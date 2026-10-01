@@ -1,0 +1,21 @@
+// 字体随站点部署，正文先使用系统回退字体，避免等待字体时空白。
+@font-face {
+  font-family: 'Alibaba PuHuiTi';
+  src: url('/fonts/alibaba-puhuiti/AlibabaPuHuiTi-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alibaba PuHuiTi';
+  src: url('/fonts/alibaba-puhuiti/AlibabaPuHuiTi-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Alibaba PuHuiTi';
+  src: url('/fonts/alibaba-puhuiti/AlibabaPuHuiTi-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}

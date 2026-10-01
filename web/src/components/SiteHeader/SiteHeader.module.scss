@@ -1,0 +1,299 @@
+/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
+// 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
+.site-header {
+  height: var(--header);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: rgba(250, 251, 249, 0.97);
+  z-index: 20;
+}
+
+.header-inner {
+  max-width: 1320px;
+  margin: auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 80px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+
+  &-icon {
+    color: var(--blue);
+
+    svg {
+      width: 30px;
+      height: 34px;
+      stroke-width: 1.5;
+    }
+  }
+
+  &-dot {
+    color: var(--blue);
+  }
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  height: 100%;
+
+  > a {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+    position: relative;
+  }
+
+  > a.active {
+    color: var(--blue);
+    font-weight: 500;
+  }
+
+  > a.active:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--blue);
+  }
+
+  > a:hover {
+    color: var(--blue);
+  }
+}
+
+.header {
+  &-login {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    border: 1px solid #d7dfe8;
+    border-radius: 5px;
+    min-height: 36px;
+    min-width: 86px;
+    padding: 6px 14px;
+    font-size: 12px;
+    background: transparent;
+
+    &:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
+  }
+
+  &-inner {
+    @media (max-width: 1150px) {
+      gap: 55px;
+    }
+
+    @media (max-width: 700px) {
+      padding: 0 20px;
+      gap: 23px;
+    }
+  }
+}
+
+.brand {
+  @media (max-width: 700px) {
+    font-size: 23px;
+    gap: 7px;
+
+    &-icon {
+      svg {
+        width: 25px;
+        height: 29px;
+      }
+    }
+  }
+}
+
+.site-nav {
+  @media (max-width: 700px) {
+    gap: 20px;
+
+    > a {
+      font-size: 12px;
+    }
+
+    > a:last-child {
+      display: none;
+    }
+  }
+}
+
+.header-login {
+  @media (max-width: 700px) {
+    padding: 6px 11px;
+    min-width: 61px;
+    min-height: 36px;
+    gap: 8px;
+    font-size: 11px;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+}
+
+.site-nav a,
+.header-login {
+  @media (max-width: 700px) {
+    min-height: 44px;
+  }
+}
+
+.header-inner {
+  @media (max-width: 370px) {
+    gap: 17px;
+  }
+}
+
+.home {
+  &-header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  &-menu {
+    position: relative;
+
+    summary {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #5d6d80;
+      font-size: 12px;
+      cursor: pointer;
+      list-style: none;
+      min-height: 40px;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    &[open] summary {
+      color: var(--blue);
+    }
+
+    nav {
+      position: absolute;
+      right: -14px;
+      top: 47px;
+      width: 176px;
+      display: grid;
+      padding: 8px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      box-shadow: 0 15px 45px #1f3a6218;
+    }
+
+    nav a {
+      padding: 12px 14px;
+      border-radius: 5px;
+      font-size: 12px;
+      color: #586c84;
+    }
+
+    nav a:hover {
+      background: #edf3fc;
+      color: var(--blue);
+    }
+  }
+
+  &-header-actions {
+    @media (max-width: 850px) {
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 620px) {
+    &-header-actions {
+      gap: 13px;
+
+      .header-login {
+        min-width: 57px;
+      }
+    }
+
+    &-menu {
+      summary > span:last-child {
+        display: none;
+      }
+
+      summary {
+        min-height: 44px;
+      }
+
+      summary svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+.header-inner {
+  @media (max-width: 620px) {
+    gap: 21px;
+  }
+}
+
+.site-nav {
+  @media (max-width: 620px) {
+    gap: 17px;
+  }
+}
+
+.header-inner {
+  @media (max-width: 370px) {
+    gap: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+.home-header-actions {
+  @media (max-width: 370px) {
+    gap: 9px;
+  }
+}
+
+.home-menu,
+.header-login {
+  @media print {
+    display: none;
+  }
+}

@@ -1,0 +1,114 @@
+/* 登录面板只定义自己的局部样式，遮罩使用原生 dialog。 */
+.panel {
+  width: 410px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid #dce5f0;
+  border-radius: 12px;
+  color: #2e425e;
+  background: #fff;
+  box-shadow: 0 24px 100px #1833552a;
+
+  &::backdrop {
+    background: #17243866;
+    backdrop-filter: blur(4px);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0 28px;
+
+  > span {
+    color: #275dad;
+    font-size: 23px;
+    font-weight: 700;
+  }
+
+  button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 5px;
+
+    &:hover {
+      background: #edf3fc;
+    }
+  }
+}
+
+.body {
+  padding: 8px 32px 28px;
+  text-align: center;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 5px 0 9px;
+  }
+
+  > p {
+    font-size: 12px;
+    color: #647790;
+  }
+
+  label {
+    display: block;
+    text-align: left;
+    font-size: 12px;
+    margin: 24px 0 8px;
+  }
+
+  input {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #dce4ef;
+    background: #f8fafc;
+    border-radius: 5px;
+    font-size: 14px;
+  }
+}
+
+.qrPlaceholder {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+  justify-content: center;
+  width: 175px;
+  height: 175px;
+  border: 1px dashed #b8c9de;
+  border-radius: 8px;
+  background: #f4f7fb;
+  color: #7892b1;
+  margin: 22px auto 0;
+  font-size: 12px;
+
+  svg {
+    width: 39px;
+    height: 39px;
+  }
+}
+
+.submit {
+  width: 100%;
+  min-height: 44px;
+  background: #9caec6;
+  color: white;
+  border-radius: 5px;
+  margin-top: 18px;
+  cursor: not-allowed;
+}
+
+.body {
+  .status {
+    font-size: 11px;
+    margin: 17px 0 0;
+    line-height: 1.8;
+  }
+}

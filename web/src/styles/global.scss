@@ -1,0 +1,96 @@
+// 全局文件只放基础样式，后续组件统一使用 .module.scss。
+@use './fonts';
+
+:root {
+  font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #1f2329;
+  background: #fafaf9;
+  line-height: 1.7;
+  font-synthesis: none;
+  --blue: #275dad;
+  --blue-dark: #1c4789;
+  --blue-light: #edf3fc;
+  --ink: #242b34;
+  --muted: #65717e;
+  --paper: #fafbf9;
+  --line: #e5e9ed;
+  --header: 76px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+// 交互元素继承站点字体，保留明确的键盘焦点。
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 104px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+summary,
+input {
+  &:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 4px;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+[data-icon] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+:root {
+  @media (max-width: 700px) {
+    --header: 64px;
+  }
+}
+
+html {
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}

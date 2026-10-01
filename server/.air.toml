@@ -1,0 +1,27 @@
+# 从 server 目录启动 Air，编译结果统一放进临时目录。
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# 每次文件变化后重新编译，再启动生成的后端程序。
+cmd = "go build -o ./tmp/zhiye-api ."
+entrypoint = ["./tmp/zhiye-api"]
+
+# 监听源码、配置和依赖文件，忽略编译产物以免重复触发。
+include_ext = ["go", "yaml", "yml", "json", "toml"]
+include_file = ["go.mod", "go.sum"]
+exclude_dir = ["tmp", "bin", "vendor", ".git"]
+
+# 合并短时间内的保存操作，编译失败时停止旧服务。
+delay = 500
+stop_on_error = true
+log = "build-errors.log"
+
+[build.windows]
+# Windows 下编译和启动路径都需要指向同一个 exe 文件。
+cmd = "go build -o ./tmp/zhiye-api.exe ."
+entrypoint = ["./tmp/zhiye-api.exe"]
+
+[misc]
+# 退出 Air 时清理本次生成的临时文件。
+clean_on_exit = true

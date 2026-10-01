@@ -1,0 +1,498 @@
+/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
+// 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
+.home-container {
+  max-width: 1280px;
+  padding-left: 60px;
+  padding-right: 60px;
+  margin: 0 auto;
+}
+
+.chapter {
+  &-heading {
+    margin-bottom: 43px;
+  }
+
+  &-label {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    letter-spacing: 1.6px;
+    color: #667f9d;
+    font-size: 9px;
+
+    > span {
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      background: #eaf0f8;
+      padding: 3px 7px;
+      border-radius: 3px;
+      color: var(--blue);
+    }
+  }
+
+  &-heading {
+    &-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 35px;
+      margin-top: 15px;
+    }
+
+    h2 {
+      font-size: 33px;
+      font-weight: 500;
+      color: #2d4058;
+      line-height: 1.55;
+      letter-spacing: -0.6px;
+      margin: 0;
+    }
+
+    &-row {
+      > p {
+        font-size: 12px;
+        line-height: 1.95;
+        color: #6e7b8d;
+        margin: 0 0 5px;
+        text-align: right;
+      }
+    }
+  }
+}
+
+.wishlist {
+  &-section {
+    padding-top: 74px;
+    padding-bottom: 60px;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    padding-top: 8px;
+  }
+}
+
+.wish {
+  &-card {
+    border: 1px solid #d6e2ee;
+    border-radius: 7px;
+    background: #edf3fa;
+    padding: 24px;
+    box-shadow: 0 9px 18px #31465a04;
+    position: relative;
+  }
+
+  &-blue {
+    transform: rotate(-1deg);
+  }
+
+  &-warm {
+    background: #f6f0e5;
+    border-color: #e8decc;
+    transform: rotate(1deg);
+    margin-top: 13px;
+  }
+
+  &-green {
+    background: #eef3ed;
+    border-color: #d8e2d6;
+    transform: rotate(-0.5deg);
+  }
+
+  &-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #6a81a0;
+    font-size: 8px;
+    letter-spacing: 1px;
+    margin-bottom: 27px;
+  }
+
+  &-check {
+    width: 14px;
+    height: 14px;
+    border: 1px solid #a9bdd6;
+    border-radius: 3px;
+  }
+
+  &-warm {
+    .wish-top {
+      color: #8b785b;
+    }
+
+    .wish-check {
+      border-color: #cdbb9a;
+    }
+  }
+
+  &-green {
+    .wish-top {
+      color: #69816c;
+    }
+
+    .wish-check {
+      border-color: #a8bdaa;
+    }
+  }
+
+  &-icon {
+    display: block;
+    color: #6689b4;
+    margin-bottom: 16px;
+
+    svg {
+      width: 28px;
+      height: 28px;
+      stroke-width: 1.35;
+    }
+  }
+
+  &-warm {
+    .wish-icon {
+      color: #ae9165;
+    }
+  }
+
+  &-green {
+    .wish-icon {
+      color: #73967a;
+    }
+  }
+
+  &-card {
+    h3 {
+      font-size: 22px;
+      line-height: 1.65;
+      letter-spacing: -0.4px;
+      font-weight: 500;
+      color: #3a5373;
+      margin: 0 0 13px;
+    }
+  }
+
+  &-warm {
+    h3 {
+      color: #756041;
+    }
+  }
+
+  &-green {
+    h3 {
+      color: #48664e;
+    }
+  }
+
+  &-card {
+    p {
+      font-size: 12px;
+      line-height: 1.95;
+      color: #6c7e95;
+      margin: 0 0 25px;
+      min-height: 70px;
+    }
+  }
+
+  &-warm {
+    p {
+      color: #8b7b62;
+    }
+  }
+
+  &-green {
+    p {
+      color: #738576;
+    }
+  }
+
+  &-bottom {
+    border-top: 1px solid #d4e0ee;
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    color: #6d83a1;
+    gap: 8px;
+
+    > span:last-child {
+      font-size: 6px;
+      letter-spacing: 1px;
+    }
+  }
+
+  &-warm {
+    .wish-bottom {
+      border-color: #e2d7c5;
+      color: #907f62;
+    }
+  }
+
+  &-green {
+    .wish-bottom {
+      border-color: #d3dfd1;
+      color: #7b907d;
+    }
+  }
+}
+
+.wishlist-handnote {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  color: #8194ad;
+  font-size: 12px;
+  padding-top: 31px;
+  padding-right: 25px;
+  transform: rotate(-2deg);
+
+  svg {
+    width: 85px;
+    height: 26px;
+    fill: none;
+    stroke: #91a7c1;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+  }
+}
+
+.wish-card {
+  &:nth-child(2) {
+    transition-delay: 0.08s;
+  }
+
+  &:nth-child(3) {
+    transition-delay: 0.16s;
+  }
+}
+
+.home-container {
+  @media (max-width: 1100px) {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+.chapter-heading {
+  @media (max-width: 1100px) {
+    h2 {
+      font-size: 30px;
+    }
+  }
+}
+
+.wish {
+  @media (max-width: 1100px) {
+    &-card {
+      padding: 21px;
+
+      h3 {
+        font-size: 20px;
+      }
+    }
+
+    &-bottom {
+      > span:last-child {
+        font-size: 5px;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 850px) {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+.chapter-heading {
+  @media (max-width: 850px) {
+    &-row {
+      gap: 25px;
+    }
+
+    h2 {
+      font-size: 27px;
+    }
+
+    &-row {
+      > p {
+        font-size: 11px;
+      }
+    }
+  }
+}
+
+.wishlist-grid {
+  @media (max-width: 850px) {
+    gap: 15px;
+  }
+}
+
+.wish {
+  @media (max-width: 850px) {
+    &-card {
+      padding: 18px;
+
+      h3 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 11px;
+      }
+    }
+
+    &-bottom {
+      > span:last-child {
+        display: none;
+      }
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 620px) {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+
+.chapter {
+  @media (max-width: 620px) {
+    &-label {
+      font-size: 8px;
+      letter-spacing: 1.1px;
+      gap: 10px;
+
+      > span {
+        font-size: 9px;
+        padding: 2px 6px;
+      }
+    }
+
+    &-heading {
+      margin-bottom: 29px;
+
+      &-row {
+        display: block;
+        margin-top: 16px;
+      }
+
+      h2 {
+        font-size: 26px;
+        line-height: 1.6;
+        letter-spacing: -0.5px;
+      }
+
+      &-row {
+        > p {
+          font-size: 11px;
+          text-align: left;
+          margin: 15px 0 0;
+        }
+
+        > p br {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.wishlist {
+  @media (max-width: 620px) {
+    &-section {
+      padding-top: 44px;
+      padding-bottom: 40px;
+    }
+
+    &-grid {
+      grid-template-columns: 1fr;
+      gap: 22px;
+      padding: 4px 3px 0;
+    }
+  }
+}
+
+.wish {
+  @media (max-width: 620px) {
+    &-card {
+      padding: 23px;
+    }
+
+    &-warm {
+      margin-top: 0;
+    }
+
+    &-top {
+      font-size: 8px;
+      margin-bottom: 24px;
+    }
+
+    &-icon {
+      svg {
+        width: 25px;
+        height: 25px;
+      }
+    }
+
+    &-card {
+      h3 {
+        font-size: 23px;
+        line-height: 1.6;
+        margin-bottom: 13px;
+      }
+
+      p {
+        font-size: 12px;
+        line-height: 1.95;
+        min-height: 0;
+        margin-bottom: 22px;
+      }
+    }
+
+    &-bottom {
+      font-size: 10px;
+
+      > span:last-child {
+        display: inline;
+        font-size: 6px;
+        letter-spacing: 1px;
+      }
+    }
+  }
+}
+
+.wishlist-handnote {
+  @media (max-width: 620px) {
+    font-size: 10px;
+    padding: 28px 0 0;
+    gap: 7px;
+    justify-content: center;
+
+    svg {
+      width: 55px;
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 370px) {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+.wish-bottom {
+  @media (max-width: 370px) {
+    > span:last-child {
+      font-size: 5px;
+    }
+  }
+}

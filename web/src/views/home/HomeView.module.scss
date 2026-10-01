@@ -1,0 +1,44 @@
+/* 通过页面数据属性控制子区域显现，不依赖跨组件的全局类名。 */
+.view {
+  overflow-x: clip;
+
+  &[data-motion='true'] [data-reveal] {
+    transition:
+      opacity 0.7s ease,
+      translate 0.7s cubic-bezier(0.2, 0.65, 0.3, 1);
+  }
+
+  &[data-motion='true'] [data-reveal]:not([data-visible]) {
+    opacity: 0;
+    translate: 0 25px;
+  }
+
+  &[data-motion='true'] [data-reveal-direction='left']:not([data-visible]) {
+    translate: -28px 15px;
+  }
+
+  &[data-motion='true'] [data-reveal-direction='right']:not([data-visible]) {
+    translate: 28px 15px;
+  }
+
+  @media (max-width: 620px) {
+    &[data-motion='true'] [data-reveal]:not([data-visible]) {
+      translate: 0 22px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &[data-motion='true'] [data-reveal] {
+      opacity: 1;
+      translate: none;
+      transition: none;
+    }
+  }
+
+  @media print {
+    &[data-motion='true'] [data-reveal] {
+      opacity: 1;
+      translate: none;
+    }
+  }
+}

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fafbf9">
+  <title>知识库 · 知页</title>
+  <link rel="stylesheet" href="./demo-assets/demo.css">
+  <script src="./demo-assets/demo.js" defer></script>
+</head>
+<body data-page="library">
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="header-inner library-header">
+      <a href="./demo-home.html" class="brand" aria-label="返回知页首页"><span class="brand-icon" data-icon="brand"></span><span>知页<span class="brand-dot">.</span></span></a>
+      <nav class="site-nav" aria-label="主导航"><a href="./demo-home.html">首页</a><a class="active" href="./demo-library.html" aria-current="page">知识库</a><a href="./demo-home.html#about">关于知页</a></nav>
+      <div class="header-right"><button class="icon-button mobile-tree-button" data-open-tree aria-label="打开知识目录"><span data-icon="menu"></span></button><button class="header-login" data-open-login><span data-login-label>登录</span><span data-icon="arrow"></span></button></div>
+    </div>
+  </header>
+
+  <!-- 左侧搜索与树、中间内容、右侧标题目录，三部分职责固定。 -->
+  <div class="knowledge-shell">
+    <aside class="knowledge-sidebar" id="knowledge-sidebar" aria-label="知识库导航">
+      <div class="sidebar-top"><span class="sidebar-caption">WORKSPACE</span><button class="icon-button sidebar-close" data-close-tree aria-label="关闭知识目录"><span data-icon="close"></span></button></div>
+      <h2 class="workspace-name"><span data-icon="book"></span>我的知识库</h2>
+      <nav class="workspace-nav" aria-label="内容视图"><a href="#all" class="active" data-mode="all"><span data-icon="grid"></span>全部文章<span class="nav-count">06</span></a><a href="#recent" data-mode="recent"><span data-icon="clock"></span>最近更新</a></nav>
+      <div class="sidebar-divider"></div>
+      <label class="sidebar-search" for="tree-search"><span data-icon="search"></span><input id="tree-search" type="search" placeholder="搜索文章..." autocomplete="off"><kbd>/</kbd></label>
+      <div class="tree-heading"><span>知识目录</span><span id="tree-count">6 篇</span></div>
+      <nav id="knowledge-tree" class="knowledge-tree" aria-label="分类与文章"></nav>
+      <div class="sidebar-bottom"><span class="small-rule"></span><p>写下理解，也留下问题。</p><span>ZHIYE · PERSONAL NOTES</span></div>
+    </aside>
+    <button class="sidebar-scrim" data-close-tree aria-label="关闭知识目录" hidden></button>
+
+    <main id="main" class="knowledge-main" tabindex="-1">
+      <div class="knowledge-breadcrumb"><a href="#all">知识库</a><span data-icon="chevron"></span><span id="breadcrumb-current">全部文章</span></div>
+      <section id="list-view"><div class="eyebrow">YOUR GROWING KNOWLEDGE</div><div class="list-title-row"><h1 id="list-title">全部文章<span class="title-dot">.</span></h1><span id="list-total" class="list-total">6 篇笔记</span></div><p class="list-intro" id="list-intro">把零散的经验写下来，把相关的问题连起来。</p><div class="list-toolbar"><span id="list-label">每一篇，都是一次新的理解</span><span>按更新时间<span data-icon="down"></span></span></div><div id="article-list"></div><div class="list-end"><span></span>慢慢积累，持续生长<span></span></div></section>
+      <article id="article-view" hidden><div class="eyebrow" id="article-eyebrow"></div><h1 id="article-title"></h1><p class="article-description" id="article-description"></p><div class="article-meta"><span class="author-avatar">知</span><span>知页</span><span class="meta-dot"></span><time id="article-date"></time><span class="meta-dot"></span><span id="article-time"></span></div><button class="mobile-toc-button" data-open-toc><span data-icon="list"></span>本文目录<span data-icon="chevron"></span></button><div id="article-body" class="article-body"></div><div class="reading-gate" id="reading-gate"><span data-icon="lock"></span><h3>继续，把这个问题弄明白。</h3><p>登录后，阅读这篇笔记的完整内容。</p><button class="button button-primary" data-open-login>登录后继续阅读<span data-icon="arrow"></span></button></div><div class="article-bottom"><a href="#all"><span data-icon="arrow-left"></span>返回全部文章</a><button id="next-note">下一篇<span data-icon="arrow"></span></button></div></article>
+      <footer class="reading-footer">记录是起点，理解才是目的。<span>© 知页</span></footer>
+    </main>
+
+    <aside class="article-outline" aria-label="当前内容目录"><div class="outline-title"><span data-icon="list"></span><h2 id="outline-title">本页目录</h2></div><nav id="outline-links"></nav><div class="outline-bottom"><div class="outline-rule"></div><p>知识不是收集来的，<br>是在理解中长出来的。</p><span>LEARN. CONNECT. GROW.</span></div></aside>
+  </div>
+  <dialog id="toc-dialog" class="toc-dialog" aria-labelledby="toc-title"><div class="dialog-header"><h2 id="toc-title">本文目录</h2><button class="icon-button" data-close-dialog aria-label="关闭文章目录"><span data-icon="close"></span></button></div><nav id="mobile-outline"></nav></dialog>
+  <div id="login-mount"></div><div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

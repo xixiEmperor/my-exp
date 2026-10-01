@@ -1,0 +1,29 @@
+/* 入口说明延续阅读端的留白，后续页面可以直接替换此占位组件。 */
+.notice {
+  min-height: 60vh;
+  max-width: 880px;
+  padding: 90px 24px;
+  margin: auto;
+
+  > span {
+    font-size: 12px;
+    color: #7187a3;
+  }
+
+  h1 {
+    font-size: 36px;
+    color: #2c476a;
+    font-weight: 500;
+  }
+
+  p {
+    color: #63758c;
+    line-height: 1.9;
+  }
+
+  a {
+    display: inline-block;
+    margin-top: 24px;
+    color: #275dad;
+  }
+}

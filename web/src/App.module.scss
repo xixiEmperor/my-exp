@@ -1,0 +1,19 @@
+// 应用壳层使用局部样式，页面布局交给各自的视图和组件。
+.app {
+  min-height: 100vh;
+}
+
+// 键盘用户可以跳过固定导航，直接进入当前页面内容。
+.skipLink {
+  position: fixed;
+  top: -80px;
+  left: 20px;
+  z-index: 100;
+  padding: 10px 20px;
+  color: white;
+  background: #275dad;
+
+  &:focus {
+    top: 10px;
+  }
+}

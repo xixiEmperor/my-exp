@@ -1,0 +1,24 @@
+# 前端依赖与构建结果不进入源码仓库。
+web/node_modules/
+web/dist/
+web/.vite/
+*.tsbuildinfo
+
+# 后端可执行文件与本地运行日志不提交。
+server/bin/
+server/*.exe
+# Air 热更新生成的临时文件不进入源码仓库。
+server/tmp/
+*.log
+
+# 本地环境变量保留在开发机器，只提交示例配置。
+**/.env
+**/.env.*
+!**/.env.example
+
+# 忽略常见的系统缓存文件。
+.DS_Store
+Thumbs.db
+
+docs/
+record/

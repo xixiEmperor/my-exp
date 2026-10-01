@@ -1,0 +1,422 @@
+/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
+// 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: 46px;
+  padding: 12px 22px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 5px;
+
+  &-primary {
+    background: var(--blue);
+    color: white;
+
+    &:hover {
+      background: var(--blue-dark);
+    }
+  }
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.text-link {
+  display: inline-flex;
+  gap: 13px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: var(--blue);
+  }
+}
+
+.button {
+  @media (max-width: 700px) {
+    font-size: 12px;
+    min-height: 44px;
+    padding: 11px 18px;
+    gap: 19px;
+  }
+}
+
+.home-welcome {
+  isolation: isolate;
+}
+
+.hand-underline {
+  isolation: isolate;
+  z-index: 0;
+}
+
+.home {
+  &-container {
+    max-width: 1280px;
+    padding-left: 60px;
+    padding-right: 60px;
+    margin: 0 auto;
+  }
+
+  &-welcome {
+    position: relative;
+    padding-top: 31px;
+    padding-bottom: 35px;
+  }
+}
+
+.welcome {
+  &-background {
+    position: absolute;
+    inset: 0 0 180px;
+    background-image: radial-gradient(#c5d3e3 0.75px, transparent 0.75px);
+    background-size: 19px 19px;
+    opacity: 0.4;
+    mask-image: linear-gradient(180deg, transparent, #000 20%, #000 55%, transparent);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  &-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #65768b;
+    font-size: 10px;
+    letter-spacing: 0.6px;
+  }
+
+  &-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    i {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #628971;
+      box-shadow: 0 0 0 4px #62897110;
+    }
+  }
+
+  &-edition {
+    font-size: 8px;
+    letter-spacing: 1.6px;
+  }
+
+  &-heading {
+    text-align: center;
+    padding-top: 53px;
+  }
+
+  &-greeting {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #687d98;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+
+    > span {
+      font-size: 17px;
+      color: #aa8545;
+      line-height: 1;
+    }
+  }
+
+  &-heading {
+    h1 {
+      font-size: 47px;
+      font-weight: 700;
+      line-height: 1.6;
+      letter-spacing: -1.5px;
+      margin: 15px 0 15px;
+      color: #253a55;
+    }
+  }
+}
+
+.hand-underline {
+  position: relative;
+  color: var(--blue);
+  white-space: nowrap;
+
+  svg {
+    position: absolute;
+    left: -2%;
+    width: 104%;
+    height: 15px;
+    bottom: -7px;
+    fill: none;
+    stroke: #ceb16f;
+    stroke-width: 3;
+    stroke-linecap: round;
+    z-index: -1;
+  }
+}
+
+.welcome {
+  &-heading {
+    > p {
+      font-size: 14px;
+      line-height: 2;
+      color: #67768a;
+      margin-bottom: 20px;
+    }
+  }
+
+  &-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    margin: 24px 0 36px;
+
+    .button {
+      font-size: 12px;
+      min-height: 43px;
+      padding: 11px 19px;
+    }
+
+    .text-link {
+      font-size: 12px;
+    }
+  }
+
+  &-signature {
+    display: none;
+  }
+
+  &-end {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    color: #6e7f94;
+    padding-top: 19px;
+
+    > a {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  &-heading {
+    @media (min-width: 1450px) {
+      h1 {
+        font-size: 52px;
+      }
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 1100px) {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+
+.welcome-heading {
+  @media (max-width: 1100px) {
+    h1 {
+      font-size: 41px;
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 850px) {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+.welcome {
+  @media (max-width: 850px) {
+    &-heading {
+      h1 {
+        font-size: 35px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+
+    &-greeting {
+      font-size: 9px;
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 620px) {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+
+.welcome {
+  @media (max-width: 620px) {
+    &-meta {
+      font-size: 9px;
+    }
+
+    &-edition {
+      font-size: 6px;
+      letter-spacing: 0.9px;
+    }
+  }
+}
+
+.home-welcome {
+  @media (max-width: 620px) {
+    padding-top: 21px;
+    padding-bottom: 23px;
+  }
+}
+
+.welcome {
+  @media (max-width: 620px) {
+    &-heading {
+      padding-top: 35px;
+      text-align: left;
+    }
+
+    &-greeting {
+      justify-content: flex-start;
+      font-size: 8px;
+      letter-spacing: 1.2px;
+
+      > span {
+        font-size: 14px;
+      }
+    }
+
+    &-heading {
+      h1 {
+        font-size: 33px;
+        letter-spacing: -1.3px;
+        line-height: 1.65;
+        max-width: 450px;
+        margin-top: 16px;
+      }
+    }
+  }
+}
+
+.hand-underline {
+  @media (max-width: 620px) {
+    svg {
+      height: 11px;
+      bottom: -5px;
+      stroke-width: 3;
+    }
+  }
+}
+
+.welcome {
+  @media (max-width: 620px) {
+    &-heading {
+      > p {
+        font-size: 12px;
+        line-height: 1.95;
+        max-width: 400px;
+        margin-top: 16px;
+      }
+
+      > p br {
+        display: none;
+      }
+    }
+
+    &-links {
+      justify-content: flex-start;
+      gap: 20px;
+      margin: 22px 0 30px;
+
+      .button {
+        font-size: 11px;
+        padding: 11px 14px;
+        gap: 13px;
+        min-height: 44px;
+      }
+
+      .text-link {
+        font-size: 10px;
+        gap: 7px;
+
+        svg {
+          width: 13px;
+          height: 13px;
+        }
+      }
+    }
+
+    &-end {
+      font-size: 8px;
+      padding-top: 14px;
+      gap: 10px;
+
+      > a {
+        font-size: 8px;
+        gap: 4px;
+      }
+
+      svg {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  }
+}
+
+.home-container {
+  @media (max-width: 370px) {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+.welcome {
+  @media (max-width: 370px) {
+    &-heading {
+      h1 {
+        font-size: 30px;
+      }
+    }
+
+    &-links {
+      gap: 14px;
+
+      .text-link {
+        font-size: 9px;
+      }
+    }
+
+    &-edition {
+      display: none;
+    }
+  }
+}
