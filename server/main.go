@@ -2,23 +2,24 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
-
-	"github.com/gin-gonic/gin"
+	"zhiye/server/internal/handler"
+	"zhiye/server/internal/router"
+	"zhiye/server/internal/service"
 )
 
 func main() {
-	// 骨架阶段使用 Gin 默认的请求日志和异常恢复能力。
-	router := gin.Default()
+	// 1. 创建各部分 repo
+	// userRepo := repository.NewUsersRepo()
 
-	// 健康检查仅表示 HTTP 服务可响应，不依赖数据库或微信配置。
-	router.GET("/api/v1/health", func(context *gin.Context) {
-		context.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
-			"service": "zhiye-api",
-		})
-	})
+	// 2. 创建各部分 service
+	authService := service.NewAuthService()
+
+	// 3. 创建各部分 handler
+	authHandler := handler.NewAuthHandler(authService)
+
+	// 4. 创建装配后的路由
+	router := router.NewRouterGroup(authHandler)
 
 	// 本地默认使用 8080 端口，需要调整时通过 PORT 环境变量指定。
 	port := os.Getenv("PORT")
