@@ -19,3 +19,8 @@ type TextReply struct {
 	MsgType      string   `xml:"MsgType"`
 	Content      string   `xml:"Content"`
 }
+
+// 验证验证码请求体
+type VerifyBody struct{
+	Code string `json:"code"`
+}

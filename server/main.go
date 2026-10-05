@@ -3,17 +3,23 @@ package main
 import (
 	"log"
 	"os"
+	"zhiye/server/internal/database"
 	"zhiye/server/internal/handler"
 	"zhiye/server/internal/router"
 	"zhiye/server/internal/service"
 )
 
 func main() {
+	// 1. 连接到 mysql 服务
+
+	// 2. 连接到 redis 服务器
+	rdb := database.NewRedisClient()
+
 	// 1. 创建各部分 repo
 	// userRepo := repository.NewUsersRepo()
 
 	// 2. 创建各部分 service
-	authService := service.NewAuthService()
+	authService := service.NewAuthService(rdb)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService)

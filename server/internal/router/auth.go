@@ -16,4 +16,5 @@ func registerAuthRouter(
 	// /api/v1/auth/wechat/callback
 	auth.POST("/wechat/callback", handler.PostWechatCallback)
 	auth.GET("/wechat/callback", handler.GetWechatCallback)
+	auth.POST("/verify", handler.Verify)
 }
