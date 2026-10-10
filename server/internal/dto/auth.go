@@ -21,6 +21,15 @@ type TextReply struct {
 }
 
 // 验证验证码请求体
-type VerifyBody struct{
-	Code string `json:"code"`
+type VerifyBody struct {
+	// 保留字符串类型，避免 000123 这样的验证码丢失开头的零。
+	Code string `json:"code" binding:"required,len=6,ascii,numeric"`
+}
+
+// UserInfo 仅包含前端展示字段，避免把 OpenID 等内部资料写入可读 Cookie。
+type UserInfo struct {
+	// 使用字符串表示数据库 ID，避免 JavaScript 对较大整数丢失精度。
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Role string `json:"role"`
 }

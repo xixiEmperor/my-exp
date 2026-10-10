@@ -2,10 +2,11 @@ package database
 
 import "github.com/redis/go-redis/v9"
 
-func NewRedisClient() *redis.Client {
+// NewRedisClient 创建连接池；实际连通性由入口通过 Ping 检查。
+func NewRedisClient(addr, password string) *redis.Client {
 	return redis.NewClient(&redis.Options{
-      Addr:     "127.0.0.1:6379",
-      Password: "",
-      DB:       0, // 使用默认DB
-   })
+		Addr:     addr,
+		Password: password,
+		DB:       0, // 使用默认DB
+	})
 }

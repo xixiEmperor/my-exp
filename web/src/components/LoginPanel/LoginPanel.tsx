@@ -1,6 +1,9 @@
 import type { RefObject } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './LoginPanel.module.scss';
+import gzh from '@/assets/gzh.jpg'
+import { login } from '@/api/users';
+import { useRef } from 'react';
 
 interface Props {
   dialogRef: RefObject<HTMLDialogElement | null>;
@@ -9,6 +12,18 @@ interface Props {
 
 // 先完成遮罩结构，微信接口未接入时不生成假二维码或模拟登录成功。
 export default function LoginPanel({ dialogRef, onClose }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleLogin = async () => {
+    const code = inputRef.current?.value
+    console.log(code)
+
+    if (code?.length !== 6) return
+
+    const res = await login(code)
+    console.log(res)
+  }
+
   return (
     <dialog ref={dialogRef} className={styles.panel} aria-labelledby="login-title" onCancel={onClose} onClose={onClose}>
       <div className={styles.header}>
@@ -21,25 +36,21 @@ export default function LoginPanel({ dialogRef, onClose }: Props) {
         <h2 id="login-title">让好奇，继续往下走。</h2>
         <p>公众号验证码登录</p>
         <div className={styles.qrPlaceholder} role="status">
-          <SiteIcon name="book" />
-          <span>二维码准备中</span>
+          <img src={gzh} alt="" />
         </div>
         <label htmlFor="login-code">验证码</label>
         <input
+          ref={inputRef}
           id="login-code"
           inputMode="numeric"
           autoComplete="one-time-code"
           placeholder="请输入 6 位验证码"
           maxLength={6}
-          disabled
           aria-describedby="login-status"
         />
-        <button className={styles.submit} type="button" disabled>
+        <button className={styles.submit} type="button" onClick={handleLogin}>
           登录，继续阅读
         </button>
-        <p className={styles.status} id="login-status">
-          微信登录服务尚未接入，暂不支持登录。
-        </p>
       </div>
     </dialog>
   );
