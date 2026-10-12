@@ -11,8 +11,15 @@ interface Props {
   onToggleMenu: (event: MouseEvent<HTMLElement>) => void;
   onOpenLogin: () => void;
 }
+
 // 只负责页面结构与样式，交互通过参数交给 hooks。
-export default function SiteHeader({ menuOpen, menuRef, activePath, onToggleMenu, onOpenLogin }: Props) {
+export default function SiteHeader({
+  menuOpen,
+  menuRef,
+  activePath,
+  onToggleMenu,
+  onOpenLogin,
+}: Props) {
   const mainLinks: ReactNode[] = [];
   const sectionLinks: ReactNode[] = [];
 
@@ -43,7 +50,7 @@ export default function SiteHeader({ menuOpen, menuRef, activePath, onToggleMenu
   return (
     <header className={styles['site-header']}>
       <div className={styles['header-inner']}>
-        <Link to="/" className={styles['brand']} aria-label="知页首页">
+        <Link to="/" className={styles.brand} aria-label="知页首页">
           <span className={styles['brand-icon']} data-icon="brand">
             <SiteIcon name="brand" />
           </span>

@@ -1,9 +1,8 @@
-import type { RefObject } from 'react';
+import { type RefObject, useRef } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './LoginPanel.module.scss';
-import gzh from '@/assets/gzh.jpg'
+import gzh from '@/assets/gzh.jpg';
 import { login } from '@/api/users';
-import { useRef } from 'react';
 
 interface Props {
   dialogRef: RefObject<HTMLDialogElement | null>;
@@ -12,20 +11,24 @@ interface Props {
 
 // 先完成遮罩结构，微信接口未接入时不生成假二维码或模拟登录成功。
 export default function LoginPanel({ dialogRef, onClose }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleLogin = async () => {
-    const code = inputRef.current?.value
-    console.log(code)
+    const code = inputRef.current?.value;
 
-    if (code?.length !== 6) return
+    if (code?.length !== 6) return;
 
-    const res = await login(code)
-    console.log(res)
-  }
+    await login(code);
+  };
 
   return (
-    <dialog ref={dialogRef} className={styles.panel} aria-labelledby="login-title" onCancel={onClose} onClose={onClose}>
+    <dialog
+      ref={dialogRef}
+      className={styles.panel}
+      aria-labelledby="login-title"
+      onCancel={onClose}
+      onClose={onClose}
+    >
       <div className={styles.header}>
         <span>知页.</span>
         <button type="button" onClick={onClose} aria-label="关闭登录">

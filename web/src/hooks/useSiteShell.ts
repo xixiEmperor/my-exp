@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
-import type { MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, type MouseEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useStore } from 'zustand';
 import { uiStore } from '../stores/ui';
@@ -31,7 +30,10 @@ export function useSiteShell() {
     }
 
     const dismiss = (event: globalThis.MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node) || (event.target as Element).closest('a')) {
+      if (
+        !menuRef.current?.contains(event.target as Node) ||
+        (event.target as Element).closest('a')
+      ) {
         uiStore.getState().closeMenu();
       }
     };
@@ -40,6 +42,7 @@ export function useSiteShell() {
         uiStore.getState().closeMenu();
       }
     };
+
     document.addEventListener('click', dismiss);
     document.addEventListener('keydown', escape);
 

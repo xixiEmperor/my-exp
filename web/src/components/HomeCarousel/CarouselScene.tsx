@@ -13,7 +13,9 @@ const illustrations: Record<CarouselSceneId, ReactNode> = {
         className={[styles['slide-illustration'], styles['notes-illustration']].join(' ')}
         aria-label="知识笔记纸页插画"
       >
-        <div className={[styles['floating-label'], styles['label-top']].join(' ')}>THINK IN CONNECTIONS</div>
+        <div className={[styles['floating-label'], styles['label-top']].join(' ')}>
+          THINK IN CONNECTIONS
+        </div>
         <div className={styles['notebook-back']}></div>
         <div className={styles['notebook-page']}>
           <div className={styles['notebook-top']}>
@@ -51,10 +53,16 @@ const illustrations: Record<CarouselSceneId, ReactNode> = {
           <br />
           比较快。
         </span>
-        <span className={[styles['notebook-spark'], styles['spark-a']].join(' ')} aria-hidden="true">
+        <span
+          className={[styles['notebook-spark'], styles['spark-a']].join(' ')}
+          aria-hidden="true"
+        >
           ✳
         </span>
-        <span className={[styles['notebook-spark'], styles['spark-b']].join(' ')} aria-hidden="true">
+        <span
+          className={[styles['notebook-spark'], styles['spark-b']].join(' ')}
+          aria-hidden="true"
+        >
           +
         </span>
       </div>
@@ -114,10 +122,10 @@ const illustrations: Record<CarouselSceneId, ReactNode> = {
         className={[styles['slide-illustration'], styles['life-illustration']].join(' ')}
         aria-label="个人经历手记插画"
       >
-        <div className={[styles['postcard'], styles['postcard-back']].join(' ')}>
+        <div className={[styles.postcard, styles['postcard-back']].join(' ')}>
           <span>THE NEXT CHAPTER</span>
         </div>
-        <div className={styles['postcard']}>
+        <div className={styles.postcard}>
           <div className={styles['postcard-stamp']}>
             知页
             <br />

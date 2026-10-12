@@ -101,7 +101,8 @@ export const journeyItems: readonly JourneyItem[] = [
     year: '2022',
     stage: '走进实践',
     title: '从会写一段代码，到做完一个项目。',
-    content: '开始把分散的知识放进真实场景。遇到问题、查找原因、重新调整，也逐渐学会为自己的选择做解释。',
+    content:
+      '开始把分散的知识放进真实场景。遇到问题、查找原因、重新调整，也逐渐学会为自己的选择做解释。',
     tags: ['项目实践', '解决问题'],
     caption: 'LEARNING BY DOING',
     direction: 'right',
@@ -112,7 +113,8 @@ export const journeyItems: readonly JourneyItem[] = [
     year: '2024',
     stage: '工作中的成长',
     title: '开始在意，代码以外的事情。',
-    content: '除了把功能做出来，也开始关注沟通、边界和长期维护。真正的进步，往往来自那些需要多想一步的细节。',
+    content:
+      '除了把功能做出来，也开始关注沟通、边界和长期维护。真正的进步，往往来自那些需要多想一步的细节。',
     tags: ['工程思考', '协作与复盘'],
     caption: 'BEYOND THE CODE',
     direction: 'left',
@@ -123,7 +125,8 @@ export const journeyItems: readonly JourneyItem[] = [
     year: '2026',
     stage: '记录新的开始',
     title: '搭一个小院，安放这些经历。',
-    content: '把学习过程、开发经验和还没想通的问题，慢慢整理成自己的知识库。知页从这里开始，也会继续生长。',
+    content:
+      '把学习过程、开发经验和还没想通的问题，慢慢整理成自己的知识库。知页从这里开始，也会继续生长。',
     tags: ['个人博客', '知识沉淀'],
     caption: 'STILL EXPLORING',
     direction: 'right',

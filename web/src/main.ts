@@ -12,4 +12,6 @@ if (!container) {
 }
 
 // 入口保持 .ts，使用 createElement 挂载唯一的路由实例。
-createRoot(container).render(createElement(StrictMode, null, createElement(RouterProvider, { router })));
+createRoot(container).render(
+  createElement(StrictMode, null, createElement(RouterProvider, { router })),
+);

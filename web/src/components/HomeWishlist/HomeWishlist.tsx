@@ -10,7 +10,11 @@ export default function HomeWishlist() {
 
   wishItems.forEach((item, index) => {
     wishNodes.push(
-      <article key={item.id} className={[styles['wish-card'], styles[`wish-${item.color}`]].join(' ')} data-reveal="">
+      <article
+        key={item.id}
+        className={[styles['wish-card'], styles[`wish-${item.color}`]].join(' ')}
+        data-reveal=""
+      >
         <div className={styles['wish-top']}>
           <span className={styles['wish-check']} aria-hidden="true"></span>
           <span>WISH / {String(index + 1).padStart(3, '0')}</span>
@@ -33,7 +37,10 @@ export default function HomeWishlist() {
   });
 
   return (
-    <section className={[styles['wishlist-section'], styles['home-container']].join(' ')} id="wishlist">
+    <section
+      className={[styles['wishlist-section'], styles['home-container']].join(' ')}
+      id="wishlist"
+    >
       <div className={styles['chapter-heading']} data-reveal="">
         <div className={styles['chapter-label']}>
           <span>03</span> SOMEDAY, MAYBE

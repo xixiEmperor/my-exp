@@ -6,6 +6,7 @@ import styles from './HomeHero.module.scss';
 interface Props {
   children: ReactNode;
 }
+
 // 只负责页面结构与样式，交互通过参数交给 hooks。
 export default function HomeHero({ children }: Props) {
   return (
@@ -38,7 +39,7 @@ export default function HomeHero({ children }: Props) {
         </p>
       </div>
       <div className={styles['welcome-links']}>
-        <Link className={[styles['button'], styles['button-primary']].join(' ')} to="/knowledge">
+        <Link className={[styles.button, styles['button-primary']].join(' ')} to="/knowledge">
           去知识库坐坐
           <span data-icon="arrow">
             <SiteIcon name="arrow" />

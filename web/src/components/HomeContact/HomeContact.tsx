@@ -36,7 +36,7 @@ export default function HomeContact() {
             <br />
             或者只是来打个招呼。
           </p>
-          <Link className={[styles['button'], styles['button-primary']].join(' ')} to="/knowledge">
+          <Link className={[styles.button, styles['button-primary']].join(' ')} to="/knowledge">
             先去知识库逛逛
             <span data-icon="arrow">
               <SiteIcon name="arrow" />

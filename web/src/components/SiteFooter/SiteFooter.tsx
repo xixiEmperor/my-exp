@@ -6,7 +6,7 @@ import styles from './SiteFooter.module.scss';
 export default function SiteFooter() {
   return (
     <footer className={[styles['site-footer'], styles['home-container']].join(' ')}>
-      <Link className={[styles['brand'], styles['footer-brand']].join(' ')} to="/">
+      <Link className={[styles.brand, styles['footer-brand']].join(' ')} to="/">
         <span className={styles['brand-icon']} data-icon="brand">
           <SiteIcon name="brand" />
         </span>

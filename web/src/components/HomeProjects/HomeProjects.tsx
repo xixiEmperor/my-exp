@@ -11,6 +11,7 @@ interface Props {
   onHover: (event: PointerEvent<HTMLButtonElement>, index: number) => void;
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>, index: number) => void;
 }
+
 // 只负责页面结构与样式，交互通过参数交给 hooks。
 export default function HomeProjects({ activePhase, phase, onSelect, onHover, onKeyDown }: Props) {
   const stepNodes: ReactNode[] = [];
@@ -36,7 +37,9 @@ export default function HomeProjects({ activePhase, phase, onSelect, onHover, on
         onKeyDown={(event) => onKeyDown(event, index)}
       >
         <span className={styles['step-position']}>{String(index + 1).padStart(2, '0')}</span>
-        <span className={[styles['step-status'], item.isCurrent ? styles.current : ''].join(' ')}>{item.status}</span>
+        <span className={[styles['step-status'], item.isCurrent ? styles.current : ''].join(' ')}>
+          {item.status}
+        </span>
         <span className={styles['step-title']}>{item.stepTitle}</span>
         <span className={styles['step-caption']}>{item.caption}</span>
       </button>,

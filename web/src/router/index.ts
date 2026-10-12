@@ -9,6 +9,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     Component: App,
+
     // 仍然只维护这一份对象配置，通过 App 的 Outlet 展示页面。
     children: [
       { index: true, Component: HomeView },

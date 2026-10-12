@@ -6,6 +6,7 @@ interface Props {
   timelineRef: RefObject<HTMLDivElement | null>;
   progressRef: RefObject<HTMLElement | null>;
 }
+
 // 只负责页面结构与样式，交互通过参数交给 hooks。
 export default function HomeJourney({ timelineRef, progressRef }: Props) {
   // 每次渲染单独收集节点，阶段和标签都使用稳定的内容标识。
@@ -25,7 +26,12 @@ export default function HomeJourney({ timelineRef, progressRef }: Props) {
     ].join(' ');
 
     journeyNodes.push(
-      <article key={item.id} className={className} data-reveal="" data-reveal-direction={item.direction}>
+      <article
+        key={item.id}
+        className={className}
+        data-reveal=""
+        data-reveal-direction={item.direction}
+      >
         <div className={styles['journey-card']}>
           <div className={styles['journey-card-top']}>
             <span className={styles['journey-year']}>
@@ -48,7 +54,10 @@ export default function HomeJourney({ timelineRef, progressRef }: Props) {
   });
 
   return (
-    <section className={[styles['journey-section'], styles['home-container']].join(' ')} id="journey">
+    <section
+      className={[styles['journey-section'], styles['home-container']].join(' ')}
+      id="journey"
+    >
       <div className={styles['chapter-heading']} data-reveal="">
         <div className={styles['chapter-label']}>
           <span>01</span> MY JOURNEY

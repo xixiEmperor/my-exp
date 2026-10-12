@@ -39,7 +39,8 @@
   &-grid {
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+    background-image:
+      linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
     background-size: 36px 36px;
     opacity: 0.045;
     pointer-events: none;
@@ -382,7 +383,8 @@
   .slide-grid {
     opacity: 0.3;
     background-image:
-      linear-gradient(#bdcce0 1px, transparent 1px), linear-gradient(90deg, #bdcce0 1px, transparent 1px);
+      linear-gradient(#bdcce0 1px, transparent 1px),
+      linear-gradient(90deg, #bdcce0 1px, transparent 1px);
   }
 
   .slide-copy {
@@ -532,7 +534,8 @@
   .slide-grid {
     opacity: 0.4;
     background-image:
-      linear-gradient(#e5dac4 1px, transparent 1px), linear-gradient(90deg, #e5dac4 1px, transparent 1px);
+      linear-gradient(#e5dac4 1px, transparent 1px),
+      linear-gradient(90deg, #e5dac4 1px, transparent 1px);
   }
 
   .slide-copy {

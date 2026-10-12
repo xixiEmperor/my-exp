@@ -125,6 +125,7 @@ const icons = {
     </>
   ),
 };
+
 export type IconName = keyof typeof icons;
 
 interface Props {

@@ -1,11 +1,11 @@
-import { request } from './request'
+import { request } from './request';
 
 export const login = (code: string) => {
-	return request({
-		path: '/auth/verify',
-		method: 'POST',
-		body: {
-			code
-		}
-	})
-}
+  return request({
+    path: '/auth/verify',
+    method: 'POST',
+    body: {
+      code,
+    },
+  });
+};

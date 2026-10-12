@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
-import type { KeyboardEvent, PointerEvent } from 'react';
+import { useCallback, useEffect, useRef, type KeyboardEvent, type PointerEvent } from 'react';
 import type { Swiper as SwiperInstance } from 'swiper';
 import { useStore } from 'zustand';
 import { carouselItems, projectPhases } from '../constants/home';
@@ -49,9 +48,14 @@ export function useHomePage() {
 
       event.preventDefault();
       selectProject(nextIndex);
+
       // 键盘切换同时移动焦点，手机端横向时间轴也能滚到选中节点。
-      const next = event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(`[data-phase="${nextIndex}"]`);
+      const next = event.currentTarget.parentElement?.querySelector<HTMLButtonElement>(
+        `[data-phase="${nextIndex}"]`,
+      );
+
       next?.focus({ preventScroll: true });
+
       next?.scrollIntoView({
         block: 'nearest',
         inline: 'nearest',
@@ -86,6 +90,7 @@ export function useHomePage() {
     }
 
     root.dataset.motion = 'true';
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -117,6 +122,7 @@ export function useHomePage() {
     }
 
     let frame = 0;
+
     // 与时间轴装饰线的顶部和底部留白一致，进度按实际可见线段计算。
     const topInset = 29;
     const bottomInset = 47;
@@ -129,9 +135,11 @@ export function useHomePage() {
         0,
         Math.min(
           1,
-          (window.innerHeight * 0.72 - rect.top - topInset) / Math.max(1, rect.height - topInset - bottomInset),
+          (window.innerHeight * 0.72 - rect.top - topInset) /
+            Math.max(1, rect.height - topInset - bottomInset),
         ),
       );
+
       progress.style.transform = `scaleY(${value})`;
     };
 
@@ -147,7 +155,10 @@ export function useHomePage() {
     update();
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
-    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleUpdate);
+
+    const resizeObserver =
+      typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(scheduleUpdate);
+
     resizeObserver?.observe(timeline);
 
     return () => {
