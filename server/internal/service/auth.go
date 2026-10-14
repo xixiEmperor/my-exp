@@ -9,11 +9,11 @@ import (
 	"os"
 	"strings"
 	"time"
+	"zhiye/server/internal/dto"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9"
 )
 
 type AuthService struct {
@@ -22,7 +22,15 @@ type AuthService struct {
 }
 
 // TokenTTL 同时用于令牌和 Cookie，避免两边分别写死有效期。
-const TokenTTL = 2 * time.Hour
+const TokenTTL = 30 * 24 * time.Hour
+
+// verificationCodeTTL 是验证码以及 loginId 的缓存有效期。
+const verificationCodeTTL = 5 * time.Minute
+
+// maxCodeAttempts 是同一个验证码允许的最大失败次数，超过后直接限流。
+const maxCodeAttempts = 5
+
+const loginIDAlphabet = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
 
 // LoginResult 只描述登录结果，不包含 Gin 或 Cookie 等 HTTP 细节。
 type LoginResult struct {
@@ -31,8 +39,8 @@ type LoginResult struct {
 }
 
 // Login 组织完整登录步骤，任何一步失败都不返回可使用的登录结果。
-func (a *AuthService) Login(ctx context.Context, code string) (*LoginResult, error) {
-	user, err := a.VerifyCode(ctx, code)
+func (a *AuthService) Login(ctx context.Context, loginId, code string) (*LoginResult, error) {
+	user, err := a.VerifyCode(ctx, loginId, code)
 	if err != nil {
 		return nil, err
 	}
@@ -59,57 +67,69 @@ func NewAuthService(codes *repository.VerificationCodes, users *UsersService) *A
 }
 
 // 生成验证码
-func (a *AuthService) GenerateVerificationCode(ctx context.Context, userID string) (string, error) {
-	// 先查看当前用户是否有缓存,如果有缓存且未过期，不处理，直接返回
-	// 检查已移到 repository 的原子脚本中，避免检查之后状态被其他请求改变。
+func (a *AuthService) GenerateVerificationCode(ctx context.Context, userID string) (*dto.VerifyBody, error) {
+	credentials := dto.VerifyBody{}
+
 	if userID == "" {
-		return "", errors.New("微信用户标识不能为空")
+		return &credentials, errors.New("微信用户标识不能为空")
 	}
-	// 六位验证码可能碰撞，限制重试次数，避免缓存接近满载时无限循环。
-	for attempt := 0; attempt < 5; attempt++ {
-		// 如果没有缓存随机生成 0～999999
-		n, err := rand.Int(rand.Reader, big.NewInt(1000000))
-		if err != nil {
-			return "", err
-		}
 
-		// 不足六位时，左侧补 0
-		code := fmt.Sprintf("%06d", n.Int64())
-
-		// 缓存到 redis 并设置 5min 有效期, 同时设置一个反向的映射（code -> id），便于登录时反查登录用户
-		result, err := a.codes.Save(ctx, userID, code, 5*time.Minute)
-		if err != nil {
-			return "", fmt.Errorf("保存验证码: %w", err)
-		}
-		switch result {
-		case 1:
-			return code, nil
-		case 0:
-			return "", ErrCodeActive
-		}
+	// 生成临时登录id
+	loginId, err := NewLoginID(8)
+	if err != nil {
+		return &credentials, err
 	}
-	return "", errors.New("生成验证码多次碰撞，请重试")
+
+	// 如果没有缓存随机生成 0～999999
+	n, err := rand.Int(rand.Reader, big.NewInt(1000000))
+	if err != nil {
+		return &credentials, err
+	}
+
+	// 不足六位时，左侧补 0
+	code := fmt.Sprintf("%06d", n.Int64())
+
+	// 缓存到 redis 并设置 5min 有效期
+	saved, err := a.codes.SaveIfAbsent(ctx, loginId, userID, code, verificationCodeTTL)
+	if err != nil {
+		return &credentials, fmt.Errorf("保存验证码: %w", err)
+	}
+	if !saved {
+		// 同一个用户还有未过期的验证码，不重复下发。
+		return &credentials, ErrCodeActive
+	}
+
+	credentials.Code = code
+	credentials.LoginId = loginId
+	return &credentials, nil
 }
 
 // 验证验证码
-func (a *AuthService) VerifyCode(ctx context.Context, code string) (*model.Users, error) {
-	// 从 redis 里面反查 openid，并原子删除 code 键
-	// repository 一次删除两个索引，service 只处理业务结果。
-	openid, err := a.codes.Consume(ctx, code)
-
-	// 如果找不到，说明已过期或不存在
-	if errors.Is(err, redis.Nil) {
-		return nil, ErrInvalidCode
-	}
+func (a *AuthService) VerifyCode(ctx context.Context, loginId, code string) (*model.Users, error) {
+	// repository 只回答存储层发生了什么，通过与否、提示什么由这里判断。
+	result, err := a.codes.Consume(ctx, loginId, code)
 	if err != nil {
 		return nil, fmt.Errorf("消费验证码: %w", err)
 	}
 
-	// 验证码消费完成后，只负责取得用户；签发令牌由 Login 组织，Cookie 由 handler 写入。
+	switch result.Status {
+	case repository.ConsumeMissing:
+		// 键不存在，说明验证码已过期或从未生成。
+		return nil, ErrInvalidCode
+	case repository.ConsumeMismatched:
+		// attempt 是自增后的值，超过上限就改提示限流，不再允许继续试探。
+		if result.Attempt > maxCodeAttempts {
+			return nil, ErrRateLimit
+		}
+		return nil, ErrWrongCode
+	}
+
+	// 验证码命中时 repository 已经把它删除，这里只负责取得用户；
+	// 签发令牌由 Login 组织，Cookie 由 handler 写入。
 
 	// 查找用户信息
 	// 如果找不到对应用户信息，说明是新用户，则创建对应用户信息
-	user, err := a.users.FindOrCreateUser(ctx, openid)
+	user, err := a.users.FindOrCreateUser(ctx, result.Openid)
 	if err != nil {
 		// 创建逻辑统一放在 UsersService，这里只向上返回失败原因。
 		return nil, fmt.Errorf("准备验证码用户: %w", err)
@@ -167,6 +187,22 @@ func (a *AuthService) VerifyToken(encoded string) (*Claims, error) {
 	if err != nil {
 		return nil, fmt.Errorf("校验登录令牌: %w", err)
 	}
-	
+
 	return claims, nil
+}
+
+func NewLoginID(length int) (string, error) {
+	max := big.NewInt(int64(len(loginIDAlphabet)))
+	b := make([]byte, length)
+
+	for i := range b {
+		n, err := rand.Int(rand.Reader, max)
+		if err != nil {
+			return "", err
+		}
+
+		b[i] = loginIDAlphabet[n.Int64()]
+	}
+
+	return string(b), nil
 }

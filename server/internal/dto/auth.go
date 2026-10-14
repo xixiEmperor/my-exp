@@ -23,6 +23,7 @@ type TextReply struct {
 // 验证验证码请求体
 type VerifyBody struct {
 	// 保留字符串类型，避免 000123 这样的验证码丢失开头的零。
+	LoginId string `json:"loginId"`
 	Code string `json:"code" binding:"required,len=6,ascii,numeric"`
 }
 

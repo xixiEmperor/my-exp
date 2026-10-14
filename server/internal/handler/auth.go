@@ -30,8 +30,8 @@ type AuthHandler struct {
 
 // 接口由使用方定义，只列出 handler 需要的方法，测试时可以模拟服务故障。
 type authService interface {
-	GenerateVerificationCode(context.Context, string) (string, error)
-	Login(context.Context, string) (*service.LoginResult, error)
+	GenerateVerificationCode(context.Context, string) (*dto.VerifyBody, error)
+	Login(context.Context, string, string) (*service.LoginResult, error)
 }
 
 func NewAuthHandler(s authService, callbackToken string) *AuthHandler {
@@ -94,7 +94,7 @@ func (a *AuthHandler) PostWechatCallback(c *gin.Context) {
 		return
 	}
 	// 使用请求的标准上下文，让下游操作可以响应 HTTP 请求取消。
-	code, err := a.authService.GenerateVerificationCode(c.Request.Context(), msg.FromUserName)
+	credentials, err := a.authService.GenerateVerificationCode(c.Request.Context(), msg.FromUserName)
 	if err != nil {
 		// 如果是验证码未过期的错误，直接静默返回就好，不需要回复多余内容
 		if errors.Is(err, service.ErrCodeActive) {
@@ -108,7 +108,7 @@ func (a *AuthHandler) PostWechatCallback(c *gin.Context) {
 		return
 	}
 
-	content := "验证码为：" + code + ", 5分钟内有效"
+	content := fmt.Sprintf("loginId为:%s,\n验证码为:%s，5分钟内有效", credentials.LoginId, credentials.Code)
 
 	reply := dto.TextReply{
 		// 收件人和发件人需要与收到的消息互换
@@ -126,22 +126,27 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 	var body dto.VerifyBody
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "请求异常"))
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.InternalError, "后台服务异常"))
 		return
 	}
-	fmt.Println(body.Code)
 
 	// service 完成验证码验证和令牌签发，handler 只处理 HTTP 输入输出。
-	result, err := a.authService.Login(c.Request.Context(), body.Code)
+	result, err := a.authService.Login(c.Request.Context(), body.LoginId, body.Code)
 
 	if err != nil {
-		if errors.Is(err, service.ErrInvalidCode) {
+		// 业务错误按各自的语义回给前端，前端才能给出对应的提示。
+		switch {
+		case errors.Is(err, service.ErrInvalidCode):
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.InvalidCode, "验证码无效或已过期"))
-			return
+		case errors.Is(err, service.ErrWrongCode):
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.WrongCode, "验证码有误，请重新输入"))
+		case errors.Is(err, service.ErrRateLimit):
+			c.JSON(http.StatusTooManyRequests, dto.Fail(cons.RateLimit, "尝试过于频繁，请稍后再试"))
+		default:
+			// 任何未预期的错误都必须结束请求，不能继续落入成功分支。
+			log.Printf("登录失败：%v", err)
+			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "服务暂时不可用"))
 		}
-		// 任何未预期的错误都必须结束请求，不能继续落入成功分支。
-		log.Printf("登录失败：%v", err)
-		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "服务暂时不可用"))
 		return
 	}
 
