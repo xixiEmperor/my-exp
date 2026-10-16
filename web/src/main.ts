@@ -8,10 +8,10 @@ import './styles/global.scss';
 const container = document.getElementById('root');
 
 if (!container) {
-  throw new Error('找不到 React 挂载容器 root');
+    throw new Error('找不到 React 挂载容器 root');
 }
 
 // 入口保持 .ts，使用 createElement 挂载唯一的路由实例。
 createRoot(container).render(
-  createElement(StrictMode, null, createElement(RouterProvider, { router })),
+    createElement(StrictMode, null, createElement(RouterProvider, { router })),
 );

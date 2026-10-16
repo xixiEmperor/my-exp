@@ -1,8 +1,12 @@
-# 知页
+# xixiEmperor
 
-个人博客与知识库。前端已实现个人博客首页，包括 Swiper 轮播、个人经历时间轴、项目历程、未来计划和联系区。后端目前只提供健康检查接口，原有 HTML demo 继续作为设计参考。
+个人博客与知识库。前端已实现个人主页，采用三栏工作台版式：中间是横幅、成长时间轴、项目时间轴、愿望轮播、未来计划和联系面板，两侧留白放自我介绍、快捷跳转、本地时间、天气和技术栈小组件。
 
-经历和联系方式仍为明确标注的示例内容。知识库入口目前展示待开发说明，登录遮罩尚未接入微信服务，因此不会生成虚假二维码或模拟登录成功。日期、天气、额外作品集等扩展没有加入。
+全站支持明暗两套主题，默认跟随系统偏好，用户手动切换后用 localStorage 记住。阅读页的排版样式已经单独沉淀在 `web/src/styles/reader.scss`，等知识库正文接入时直接使用。
+
+经历和联系方式仍为明确标注的示例内容。知识库入口目前展示待开发说明，登录遮罩尚未接入微信服务，因此不会生成虚假二维码或模拟登录成功。
+
+后端目前只提供健康检查接口，原有 HTML demo 继续作为设计参考。仓库名、后端 Go module 名、前端包名和数据库名沿用 `zhiye` 与 `my_exp`，属于内部标识，没有跟着站点名称改动。
 
 ## 环境要求
 
@@ -71,7 +75,7 @@ go build -o bin/zhiye-api.exe .
 | `web/src/views/home/HomeView.tsx` | 集成首页各区域 |
 | `web/src/router/index.ts` | 唯一的配置式路由表 |
 | `web/src/views`、`components`、`hooks`、`stores` | 视图、组件、业务逻辑和 Zustand 状态 |
-| `web/src/constants/home.ts` | 项目历程详情和轮播说明 |
+| `web/src/constants/home.ts` | 首页全部展示内容与分区文案 |
 | `web/public/fonts/alibaba-puhuiti` | 本地阿里巴巴普惠体与字体来源说明 |
 | `web/src/utils`、`api`、`assets` | 保留工具、接口和资源目录 |
 | `web/src/types`、`styles`、`constants`、`config` | 公共类型、样式、常量和配置 |
@@ -82,8 +86,10 @@ go build -o bin/zhiye-api.exe .
 
 空目录使用 `.gitkeep` 保留结构。组件实现时按组件名建文件夹，一个或几个 TSX 配一个 `.module.scss`。
 
-前端已使用 React、React Router 6、Zustand、Sass 和 Swiper。首页轮播的导航、分页、键盘和触摸切换由 Swiper 处理。hooks 订阅和更新 Zustand，组件接收状态与操作。组件按名称独立建文件夹，每个文件夹使用一个 `.module.scss`。
+前端已使用 React、React Router 6、Zustand、Sass 和 Swiper。愿望清单轮播的导航、分页、键盘和触摸切换由 Swiper 处理。hooks 订阅和更新 Zustand，组件接收状态与操作。组件按名称独立建文件夹，每个文件夹使用一个 `.module.scss`。
 
-经历时间轴通过 IntersectionObserver 逐项显现，并尊重系统减少动态效果的设置。项目历程支持悬浮、点击和方向键操作。阿里巴巴普惠体通过本地字体文件加载。
+颜色全部走 `web/src/styles/tokens.scss` 里的令牌，派生色用 `color-mix` 从强调色算出来，明暗两套值共用同一份深色 mixin。主题状态存在 Zustand 的 UI store 里，由 `useTheme` 负责和系统偏好合成并同步到文档，`web/index.html` 里有一段同步脚本负责防首屏闪烁。
+
+区块进入和离开视口都会播放过渡，用一条带阈值滞后的 IntersectionObserver 实现，并尊重系统减少动态效果的设置。项目时间轴的卡片可以悬浮、点击和方向键操作，轨道用 flex 加横向滚动实现。阿里巴巴普惠体通过本地字体文件加载。
 
 首页可以独立于后端浏览。AntD、MDXEditor 和 react-markdown 等依赖在实现对应业务时再加入，目前没有建立数据库连接。开发服务由你按上述命令手动启动。

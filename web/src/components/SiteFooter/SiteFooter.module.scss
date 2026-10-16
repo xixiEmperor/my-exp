@@ -1,165 +1,59 @@
-/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
+/* 页脚保持安静，只做收尾，不抢主内容的注意力。 */
 // 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  line-height: 1;
-
-  &-icon {
-    color: var(--blue);
-
-    svg {
-      width: 30px;
-      height: 34px;
-      stroke-width: 1.5;
-    }
-  }
-}
-
 .site-footer {
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding-top: 24px;
-  padding-bottom: 26px;
-  color: #697684;
-  font-size: 11px;
+    border-top: 1px solid var(--line);
 }
 
-.footer-brand {
-  font-size: 20px;
+.footer-inner {
+    width: min(var(--shell), 100% - 48px);
+    margin: 0 auto;
+    padding: 20px 0 26px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    color: var(--muted-2);
+    font-size: 13px;
 
-  svg {
-    width: 22px;
-    height: 27px;
-  }
-}
-
-.site-footer {
-  > span:last-child {
-    margin-left: auto;
-  }
-}
-
-.brand {
-  @media (max-width: 700px) {
-    font-size: 23px;
-    gap: 7px;
-
-    &-icon {
-      svg {
-        width: 25px;
-        height: 29px;
-      }
+    @media (max-width: 900px) {
+        width: min(var(--shell), 100% - 30px);
     }
-  }
-}
 
-.site-footer {
-  @media (max-width: 700px) {
-    gap: 19px;
-    font-size: 9px;
-    padding-top: 20px;
-    padding-bottom: 22px;
-  }
-}
-
-.footer-brand {
-  @media (max-width: 700px) {
-    font-size: 18px;
-
-    svg {
-      width: 20px;
-      height: 23px;
+    @media (max-width: 700px) {
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 12px;
     }
-  }
 }
 
-.home-container {
-  max-width: 1280px;
-  padding-left: 60px;
-  padding-right: 60px;
-  margin: 0 auto;
+.footer-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    // 换行之后只剩这一组内容，不再往右顶，跟着容器一起居中。
+    @media (max-width: 700px) {
+        gap: 12px;
+    }
 }
 
 .back-top {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-left: auto;
-  font-size: 10px;
-  color: #6a809e;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    transition: color 0.2s;
 
-  svg {
-    width: 13px;
-    height: 13px;
-  }
-}
-
-.site-footer {
-  &.home-container > span:last-child {
-    margin-left: 4px;
-  }
-}
-
-.home-container {
-  @media (max-width: 1100px) {
-    padding-left: 40px;
-    padding-right: 40px;
-  }
-
-  @media (max-width: 850px) {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-
-  @media (max-width: 620px) {
-    padding-left: 22px;
-    padding-right: 22px;
-  }
-}
-
-.site-footer {
-  @media (max-width: 620px) {
-    &.home-container {
-      gap: 14px;
-      flex-wrap: wrap;
-      padding-top: 22px;
-      padding-bottom: 22px;
+    &:hover {
+        color: var(--accent);
     }
 
-    &.home-container > span:nth-child(2) {
-      font-size: 8px;
+    svg {
+        width: 13px;
+        height: 13px;
     }
-  }
 }
 
-.back-top {
-  @media (max-width: 620px) {
-    font-size: 9px;
-    gap: 4px;
-  }
-}
-
-.site-footer {
-  @media (max-width: 620px) {
-    &.home-container > span:last-child {
-      font-size: 8px;
-      width: 100%;
-      text-align: right;
-      margin-top: -8px;
-    }
-  }
-}
-
-.home-container {
-  @media (max-width: 370px) {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
+.copy {
+    white-space: nowrap;
 }

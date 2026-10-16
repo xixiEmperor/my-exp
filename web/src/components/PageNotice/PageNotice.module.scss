@@ -1,29 +1,35 @@
 /* 入口说明延续阅读端的留白，后续页面可以直接替换此占位组件。 */
 .notice {
-  min-height: 60vh;
-  max-width: 880px;
-  padding: 90px 24px;
-  margin: auto;
+    min-height: 60vh;
+    max-width: 880px;
+    padding: 90px 24px;
+    margin: auto;
 
-  > span {
-    font-size: 12px;
-    color: #7187a3;
-  }
+    > span {
+        color: var(--muted-2);
+        font-size: 14px;
+    }
 
-  h1 {
-    font-size: 36px;
-    color: #2c476a;
-    font-weight: 500;
-  }
+    h1 {
+        color: var(--ink);
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+    }
 
-  p {
-    color: #63758c;
-    line-height: 1.9;
-  }
+    p {
+        color: var(--muted);
+        line-height: 1.9;
+    }
 
-  a {
-    display: inline-block;
-    margin-top: 24px;
-    color: #275dad;
-  }
+    a {
+        display: inline-block;
+        margin-top: 24px;
+        color: var(--accent-deep);
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--accent);
+        }
+    }
 }

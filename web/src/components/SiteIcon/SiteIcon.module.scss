@@ -1,12 +1,12 @@
 // 图标只继承颜色，尺寸由组件自身或使用位置局部调整。
 .icon {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  display: block;
-  flex: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    display: block;
+    flex: none;
 }

@@ -1,0 +1,98 @@
+// 全站设计令牌集中在这里，组件只引用变量，不再写死色值。
+// 明暗两套值先写成 mixin，再挂到显式选择和系统偏好两个入口，避免同一组深色值写两遍。
+
+// 深色令牌。只在用户显式选择深色，或者没选择过且系统偏好深色时生效。
+@mixin dark-tokens {
+    color-scheme: dark;
+
+    --bg: #080c16;
+    --paper: #0e1525;
+    --paper-2: #151f33;
+    --paper-3: #1d2b43;
+    --ink: #edf5ff;
+    --muted: #b2c0d5;
+    --muted-2: #8496b3;
+    --line: #293750;
+    --accent: #64f4e3;
+    --accent-deep: #9ffff1;
+    --accent-soft: #123339;
+    --mint: #6df5d7;
+    --lime: #d9ff7c;
+    --purple: #a195ff;
+    --hero: #080d20;
+    --hero-2: #171842;
+    --shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+    --shadow-sm: 0 8px 26px rgba(0, 0, 0, 0.18);
+}
+
+:root {
+    color-scheme: light;
+
+    // 表面四档：页面底色、卡片、内嵌块、更深的内嵌块。
+    --bg: #f2f5ff;
+    --paper: #fcfdff;
+    --paper-2: #e9eefb;
+    --paper-3: #dce5f7;
+
+    // 文字三档：正文、次要说明、标签与脚注。
+    --ink: #151c36;
+    --muted: #53617e;
+    --muted-2: #7888a7;
+
+    --line: #d4deef;
+
+    // 强调色三档。浅色是靛蓝，深色换成青绿霓虹。
+    --accent: #5147ec;
+    --accent-deep: #3d35bb;
+    --accent-soft: #e4e8ff;
+
+    // 点缀三色，用在项目节点、愿望卡片这类需要局部变化的地方。
+    --mint: #a9f5e0;
+    --lime: #e1ff9b;
+    --purple: #8f80ff;
+
+    // 深色面板单独一组。Hero 和联系面板在明暗主题下都保持深色底，
+    // 所以这组值不放进 dark-tokens，两种主题共用一份。
+    --hero: #0a1024;
+    --hero-2: #171b43;
+    --hero-ink: #f4f2f8;
+    --hero-muted: #c1cbe0;
+    --hero-line: rgba(133, 166, 255, 0.22);
+
+    --shadow: 0 22px 60px rgba(33, 42, 90, 0.1);
+    --shadow-sm: 0 8px 24px rgba(33, 42, 90, 0.06);
+
+    // 焦点环由强调色派生。强调色换了，焦点环自动跟着换。
+    --ring: color-mix(in srgb, var(--accent) 66%, white);
+
+    // 阅读页专用。字号做成变量，方便以后接字号调节按钮。
+    --reader-font-size: 16px;
+    --reader-code-bg: #0b1120;
+
+    // 尺子不随主题变化。
+    --r-xl: 26px;
+    --r-lg: 19px;
+    --r-md: 13px;
+    --shell: 1380px;
+    --header: 76px;
+}
+
+// 用户显式选择深色。
+html[data-theme='dark'] {
+    @include dark-tokens;
+}
+
+// 用户没有选择过时跟随系统。
+// 属性存在就代表已经显式选择过，所以这里必须用 :not 把它排除掉，
+// 否则用户选了浅色之后，系统偏好一变成深色就会被覆盖。
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+        @include dark-tokens;
+    }
+}
+
+@media (max-width: 700px) {
+    :root {
+        --header: 64px;
+    }
+}

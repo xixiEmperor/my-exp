@@ -1,14 +1,42 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#fafaf9" />
-    <title>知页</title>
-  </head>
-  <body>
-    <!-- 页面内容由 React 挂载到这个容器。 -->
-    <div id="root"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#f2f5ff" />
+        <meta
+            name="description"
+            content="xixiEmperor 的个人主页。记录学习与工作，沉淀知识，实践想法。"
+        />
+        <title>xixiEmperor的个人主页</title>
+        <!--
+      防首屏闪烁：在 React 挂载之前同步把主题落到 html 上，深色用户不会看到一帧白底。
+      存储键 xixi-theme 必须和 src/config/theme.ts 里的 THEME_STORAGE_KEY 保持一致。
+    -->
+        <script>
+            (function () {
+                try {
+                    var stored = localStorage.getItem('xixi-theme');
+                    var explicit = stored === 'light' || stored === 'dark';
+                    var dark = explicit
+                        ? stored === 'dark'
+                        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (explicit) {
+                        document.documentElement.dataset.theme = stored;
+                    }
+                    var meta = document.querySelector('meta[name="theme-color"]');
+                    if (meta) {
+                        meta.setAttribute('content', dark ? '#080c16' : '#f2f5ff');
+                    }
+                } catch (error) {
+                    /* 隐私模式下 localStorage 不可用，保持默认浅色即可，不用打断渲染 */
+                }
+            })();
+        </script>
+    </head>
+    <body>
+        <!-- 页面内容由 React 挂载到这个容器。 -->
+        <div id="root"></div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
 </html>

@@ -1,0 +1,384 @@
+/* 两侧留白里的小组件。六张卡片共用这份样式，容器由 HomeSideRail 提供。 */
+.rail {
+    min-width: 0;
+
+    // 宽屏时两侧留白跟着滚动，主内容区始终能看到这些小组件。
+    // 拦成一整屏高的竖列之后再让内容居中，卡片落位就在竖直中线上，
+    // 不会从首屏顶部贴着往下排。内容比竖列还高时居中会自动退回顶部对齐。
+    @media (min-width: 1181px) {
+        position: sticky;
+        top: var(--header);
+        display: flex;
+        flex-direction: column;
+        justify-content: safe center;
+
+        // 竖列从头部下沿铺到视口底部。
+        min-height: calc(100vh - var(--header));
+
+        // 底部再让出头部那一档，卡片的中点才正好落在视口中线，而不是偏下半个头部。
+        padding-bottom: var(--header);
+    }
+
+    // 窄屏收成主内容下方的一行卡片，具体列数交给 .stack 决定。
+    @media (max-width: 1180px) {
+        margin-bottom: 20px;
+    }
+
+    // 手机上这些小组件只会把页面拉长，直接收掉。
+    // 分区锚点这时候由页脚承担，顶栏不再提供探索入口。
+    @media (max-width: 700px) {
+        display: none;
+    }
+}
+
+.left {
+    grid-area: left;
+}
+
+.right {
+    grid-area: right;
+}
+
+.stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+
+    @media (min-width: 1181px) {
+        // 字号调大之后这一列也跟着放开一点，中文正文少断几行。
+        max-width: 205px;
+
+        // 上面改成了 flex 竖列，justify-self 在 flex 里不生效，用自动外边距居中。
+        margin-inline: auto;
+    }
+
+    @media (max-width: 1180px) {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (max-width: 480px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.rail-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px 2px;
+    color: var(--muted-2);
+    font:
+        800 11px/1.4 ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    letter-spacing: 0.12em;
+
+    &::before {
+        content: '';
+        width: 16px;
+        height: 1px;
+        background: linear-gradient(90deg, var(--accent), var(--purple));
+    }
+
+    @media (max-width: 1180px) {
+        grid-column: 1 / -1;
+        margin-bottom: -2px;
+    }
+}
+
+// 包裹层只承载进出场动画，卡片自己的悬停过渡留给 .widget。
+.slot {
+    min-width: 0;
+}
+
+.widget {
+    // 同一行的卡片高度对齐，内容短的卡片也会被拉到一致。
+    height: 100%;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 17px;
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s;
+
+    &:hover {
+        border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+    }
+}
+
+.widget-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 800;
+
+    svg {
+        width: 14px;
+        height: 14px;
+        color: var(--accent);
+    }
+}
+
+.profile {
+    &-stamp {
+        display: grid;
+        place-items: center;
+        width: 49px;
+        height: 49px;
+        margin-bottom: 13px;
+        border-radius: 16px;
+        color: #08121f;
+        background: linear-gradient(145deg, var(--mint), var(--accent) 60%, var(--purple));
+        box-shadow: 0 10px 21px color-mix(in srgb, var(--accent) 20%, transparent);
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: -0.08em;
+    }
+
+    &-name {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+    }
+
+    &-desc {
+        margin: 5px 0 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.75;
+    }
+}
+
+.status-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--mint) 15%, transparent);
+}
+
+.quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    a {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 4px;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        transition:
+            color 0.2s,
+            background-color 0.2s,
+            padding 0.2s;
+
+        &:hover {
+            padding-left: 8px;
+            color: var(--accent-deep);
+            background: var(--accent-soft);
+        }
+    }
+
+    i {
+        width: 5px;
+        height: 5px;
+        border-radius: 2px;
+        background: var(--accent);
+    }
+}
+
+.quote {
+    &-mark {
+        margin-bottom: 3px;
+        color: var(--accent);
+        font:
+            italic 900 26px/1 Georgia,
+            serif;
+    }
+
+    &-text {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 750;
+        line-height: 1.7;
+    }
+
+    &-by {
+        margin-top: 7px;
+        color: var(--muted-2);
+        font-size: 11px;
+    }
+}
+
+.clock {
+    &-time {
+        font:
+            800 25px/1.2 ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            monospace;
+        letter-spacing: -0.07em;
+    }
+
+    &-date {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    &-zone {
+        display: inline-flex;
+        margin-top: 10px;
+        padding: 4px 7px;
+        border-radius: 6px;
+        background: var(--paper-2);
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+    }
+}
+
+.weather {
+    &-temp {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 6px 0 0;
+        font-size: 30px;
+        font-weight: 850;
+        letter-spacing: -0.08em;
+    }
+
+    &-symbol {
+        display: grid;
+        place-items: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        background: var(--accent-soft);
+        color: var(--accent-deep);
+        font-size: 23px;
+        letter-spacing: normal;
+    }
+
+    &-desc {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    // 反查到的地名，跟着温度一起读。
+    &-place {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 7px;
+        color: var(--accent-deep);
+        font-size: 11px;
+        line-height: 1.5;
+
+        svg {
+            width: 11px;
+            height: 11px;
+        }
+    }
+
+    &-details {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 13px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+    }
+
+    &-detail {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 11px;
+
+        strong {
+            color: var(--ink);
+            font-weight: 800;
+        }
+    }
+
+    &-btn {
+        width: 100%;
+        margin-top: 13px;
+        padding: 8px 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        color: var(--ink);
+        background: var(--paper);
+        font-size: 12px;
+        font-weight: 800;
+        transition:
+            border-color 0.2s,
+            color 0.2s;
+
+        &:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        &:disabled {
+            cursor: progress;
+            opacity: 0.6;
+        }
+    }
+
+    &-status {
+        min-height: 16px;
+        margin-top: 7px;
+        color: var(--muted-2);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+}
+
+.tiny-note {
+    margin: 0 0 10px;
+    color: var(--muted-2);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.mini-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    span {
+        padding: 4px 6px;
+        border-radius: 6px;
+        background: var(--paper-2);
+        color: var(--muted);
+        font:
+            700 10px ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            monospace;
+    }
+}

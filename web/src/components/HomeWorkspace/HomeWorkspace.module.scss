@@ -1,0 +1,30 @@
+/* 三栏工作台。两侧留白刻意留得宽，让中间的主内容有呼吸感。 */
+.shell {
+    width: min(var(--shell), 100% - 48px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) minmax(0, 820px) minmax(150px, 1fr);
+    grid-template-areas: 'left center right';
+    gap: 24px;
+    align-items: start;
+
+    // 窄屏不再并排，改成主内容在最前、两个侧栏依次收在下面。
+    @media (max-width: 1180px) {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            'center'
+            'left'
+            'right';
+        gap: 0;
+        max-width: 900px;
+    }
+
+    @media (max-width: 900px) {
+        width: min(var(--shell), 100% - 30px);
+    }
+}
+
+.center {
+    grid-area: center;
+    min-width: 0;
+}

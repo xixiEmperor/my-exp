@@ -1,618 +1,261 @@
-/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
+/* 横向项目时间轴。外壳定高，卡片用百分比宽高，轨道横向可滚。 */
 // 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
-.home-container {
-  max-width: 1280px;
-  padding-left: 60px;
-  padding-right: 60px;
-  margin: 0 auto;
-}
-
-.chapter {
-  &-heading {
-    margin-bottom: 43px;
-  }
-
-  &-label {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    letter-spacing: 1.6px;
-    color: #667f9d;
-    font-size: 9px;
-
-    > span {
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      background: #eaf0f8;
-      padding: 3px 7px;
-      border-radius: 3px;
-      color: var(--blue);
-    }
-  }
-
-  &-heading {
-    &-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 35px;
-      margin-top: 15px;
-    }
-
-    h2 {
-      font-size: 33px;
-      font-weight: 500;
-      color: #2d4058;
-      line-height: 1.55;
-      letter-spacing: -0.6px;
-      margin: 0;
-    }
-
-    &-row {
-      > p {
-        font-size: 12px;
-        line-height: 1.95;
-        color: #6e7b8d;
-        margin: 0 0 5px;
-        text-align: right;
-      }
-    }
-  }
-}
-
-.project {
-  &-section {
-    background: #edf2f7;
-    border-top: 1px solid #e1e8f0;
-    border-bottom: 1px solid #e1e8f0;
-    padding-top: 65px;
-    padding-bottom: 40px;
-  }
-
-  &-intention {
-    display: flex;
-    gap: 22px;
-    align-items: flex-start;
-    background: #f8fafc;
-    border: 1px solid #dce5ef;
-    border-radius: 8px;
-    padding: 25px 30px;
-    margin-bottom: 36px;
+.shell {
     position: relative;
-  }
+    // 外壳必须有确定高度，卡片上的百分比高度才有参照物，否则会整片塌陷。
+    height: clamp(280px, 46vh, 372px);
 }
 
-.intention {
-  &-icon {
-    width: 36px;
-    height: 36px;
-    border: 1px solid #d3dfed;
-    border-radius: 8px;
-    color: #557baa;
-    background: #f0f5fb;
-    flex: none;
-
-    svg {
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  &-label {
-    font-size: 8px;
-    letter-spacing: 1px;
-    color: #6a80a0;
-  }
-}
-
-.project-intention {
-  p {
-    font-size: 14px;
-    line-height: 1.9;
-    color: #4c6483;
-    margin: 8px 80px 0 0;
-  }
-}
-
-.intention-doodle {
-  position: absolute;
-  right: 29px;
-  top: 20px;
-  font-size: 27px;
-  color: #94aaca;
-  font-weight: 500;
-  transform: rotate(-9deg);
-  line-height: 1.1;
-
-  svg {
-    display: block;
-    width: 65px;
-    height: 27px;
-    stroke: #9eb4d1;
-    stroke-width: 1.5;
-    fill: none;
-    stroke-linecap: round;
-  }
-}
-
-.project {
-  &-rail {
-    &-wrap {
-      overflow: auto;
-      padding: 9px 0 8px;
-      scrollbar-width: thin;
-      scrollbar-color: #bccfe4 transparent;
-    }
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    min-width: 800px;
-
-    &:before {
-      content: '';
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: calc(25% - 16px);
-      height: 1px;
-      background: #b8c9df;
-    }
-  }
-
-  &-step {
+.track {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    gap: 14px;
+    height: 100%;
+    padding: 6px 4px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    // 滚到尽头时不要把整页一起带走。
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--accent) 30%, var(--line)) transparent;
+
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--accent) 28%, var(--line));
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    // 轨道本身可以聚焦，键盘用户能用方向键横移。
+    &:focus-visible {
+        outline: 3px solid var(--ring);
+        outline-offset: 4px;
+    }
+}
+
+.card {
     position: relative;
+    z-index: 1;
+    // 宽度相对轨道，高度相对外壳，两个百分比都依赖父级的确定尺寸。
+    flex: 0 0 30%;
+    min-width: 208px;
+    height: 100%;
+    padding: 0 14px 14px;
     text-align: left;
-    min-width: 0;
-    padding: 49px 15px 17px 0;
-    border-radius: 4px;
-    scroll-margin: 20px;
-  }
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    scroll-snap-align: start;
+    overflow: hidden;
+    transition:
+        transform 0.22s,
+        border-color 0.22s,
+        box-shadow 0.22s;
+
+    &:hover,
+    &:focus-visible,
+    &.expanded {
+        z-index: 5;
+        transform: translateY(-4px);
+        border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+        box-shadow: var(--shadow);
+    }
+
+    // 悬停和聚焦只做视觉展开，点击才把状态固定下来，和设计稿的开关手感一致。
+    &:hover .more,
+    &:focus-visible .more,
+    &.expanded .more {
+        max-height: 190px;
+        margin-top: 9px;
+        opacity: 1;
+    }
 }
 
-.step-position {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 33px;
-  height: 33px;
-  border: 1px solid #aabed7;
-  background: #edf2f7;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 10px;
-  letter-spacing: 0.3px;
-  color: #6785a9;
-  z-index: 2;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
+// 每张卡片的节点色不同，让一串卡片有节奏。
+.dot {
+    display: block;
+    position: relative;
+    width: 10px;
+    height: 10px;
+    margin: 14px 0 14px 3px;
+    border: 2px solid var(--paper);
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
 }
 
-.project-step {
-  &.active .step-position {
-    background: var(--blue);
-    border-color: var(--blue);
-    color: white;
-    box-shadow: 0 0 0 5px #dfe9f6;
-  }
+.card:nth-child(2) .dot {
+    background: var(--purple);
+    box-shadow: 0 0 0 1px var(--purple);
+}
+
+.card:nth-child(3) .dot {
+    background: var(--mint);
+    box-shadow: 0 0 0 1px var(--mint);
+}
+
+.card:nth-child(4) .dot {
+    background: var(--lime);
+    box-shadow: 0 0 0 1px var(--lime);
 }
 
 .step {
-  &-status {
-    font-size: 9px;
-    line-height: 1.7;
-    color: #667f9e;
-    margin-bottom: 6px;
-
-    &.current {
-      color: #396dad;
-    }
-  }
-
-  &-title {
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 1.7;
-    color: #3c5576;
-    margin-bottom: 5px;
-    transition: color 0.2s;
-  }
+    display: block;
+    color: var(--muted-2);
+    font:
+        800 10px ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    letter-spacing: 0.11em;
 }
 
-.project-step {
-  &.active .step-title {
-    color: var(--blue);
-  }
+.status {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 3px 7px;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    font-size: 10px;
+    font-weight: 800;
 }
 
-.step-caption {
-  font-size: 10px;
-  line-height: 1.8;
-  color: #71869f;
+.title {
+    display: block;
+    min-height: 38px;
+    margin: 7px 0 6px;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.55;
+    letter-spacing: -0.025em;
 }
 
-.project-detail {
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 21px;
-  background: #fff;
-  border: 1px solid #d6e1ef;
-  border-radius: 9px;
-  position: relative;
-  min-height: 220px;
-  padding: 28px 47px 28px 28px;
-  align-items: center;
-  box-shadow: 0 9px 26px #2f52820a;
-
-  &-number {
-    font-size: 88px;
-    line-height: 1;
-    letter-spacing: -5px;
-    font-weight: 500;
-    color: #e0e9f5;
-    text-align: center;
-  }
+.summary {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.75;
 }
 
-.detail-kicker {
-  font-size: 9px;
-  color: #6c83a1;
-  letter-spacing: 0.7px;
-  margin-bottom: 7px;
-}
-
-.project-detail {
-  h3 {
-    font-size: 23px;
-    line-height: 1.6;
-    font-weight: 500;
-    color: #2f4e76;
-    margin: 0 0 9px;
-  }
-
-  p {
-    font-size: 12px;
-    line-height: 1.95;
-    color: #657a93;
-    margin: 0 0 16px;
-    max-width: 800px;
-  }
+.more {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+        max-height 0.3s ease,
+        opacity 0.25s ease,
+        margin 0.25s ease;
 }
 
 .detail {
-  &-tags {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.75;
+}
+
+.tags {
     display: flex;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 9px;
 
-    > span {
-      font-size: 9px;
-      color: #5e7ea5;
-      background: #edf3fb;
-      padding: 3px 9px;
-      border-radius: 3px;
+    span {
+        padding: 3px 6px;
+        border-radius: 5px;
+        background: var(--paper-2);
+        color: var(--muted);
+        font:
+            700 10px ui-monospace,
+            SFMono-Regular,
+            Menlo,
+            monospace;
     }
-  }
-
-  &-corner {
-    position: absolute;
-    right: 22px;
-    top: 20px;
-    font-size: 23px;
-    color: #a8bad1;
-  }
 }
 
-.project-footnote {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10px;
-  color: #73869f;
-  margin-top: 16px;
-
-  svg {
-    width: 13px;
-    height: 13px;
-  }
-}
-
-.home-container {
-  @media (max-width: 1100px) {
-    padding-left: 40px;
-    padding-right: 40px;
-  }
-}
-
-.chapter-heading {
-  @media (max-width: 1100px) {
-    h2 {
-      font-size: 30px;
-    }
-  }
-}
-
-.project-detail {
-  @media (max-width: 1100px) {
-    grid-template-columns: 85px 1fr;
-    gap: 18px;
-
-    &-number {
-      font-size: 72px;
-    }
-  }
-}
-
-.home-container {
-  @media (max-width: 850px) {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-}
-
-.chapter-heading {
-  @media (max-width: 850px) {
-    &-row {
-      gap: 25px;
-    }
-
-    h2 {
-      font-size: 27px;
-    }
-
-    &-row {
-      > p {
-        font-size: 11px;
-      }
-    }
-  }
-}
-
-.project {
-  @media (max-width: 850px) {
-    &-intention {
-      p {
-        font-size: 12px;
-      }
-    }
-
-    &-detail {
-      padding-left: 20px;
-
-      h3 {
-        font-size: 21px;
-      }
-    }
-  }
-}
-
-.home-container {
-  @media (max-width: 620px) {
-    padding-left: 22px;
-    padding-right: 22px;
-  }
-}
-
-.chapter {
-  @media (max-width: 620px) {
-    &-label {
-      font-size: 8px;
-      letter-spacing: 1.1px;
-      gap: 10px;
-
-      > span {
-        font-size: 9px;
-        padding: 2px 6px;
-      }
-    }
-
-    &-heading {
-      margin-bottom: 29px;
-
-      &-row {
-        display: block;
-        margin-top: 16px;
-      }
-
-      h2 {
-        font-size: 26px;
-        line-height: 1.6;
-        letter-spacing: -0.5px;
-      }
-
-      &-row {
-        > p {
-          font-size: 11px;
-          text-align: left;
-          margin: 15px 0 0;
-        }
-
-        > p br {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-.project {
-  @media (max-width: 620px) {
-    &-section {
-      padding-top: 40px;
-      padding-bottom: 30px;
-    }
-
-    &-intention {
-      padding: 20px 17px;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-  }
-}
-
-.intention {
-  @media (max-width: 620px) {
-    &-icon {
-      width: 29px;
-      height: 29px;
-      border-radius: 6px;
-
-      svg {
-        width: 16px;
-        height: 16px;
-      }
-    }
-
-    &-label {
-      font-size: 7px;
-      letter-spacing: 0.5px;
-    }
-  }
-}
-
-.project-intention {
-  @media (max-width: 620px) {
-    p {
-      font-size: 12px;
-      line-height: 1.95;
-      margin-right: 0;
-    }
-
-    p br {
-      display: none;
-    }
-  }
-}
-
-.intention-doodle {
-  @media (max-width: 620px) {
-    display: none;
-  }
-}
-
-.project {
-  @media (max-width: 620px) {
-    &-rail {
-      &-wrap {
-        margin-right: -22px;
-        padding-right: 22px;
-        scroll-snap-type: x proximity;
-      }
-      min-width: 820px;
-    }
-
-    &-step {
-      scroll-snap-align: start;
-      padding-bottom: 14px;
-    }
-  }
-}
-
-.step {
-  @media (max-width: 620px) {
-    &-title {
-      font-size: 16px;
-    }
-
-    &-caption {
-      font-size: 10px;
-    }
-
-    &-status {
-      font-size: 9px;
-    }
-  }
-}
-
-.project-detail {
-  @media (max-width: 620px) {
-    grid-template-columns: 1fr;
-    padding: 24px 21px 22px;
-    min-height: 290px;
+.hint {
+    display: flex;
+    align-items: center;
     gap: 7px;
-
-    &-number {
-      font-size: 41px;
-      letter-spacing: -2px;
-      text-align: left;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    h3 {
-      font-size: 21px;
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-  }
-}
-
-.detail-kicker {
-  @media (max-width: 620px) {
-    font-size: 8px;
-    line-height: 1.8;
-  }
-}
-
-.project-detail {
-  @media (max-width: 620px) {
-    p {
-      font-size: 12px;
-      line-height: 1.95;
-    }
-  }
-}
-
-.detail {
-  @media (max-width: 620px) {
-    &-tags {
-      > span {
-        font-size: 9px;
-      }
-    }
-
-    &-corner {
-      top: 22px;
-      right: 20px;
-      font-size: 23px;
-    }
-  }
-}
-
-.project-footnote {
-  @media (max-width: 620px) {
-    font-size: 9px;
-    line-height: 1.8;
-    align-items: flex-start;
-    gap: 6px;
-
-    > span {
-      margin-top: 2px;
-    }
+    margin: 14px 0 0;
+    color: var(--muted-2);
+    font-size: 11px;
 
     svg {
-      width: 12px;
-      height: 12px;
+        width: 13px;
+        height: 13px;
+        color: var(--accent);
     }
-  }
 }
 
-.home-container {
-  @media (max-width: 370px) {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
+// 两端渐隐提示。渐隐层挂在外壳上，挂到轨道里会跟着内容一起滚。
+.shell::before,
+.shell::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 24px;
+    z-index: 2;
+    width: 40px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
 }
 
-.project-rail-wrap {
-  @media (max-width: 370px) {
-    margin-right: -18px;
-    padding-right: 18px;
-  }
+.shell::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--bg), transparent);
+}
+
+.shell::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--bg), transparent);
+}
+
+.shell[data-edge='middle']::before,
+.shell[data-edge='middle']::after,
+.shell[data-edge='end']::before,
+.shell[data-edge='start']::after {
+    opacity: 1;
+}
+
+@media (max-width: 760px) {
+    .shell {
+        height: clamp(300px, 62vh, 400px);
+    }
+
+    .card {
+        flex: 0 0 72%;
+    }
+
+    .hint {
+        align-items: flex-start;
+        line-height: 1.6;
+    }
+}
+
+@media (max-width: 420px) {
+    .card {
+        flex: 0 0 84%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .more,
+    .shell::before,
+    .shell::after {
+        transition: none;
+    }
 }

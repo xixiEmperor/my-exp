@@ -1,0 +1,68 @@
+// 首页区块的进出场动画。首页可以张扬，阅读页保持安静，所以这套只作用于带 data-reveal 的元素。
+// 开关挂在 documentElement 上，由 hooks/useReveal.ts 控制。
+//
+// 规则顺序有讲究：带方向的变体和带 data-visible 的进场态特异性完全相同，
+// 都是三个属性选择器加一个 html，所以谁写在后面谁生效。进场态必须放最后，
+// 否则元素进场之后仍旧停在起始位移上，看着就像错位。
+
+html[data-home-motion] [data-reveal] {
+    --reveal-delay: 0s;
+
+    opacity: 0;
+    translate: 0 25px;
+    // 退场时长写在基准态。
+    transition:
+        opacity 0.4s ease var(--reveal-delay),
+        translate 0.4s ease var(--reveal-delay);
+}
+
+// 左右交错进场，方向由数据给出。
+html[data-home-motion] [data-reveal][data-reveal-direction='left'] {
+    translate: -28px 15px;
+}
+
+html[data-home-motion] [data-reveal][data-reveal-direction='right'] {
+    translate: 28px 15px;
+}
+
+// 同一组里的卡片按索引稍微错开，避免所有内容同时入场。
+// 用变量传延迟，这样减少动效时只要把 transition 关掉就能一并失效。
+html[data-home-motion] [data-reveal][data-reveal-delay='1'] {
+    --reveal-delay: 0.08s;
+}
+
+html[data-home-motion] [data-reveal][data-reveal-delay='2'] {
+    --reveal-delay: 0.16s;
+}
+
+html[data-home-motion] [data-reveal][data-reveal-delay='3'] {
+    --reveal-delay: 0.24s;
+}
+
+// 窄屏时间轴不再左右交错，卡片统一在轴的右侧，
+// 进场方向也跟着收回竖直，不然右边那一列会从两侧各自滑进来。
+@media (max-width: 760px) {
+    html[data-home-motion] [data-reveal],
+    html[data-home-motion] [data-reveal][data-reveal-direction] {
+        translate: 0 22px;
+    }
+}
+
+// 进场时长写在目标态。过渡取的是目标状态里的值，
+// 所以一次声明就能得到进场慢、退场快的不同节奏。
+// 退场沿同一条路径反向播回，方向和位移与进场严格相对。
+html[data-home-motion] [data-reveal][data-visible] {
+    opacity: 1;
+    translate: none;
+    transition-duration: 0.7s;
+}
+
+// 系统开启减少动效时双向关闭：既不隐藏元素，也不播放退场。
+@media (prefers-reduced-motion: reduce) {
+    html[data-home-motion] [data-reveal],
+    html[data-home-motion] [data-reveal][data-reveal-direction] {
+        opacity: 1;
+        translate: none;
+        transition: none;
+    }
+}

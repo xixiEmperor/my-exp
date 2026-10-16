@@ -1,62 +1,45 @@
-import type { ReactNode } from 'react';
-import { contactItems } from '../../constants/home';
 import { Link } from 'react-router-dom';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './HomeContact.module.scss';
 
-// 只负责页面结构与样式，交互通过参数交给 hooks。
-export default function HomeContact() {
-  // 联系方式统一由配置生成，补充内容时无需复制整行结构。
-  const contactNodes: ReactNode[] = [];
+interface Props {
+    email: string;
+    copied: boolean;
+    onCopyEmail: () => void;
+}
 
-  contactItems.forEach((item) => {
-    contactNodes.push(
-      <div key={item.id} className={styles['contact-row']}>
-        <span>{item.label}</span>
-        <span>{item.value}</span>
-        <span className={styles['contact-placeholder']}>{item.status}</span>
-      </div>,
+// 深色联系面板。邮箱还没配置时复制按钮保持不可用，避免点了没有任何反馈。
+export default function HomeContact({ email, copied, onCopyEmail }: Props) {
+    const hasEmail = email.length > 0;
+    const copyLabel = copied ? '已复制 ✓' : '复制联系邮箱';
+
+    return (
+        <section className={styles.panel} id="contact">
+            <div className={styles.copy}>
+                <span className={styles.eyebrow}>SAY HELLO</span>
+                <h2>有想法，欢迎来聊聊。</h2>
+                <p>技术交流、项目合作，或者分享一个有意思的问题，都欢迎联系我。</p>
+                {!hasEmail && (
+                    <p className={styles.note}>
+                        邮箱还没有填写。填入之后，这里的复制按钮会自动可用。
+                    </p>
+                )}
+            </div>
+            <div className={styles.actions}>
+                <Link className={[styles.button, styles.primary].join(' ')} to="/knowledge">
+                    先去知识库逛逛
+                    <SiteIcon name="arrow" />
+                </Link>
+                <button
+                    className={styles.button}
+                    type="button"
+                    disabled={!hasEmail}
+                    onClick={onCopyEmail}
+                >
+                    <SiteIcon name="copy" />
+                    {copyLabel}
+                </button>
+            </div>
+        </section>
     );
-  });
-
-  return (
-    <section className={styles['contact-section']} id="contact">
-      <div className={[styles['home-container'], styles['contact-inner']].join(' ')}>
-        <div className={styles['contact-copy']} data-reveal="">
-          <div className={styles['chapter-label']}>
-            <span>04</span> LET'S SAY HELLO
-          </div>
-          <h2>
-            代码之外，
-            <br />
-            也很高兴认识你<span>。</span>
-          </h2>
-          <p>
-            可以聊聊前端、分享一个想法，
-            <br />
-            或者只是来打个招呼。
-          </p>
-          <Link className={[styles.button, styles['button-primary']].join(' ')} to="/knowledge">
-            先去知识库逛逛
-            <span data-icon="arrow">
-              <SiteIcon name="arrow" />
-            </span>
-          </Link>
-        </div>
-        <div className={styles['contact-card']} data-reveal="">
-          <div className={styles['contact-card-heading']}>
-            <span className={styles['contact-wave']} aria-hidden="true">
-              hi.
-            </span>
-            <span>KEEP IN TOUCH</span>
-          </div>
-          {contactNodes}
-          <p className={styles['contact-note']}>这里将展示真实联系方式，当前仅为布局示例。</p>
-          <div className={styles['contact-card-footer']}>
-            <span className={styles['tiny-square']}></span>保持好奇，下次见。
-          </div>
-        </div>
-      </div>
-    </section>
-  );
 }

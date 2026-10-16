@@ -1,113 +1,144 @@
 /* 登录面板只定义自己的局部样式，遮罩使用原生 dialog。 */
 .panel {
-  width: 410px;
-  max-width: calc(100vw - 32px);
-  max-height: calc(100dvh - 32px);
-  padding: 0;
-  border: 1px solid #dce5f0;
-  border-radius: 12px;
-  color: #2e425e;
-  background: #fff;
-  box-shadow: 0 24px 100px #1833552a;
+    width: 410px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: var(--shadow);
 
-  &::backdrop {
-    background: #17243866;
-    backdrop-filter: blur(4px);
-  }
+    &::backdrop {
+        // 遮罩在两种主题下都保持压暗，直接用半透明深色最稳。
+        background: rgba(4, 8, 18, 0.68);
+        backdrop-filter: blur(6px);
+    }
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 0 28px;
 
-  > span {
-    color: #275dad;
-    font-size: 23px;
-    font-weight: 700;
-  }
-
-  button {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 5px;
-
-    &:hover {
-      background: #edf3fc;
+    > span {
+        color: var(--accent-deep);
+        font-size: 15px;
+        font-weight: 900;
+        letter-spacing: -0.045em;
     }
-  }
+
+    button {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        color: var(--muted);
+
+        &:hover {
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+    }
 }
 
 .body {
-  padding: 8px 32px 28px;
-  text-align: center;
+    padding: 8px 32px 28px;
+    text-align: center;
 
-  h2 {
-    font-size: 24px;
-    font-weight: 500;
-    margin: 5px 0 9px;
-  }
+    h2 {
+        margin: 5px 0 9px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.045em;
+    }
 
-  > p {
-    font-size: 12px;
-    color: #647790;
-  }
+    > p {
+        color: var(--muted);
+        font-size: 14px;
+    }
 
-  label {
-    display: block;
-    text-align: left;
-    font-size: 12px;
-    margin: 24px 0 8px;
-  }
+    label {
+        display: block;
+        margin: 24px 0 8px;
+        text-align: left;
+        font-size: 14px;
+        color: var(--muted);
+    }
 
-  input {
-    width: 100%;
-    height: 44px;
-    padding: 0 13px;
-    border: 1px solid #dce4ef;
-    background: #f8fafc;
-    border-radius: 5px;
-    font-size: 14px;
-  }
+    .loginForm {
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        input {
+            width: 100%;
+            height: 44px;
+            padding: 0 13px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            color: var(--ink);
+            background: var(--paper-2);
+            font-size: 14px;
+
+            &::placeholder {
+                color: var(--muted-2);
+            }
+        }
+    }
 }
 
 .qrPlaceholder {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
-  justify-content: center;
-  width: 175px;
-  height: 175px;
-  border: 1px dashed #b8c9de;
-  border-radius: 8px;
-  background: #f4f7fb;
-  color: #7892b1;
-  margin: 22px auto 0;
-  font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    width: 175px;
+    height: 175px;
+    margin: 22px auto;
+    padding: 10px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    // 公众号二维码是白底图片，容器固定白底，深色主题下才不会显得突兀。
+    background: #fff;
+    color: var(--muted-2);
+    font-size: 14px;
 
-  img {
-    width: 100%;
-    height: 100%;
-  }
+    img {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+    }
 }
 
 .submit {
-  width: 100%;
-  min-height: 44px;
-  background: #61a0f3;
-  color: white;
-  border-radius: 5px;
-  margin-top: 18px;
+    width: 100%;
+    min-height: 44px;
+    margin-top: 18px;
+    border-radius: 10px;
+    // 强调色打底、页面底色做文字，两种主题下都是高对比组合。
+    color: var(--bg);
+    background: linear-gradient(115deg, var(--accent), var(--purple));
+    font-weight: 800;
+    transition:
+        transform 0.2s,
+        filter 0.2s;
+
+    &:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+    }
 }
 
 .body {
-  .status {
-    font-size: 11px;
-    margin: 17px 0 0;
-    line-height: 1.8;
-  }
+    .status {
+        margin: 17px 0 0;
+        font-size: 13px;
+        line-height: 1.8;
+    }
 }

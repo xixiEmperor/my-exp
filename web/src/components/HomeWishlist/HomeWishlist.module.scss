@@ -1,498 +1,249 @@
-/* 组件样式沿用已确认的首页设计，通过 CSS Modules 隔离类名。 */
-// 用 & 组织同一模块的类名，避免新增父选择器改变样式优先级。
-.home-container {
-  max-width: 1280px;
-  padding-left: 60px;
-  padding-right: 60px;
-  margin: 0 auto;
+/* 愿望清单轮播，一屏一张。卡片居中不占满，翻页按钮放在下方控制条两端。 */
+.carousel {
+    // 卡片最大宽度。块级元素本身会随容器收窄，不必再写 min()。
+    --card-max: 600px;
+
+    // Swiper 的样式是全局注入的，能靠官方变量解决的先走变量，
+    // 剩下的只覆盖分页点，翻页按钮是自己渲染的，不参与这套优先级竞争。
+    --swiper-theme-color: var(--accent);
+
+    :global(.swiper) {
+        // 底部给分页点留出位置。
+        padding-bottom: 26px;
+    }
+
+    // 让同一屏里的卡片高度一致，矮的卡片也会被拉伸到最高的一张。
+    :global(.swiper-slide) {
+        height: auto;
+    }
+
+    :global(.swiper-pagination-bullet) {
+        opacity: 1;
+        background: var(--line);
+    }
+
+    :global(.swiper-pagination-bullet-active) {
+        background: var(--accent);
+    }
 }
 
-.chapter {
-  &-heading {
-    margin-bottom: 43px;
-  }
+.card {
+    // 默认色调是强调色，另外两种由 data-tone 覆盖。
+    --tone: var(--accent);
 
-  &-label {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    letter-spacing: 1.6px;
-    color: #667f9d;
-    font-size: 9px;
-
-    > span {
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      background: #eaf0f8;
-      padding: 3px 7px;
-      border-radius: 3px;
-      color: var(--blue);
-    }
-  }
-
-  &-heading {
-    &-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 35px;
-      margin-top: 15px;
-    }
-
-    h2 {
-      font-size: 33px;
-      font-weight: 500;
-      color: #2d4058;
-      line-height: 1.55;
-      letter-spacing: -0.6px;
-      margin: 0;
-    }
-
-    &-row {
-      > p {
-        font-size: 12px;
-        line-height: 1.95;
-        color: #6e7b8d;
-        margin: 0 0 5px;
-        text-align: right;
-      }
-    }
-  }
+    max-width: var(--card-max);
+    height: 100%;
+    margin: 0 auto;
+    padding: 22px 26px 20px;
+    border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--line));
+    border-radius: var(--r-lg);
+    background: color-mix(in srgb, var(--tone) 6%, var(--paper));
+    box-shadow: var(--shadow-sm);
+    transition:
+        border-color 0.22s,
+        transform 0.22s;
 }
 
-.wishlist {
-  &-section {
-    padding-top: 74px;
-    padding-bottom: 60px;
-  }
-
-  &-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-    padding-top: 8px;
-  }
+.card[data-tone='mint'] {
+    --tone: var(--mint);
 }
 
-.wish {
-  &-card {
-    border: 1px solid #d6e2ee;
-    border-radius: 7px;
-    background: #edf3fa;
-    padding: 24px;
-    box-shadow: 0 9px 18px #31465a04;
-    position: relative;
-  }
+.card[data-tone='purple'] {
+    --tone: var(--purple);
+}
 
-  &-blue {
-    transform: rotate(-1deg);
-  }
-
-  &-warm {
-    background: #f6f0e5;
-    border-color: #e8decc;
-    transform: rotate(1deg);
-    margin-top: 13px;
-  }
-
-  &-green {
-    background: #eef3ed;
-    border-color: #d8e2d6;
-    transform: rotate(-0.5deg);
-  }
-
-  &-top {
+.top {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    color: #6a81a0;
-    font-size: 8px;
-    letter-spacing: 1px;
-    margin-bottom: 27px;
-  }
-
-  &-check {
-    width: 14px;
-    height: 14px;
-    border: 1px solid #a9bdd6;
-    border-radius: 3px;
-  }
-
-  &-warm {
-    .wish-top {
-      color: #8b785b;
-    }
-
-    .wish-check {
-      border-color: #cdbb9a;
-    }
-  }
-
-  &-green {
-    .wish-top {
-      color: #69816c;
-    }
-
-    .wish-check {
-      border-color: #a8bdaa;
-    }
-  }
-
-  &-icon {
-    display: block;
-    color: #6689b4;
-    margin-bottom: 16px;
-
-    svg {
-      width: 28px;
-      height: 28px;
-      stroke-width: 1.35;
-    }
-  }
-
-  &-warm {
-    .wish-icon {
-      color: #ae9165;
-    }
-  }
-
-  &-green {
-    .wish-icon {
-      color: #73967a;
-    }
-  }
-
-  &-card {
-    h3 {
-      font-size: 22px;
-      line-height: 1.65;
-      letter-spacing: -0.4px;
-      font-weight: 500;
-      color: #3a5373;
-      margin: 0 0 13px;
-    }
-  }
-
-  &-warm {
-    h3 {
-      color: #756041;
-    }
-  }
-
-  &-green {
-    h3 {
-      color: #48664e;
-    }
-  }
-
-  &-card {
-    p {
-      font-size: 12px;
-      line-height: 1.95;
-      color: #6c7e95;
-      margin: 0 0 25px;
-      min-height: 70px;
-    }
-  }
-
-  &-warm {
-    p {
-      color: #8b7b62;
-    }
-  }
-
-  &-green {
-    p {
-      color: #738576;
-    }
-  }
-
-  &-bottom {
-    border-top: 1px solid #d4e0ee;
-    padding-top: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 9px;
-    color: #6d83a1;
     gap: 8px;
-
-    > span:last-child {
-      font-size: 6px;
-      letter-spacing: 1px;
-    }
-  }
-
-  &-warm {
-    .wish-bottom {
-      border-color: #e2d7c5;
-      color: #907f62;
-    }
-  }
-
-  &-green {
-    .wish-bottom {
-      border-color: #d3dfd1;
-      color: #7b907d;
-    }
-  }
+    color: var(--muted-2);
+    font:
+        800 10px ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    letter-spacing: 0.1em;
 }
 
-.wishlist-handnote {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 16px;
-  color: #8194ad;
-  font-size: 12px;
-  padding-top: 31px;
-  padding-right: 25px;
-  transform: rotate(-2deg);
-
-  svg {
-    width: 85px;
-    height: 26px;
-    fill: none;
-    stroke: #91a7c1;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-  }
+.check {
+    width: 9px;
+    height: 9px;
+    border: 1px solid color-mix(in srgb, var(--tone) 60%, var(--line));
+    border-radius: 3px;
 }
 
-.wish-card {
-  &:nth-child(2) {
-    transition-delay: 0.08s;
-  }
-
-  &:nth-child(3) {
-    transition-delay: 0.16s;
-  }
+.main {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    margin-top: 16px;
 }
 
-.home-container {
-  @media (max-width: 1100px) {
-    padding-left: 40px;
-    padding-right: 40px;
-  }
-}
-
-.chapter-heading {
-  @media (max-width: 1100px) {
-    h2 {
-      font-size: 30px;
-    }
-  }
-}
-
-.wish {
-  @media (max-width: 1100px) {
-    &-card {
-      padding: 21px;
-
-      h3 {
-        font-size: 20px;
-      }
-    }
-
-    &-bottom {
-      > span:last-child {
-        font-size: 5px;
-        letter-spacing: 0.5px;
-      }
-    }
-  }
-}
-
-.home-container {
-  @media (max-width: 850px) {
-    padding-left: 30px;
-    padding-right: 30px;
-  }
-}
-
-.chapter-heading {
-  @media (max-width: 850px) {
-    &-row {
-      gap: 25px;
-    }
-
-    h2 {
-      font-size: 27px;
-    }
-
-    &-row {
-      > p {
-        font-size: 11px;
-      }
-    }
-  }
-}
-
-.wishlist-grid {
-  @media (max-width: 850px) {
-    gap: 15px;
-  }
-}
-
-.wish {
-  @media (max-width: 850px) {
-    &-card {
-      padding: 18px;
-
-      h3 {
-        font-size: 18px;
-      }
-
-      p {
-        font-size: 11px;
-      }
-    }
-
-    &-bottom {
-      > span:last-child {
-        display: none;
-      }
-    }
-  }
-}
-
-.home-container {
-  @media (max-width: 620px) {
-    padding-left: 22px;
-    padding-right: 22px;
-  }
-}
-
-.chapter {
-  @media (max-width: 620px) {
-    &-label {
-      font-size: 8px;
-      letter-spacing: 1.1px;
-      gap: 10px;
-
-      > span {
-        font-size: 9px;
-        padding: 2px 6px;
-      }
-    }
-
-    &-heading {
-      margin-bottom: 29px;
-
-      &-row {
-        display: block;
-        margin-top: 16px;
-      }
-
-      h2 {
-        font-size: 26px;
-        line-height: 1.6;
-        letter-spacing: -0.5px;
-      }
-
-      &-row {
-        > p {
-          font-size: 11px;
-          text-align: left;
-          margin: 15px 0 0;
-        }
-
-        > p br {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-.wishlist {
-  @media (max-width: 620px) {
-    &-section {
-      padding-top: 44px;
-      padding-bottom: 40px;
-    }
-
-    &-grid {
-      grid-template-columns: 1fr;
-      gap: 22px;
-      padding: 4px 3px 0;
-    }
-  }
-}
-
-.wish {
-  @media (max-width: 620px) {
-    &-card {
-      padding: 23px;
-    }
-
-    &-warm {
-      margin-top: 0;
-    }
-
-    &-top {
-      font-size: 8px;
-      margin-bottom: 24px;
-    }
-
-    &-icon {
-      svg {
-        width: 25px;
-        height: 25px;
-      }
-    }
-
-    &-card {
-      h3 {
-        font-size: 23px;
-        line-height: 1.6;
-        margin-bottom: 13px;
-      }
-
-      p {
-        font-size: 12px;
-        line-height: 1.95;
-        min-height: 0;
-        margin-bottom: 22px;
-      }
-    }
-
-    &-bottom {
-      font-size: 10px;
-
-      > span:last-child {
-        display: inline;
-        font-size: 6px;
-        letter-spacing: 1px;
-      }
-    }
-  }
-}
-
-.wishlist-handnote {
-  @media (max-width: 620px) {
-    font-size: 10px;
-    padding: 28px 0 0;
-    gap: 7px;
-    justify-content: center;
+.icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    // 底色跟着色调走，图标本身用正文色，两种主题下都清楚。
+    background: color-mix(in srgb, var(--tone) 22%, var(--paper-2));
+    color: var(--ink);
 
     svg {
-      width: 55px;
+        width: 24px;
+        height: 24px;
     }
-  }
 }
 
-.home-container {
-  @media (max-width: 370px) {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
+.text {
+    min-width: 0;
+
+    h3 {
+        margin: 0 0 10px;
+        font-size: 22px;
+        font-weight: 900;
+        line-height: 1.45;
+        letter-spacing: -0.045em;
+    }
+
+    p {
+        max-width: 56ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.9;
+    }
 }
 
-.wish-bottom {
-  @media (max-width: 370px) {
-    > span:last-child {
-      font-size: 5px;
+.bottom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in srgb, var(--tone) 22%, var(--line));
+
+    span {
+        padding: 4px 9px;
+        border-radius: 7px;
+        background: color-mix(in srgb, var(--tone) 20%, transparent);
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 800;
     }
-  }
+}
+
+// 控制条：两端是翻页按钮，中间是序号和说明。
+.caption {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.nav {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--muted);
+    transition:
+        border-color 0.2s,
+        color 0.2s,
+        background-color 0.2s;
+
+    svg {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2;
+    }
+
+    &:hover {
+        border-color: var(--accent);
+        color: var(--accent-deep);
+        background: var(--accent-soft);
+    }
+}
+
+// 图标本身指向右侧，上一张翻过来用。
+.prev svg {
+    transform: rotate(180deg);
+}
+
+.captionText {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.position {
+    flex: none;
+    color: var(--muted-2);
+    font:
+        750 12px ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    letter-spacing: 0.1em;
+}
+
+// 说明文字太长时省略，不会把控制条顶开。
+.summary {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 620px) {
+    .card {
+        padding: 17px 18px 15px;
+    }
+
+    .main {
+        gap: 12px;
+        margin-top: 13px;
+    }
+
+    .icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    .text {
+        h3 {
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        p {
+            font-size: 12px;
+        }
+    }
+
+    .bottom {
+        margin-top: 15px;
+        padding-top: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .nav {
+        transition: none;
+    }
 }

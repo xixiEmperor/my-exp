@@ -1,0 +1,32 @@
+/* 顶栏的主题切换按钮，尺寸和描边跟旁边的图标按钮保持一致。 */
+.toggle {
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 39px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    transition:
+        border-color 0.2s,
+        color 0.2s,
+        transform 0.2s;
+
+    &:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        transform: translateY(-1px);
+    }
+
+    svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    // 和登录按钮取同一个高度，顶栏右侧两个按钮才对得齐。
+    @media (max-width: 700px) {
+        width: 40px;
+        height: 40px;
+    }
+}
