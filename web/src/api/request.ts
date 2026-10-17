@@ -11,7 +11,7 @@ interface Options {
 interface ResponseBody {
     code: number;
     msg: string;
-    data?: any;
+    data?: unknown;
 }
 
 const testBaseUrl = 'http://localhost:8080/api/v1';

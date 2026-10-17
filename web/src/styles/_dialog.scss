@@ -1,0 +1,19 @@
+// 原生 dialog 的公共外观。登录面板和确认框共用同一套宽度、圆角、边框和遮罩，
+// 以后新增其他弹窗时也只改这里，不用每个组件再抄一遍。
+@mixin surface($width: 410px) {
+    width: $width;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+
+    &::backdrop {
+        // 遮罩在两种主题下都保持压暗，直接用半透明深色最稳。
+        background: rgba(4, 8, 18, 0.68);
+        backdrop-filter: blur(6px);
+    }
+}

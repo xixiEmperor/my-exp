@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { readStoredTheme, type ThemePreference } from '../config/theme';
-import { immer } from 'zustand/middleware/immer'
-import { devtools } from 'zustand/middleware'
+import { immer } from 'zustand/middleware/immer';
+import { devtools } from 'zustand/middleware';
 
 // 菜单、登录遮罩和主题偏好都属于共享 UI 状态，不在组件中重复保存。
 interface UiState {
@@ -18,39 +18,37 @@ interface UiState {
 
 export const useUIStore = create<UiState>()(
     devtools(
-        immer(
-            (set) => ({
-                menuOpen: false,
-                loginOpen: false,
+        immer((set) => ({
+            menuOpen: false,
+            loginOpen: false,
 
-                // 初值直接读本地偏好，刷新后主题不会跳一下。
-                theme: readStoredTheme(),
+            // 初值直接读本地偏好，刷新后主题不会跳一下。
+            theme: readStoredTheme(),
 
-                toggleMenu: () => {
-                    set((state) => ({ menuOpen: !state.menuOpen }));
-                },
+            toggleMenu: () => {
+                set((state) => ({ menuOpen: !state.menuOpen }));
+            },
 
-                closeMenu: () => {
-                    set({ menuOpen: false });
-                },
+            closeMenu: () => {
+                set({ menuOpen: false });
+            },
 
-                // 打开登录时一并收起菜单，避免两个浮层同时占用交互焦点。
-                openLogin: () => {
-                    set({ loginOpen: true, menuOpen: false });
-                },
+            // 打开登录时一并收起菜单，避免两个浮层同时占用交互焦点。
+            openLogin: () => {
+                set({ loginOpen: true, menuOpen: false });
+            },
 
-                closeLogin: () => {
-                    set({ loginOpen: false });
-                },
+            closeLogin: () => {
+                set({ loginOpen: false });
+            },
 
-                closeOverlays: () => {
-                    set({ menuOpen: false, loginOpen: false });
-                },
+            closeOverlays: () => {
+                set({ menuOpen: false, loginOpen: false });
+            },
 
-                setTheme: (theme) => {
-                    set({ theme });
-                },
-            })
-        )
-    )
+            setTheme: (theme) => {
+                set({ theme });
+            },
+        })),
+    ),
 );

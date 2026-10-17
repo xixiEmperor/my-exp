@@ -15,7 +15,7 @@ export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
     const codeRef = useRef<HTMLInputElement>(null);
 
     const handleLogin = () => {
-        onLogin(idRef.current?.value!, codeRef.current?.value!)
+        onLogin(idRef.current!.value, codeRef.current!.value);
     };
 
     return (

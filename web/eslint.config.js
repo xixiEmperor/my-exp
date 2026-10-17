@@ -127,7 +127,7 @@ export default defineConfig(
             ],
 
             // ---------- Airbnb: 安全与调试 ----------
-            'no-console': 'warn',
+            'no-console': 'off',
             'no-eval': 'error',
             'no-implied-eval': 'error',
             'no-script-url': 'error',

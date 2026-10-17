@@ -21,6 +21,9 @@ html {
     scroll-padding-top: calc(var(--header) + 28px);
     scrollbar-color: var(--line) var(--bg);
 
+    // 这个属性表示即使页面没有出现滚动条，也给滚动条预留宽度，防止页面跳转时感觉抖动
+    scrollbar-gutter: stable;
+
     @media (prefers-reduced-motion: reduce) {
         scroll-behavior: auto;
     }

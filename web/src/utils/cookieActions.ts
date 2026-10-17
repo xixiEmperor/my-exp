@@ -1,14 +1,9 @@
 export async function readCookie<T>(key: string): Promise<T> {
-	try {
-		const cookie = await cookieStore.get(key)
-		
-		if (cookie === undefined) {
-			throw new Error
-		}
+    const cookie = await cookieStore.get(key);
 
-		return JSON.parse(decodeURIComponent(cookie?.value!))
-	} catch (error) {
-		console.error(error)
-		throw error
-	}
+    if (!cookie?.value) {
+        throw new Error(`Cookie "${key}" not found`);
+    }
+
+    return JSON.parse(decodeURIComponent(cookie?.value));
 }

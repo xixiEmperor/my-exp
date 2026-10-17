@@ -24,8 +24,8 @@ export default function SiteHeader({
     onToggleTheme,
     onLogout,
 }: Props) {
-    const isLogin = useUserStore((state) => state.isLogin)
-    const userInfo = useUserStore((state) => state.userInfo)
+    const isLogin = useUserStore((state) => state.isLogin);
+    const userInfo = useUserStore((state) => state.userInfo);
 
     const mainLinks: ReactNode[] = [];
 
@@ -53,7 +53,9 @@ export default function SiteHeader({
                 </nav>
                 <div className={styles['home-header-actions']}>
                     <ThemeToggle resolvedTheme={resolvedTheme} onToggle={onToggleTheme} />
-                    {isLogin ? <UserMenu userInfo={userInfo!} onLogout={onLogout} /> : 
+                    {isLogin ? (
+                        <UserMenu userInfo={userInfo!} onLogout={onLogout} />
+                    ) : (
                         <button
                             className={styles['header-login']}
                             data-open-login=""
@@ -64,7 +66,7 @@ export default function SiteHeader({
                                 <SiteIcon name="arrow" />
                             </span>
                         </button>
-                    }
+                    )}
                 </div>
             </div>
         </header>

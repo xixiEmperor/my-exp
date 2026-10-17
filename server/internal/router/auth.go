@@ -18,4 +18,5 @@ func registerAuthRouter(
 	auth.GET("/wechat/callback", handler.GetWechatCallback)
 	// 保留原来的接口地址，验证码验证成功后完成登录并写入 Cookie。
 	auth.POST("/verify", handler.Verify)
+	auth.POST("/logout", handler.Logout)
 }

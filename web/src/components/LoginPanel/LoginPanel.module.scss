@@ -1,20 +1,9 @@
+@use '../../styles/dialog' as dialog;
+
 /* 登录面板只定义自己的局部样式，遮罩使用原生 dialog。 */
 .panel {
-    width: 410px;
-    max-width: calc(100vw - 32px);
-    max-height: calc(100dvh - 32px);
-    padding: 0;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    color: var(--ink);
-    background: var(--paper);
-    box-shadow: var(--shadow);
-
-    &::backdrop {
-        // 遮罩在两种主题下都保持压暗，直接用半透明深色最稳。
-        background: rgba(4, 8, 18, 0.68);
-        backdrop-filter: blur(6px);
-    }
+    // 弹层外观和确认框共用一份 mixin，避免两边样式慢慢走样。
+    @include dialog.surface;
 }
 
 .header {

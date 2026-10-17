@@ -188,6 +188,32 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.Success(0))
 }
 
+func (a *AuthHandler) Logout(c *gin.Context) {
+	secure := c.Request.TLS != nil
+
+	// 删除两个cookie
+	c.SetCookieData(&http.Cookie{
+		Name: "token", 
+		Value: "", 
+		Path: "/", 
+		MaxAge: -1,
+		HttpOnly: true, 
+		Secure: secure, 
+		SameSite: http.SameSiteLaxMode,
+	})
+	c.SetCookieData(&http.Cookie{
+		Name: "userinfo", 
+		Value: "", 
+		Path: "/", 
+		MaxAge: -1,
+		HttpOnly: false, 
+		Secure: secure, 
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	c.JSON(http.StatusOK, dto.Success(0))
+}
+
 // 明文模式下，验证微信请求的签名
 func validSignature(c *gin.Context, token string) bool {
 	signature := c.Query("signature")
