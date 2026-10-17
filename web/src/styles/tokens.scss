@@ -16,6 +16,11 @@
     --accent: #64f4e3;
     --accent-deep: #9ffff1;
     --accent-soft: #123339;
+
+    // 提示条用的语义色，深色下提高亮度，压在深底上才看得清。
+    --ok: #61e6b4;
+    --warn: #ffc46b;
+    --danger: #ff8a97;
     --mint: #6df5d7;
     --lime: #d9ff7c;
     --purple: #a195ff;
@@ -45,6 +50,12 @@
     --accent: #5147ec;
     --accent-deep: #3d35bb;
     --accent-soft: #e4e8ff;
+
+    // 提示条用的语义色。原来的强调色体系里没有成功、警告、失败三档，
+    // 所以单独补一组，组件里就不用写死色值。
+    --ok: #0f9d6b;
+    --warn: #b26a00;
+    --danger: #d92d3f;
 
     // 点缀三色，用在项目节点、愿望卡片这类需要局部变化的地方。
     --mint: #a9f5e0;

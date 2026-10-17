@@ -1,6 +1,6 @@
 import { request } from './request';
 
-export const login = (loginId: string, code: string) => {
+export const userLogin = (loginId: string, code: string) => {
     return request({
         path: '/auth/verify',
         method: 'POST',

@@ -1,0 +1,90 @@
+/* 提示条容器整体挂在 Popover 顶层，层级由顶层决定，这里只管位置。
+   浏览器给 popover 的默认值要一条条覆盖掉，否则 inset: 0 加 margin: auto 会把它拽到页面正中。 */
+.viewport {
+    position: fixed;
+    inset: auto;
+    top: calc(var(--header) + 20px);
+    left: 50%;
+    width: max-content;
+    max-width: min(422px, calc(100vw - 32px));
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: none;
+    translate: -50% 0;
+    /* 提示条只做展示，不拦截点击，登录面板弹在下面时也不会被挡住。 */
+    pointer-events: none;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    padding: 11px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow: var(--shadow-sm);
+    font-size: 14px;
+    line-height: 1.5;
+    animation: toast-in 0.24s ease both;
+
+    p {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+/* 四种类型共用同一张卡片底，只有图标带语义色，提示条不会抢走页面注意力。 */
+.success svg {
+    color: var(--ok);
+}
+
+.error svg {
+    color: var(--danger);
+}
+
+.warning svg {
+    color: var(--warn);
+}
+
+.info svg {
+    color: var(--accent);
+}
+
+/* 进场从上方落下，退场沿同一条路径退回。 */
+@keyframes toast-in {
+    from {
+        opacity: 0;
+        translate: 0 -8px;
+    }
+}
+
+@keyframes toast-out {
+    to {
+        opacity: 0;
+        translate: 0 -8px;
+    }
+}
+
+.closing {
+    animation: toast-out 0.18s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .closing {
+        animation: none;
+    }
+}

@@ -2,25 +2,20 @@ import { type RefObject, useRef } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './LoginPanel.module.scss';
 import gzh from '@/assets/gzh.jpg';
-import { login } from '@/api/users';
 
 interface Props {
     dialogRef: RefObject<HTMLDialogElement | null>;
     onClose: () => void;
+    onLogin: (loginId: string, code: string) => void;
 }
 
 // 先完成遮罩结构，微信接口未接入时不生成假二维码或模拟登录成功。
-export default function LoginPanel({ dialogRef, onClose }: Props) {
+export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
     const idRef = useRef<HTMLInputElement>(null);
     const codeRef = useRef<HTMLInputElement>(null);
 
-    const handleLogin = async () => {
-        const code = codeRef.current?.value;
-        const loginId = idRef.current?.value;
-
-        if (code?.length !== 6) return;
-
-        await login(loginId!, code);
+    const handleLogin = () => {
+        onLogin(idRef.current?.value!, codeRef.current?.value!)
     };
 
     return (

@@ -37,11 +37,9 @@ export const request = async (options: Options) => {
     // 否则做 http 异常状态码映射
     switch (r.status) {
         case 400:
-            throw new Error('请求发生错误');
         case 401:
-            throw new Error('缺少身份信息，请先登录');
         case 403:
-            throw new Error('请求被拒绝');
         default:
+            throw new Error(res.msg);
     }
 };

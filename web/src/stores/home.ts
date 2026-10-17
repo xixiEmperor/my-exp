@@ -1,5 +1,7 @@
-import { createStore } from 'zustand/vanilla';
+import { create } from 'zustand';
 import { projectPhases, wishItems } from '../constants/home';
+import { immer } from 'zustand/middleware/immer'
+import { devtools } from 'zustand/middleware'
 
 // 项目卡片允许全部收起，用 -1 表示当前没有展开的卡片。
 export const collapsedProject = -1;
@@ -12,30 +14,36 @@ interface HomeState {
     setWishlistIndex: (index: number) => void;
 }
 
-export const homeStore = createStore<HomeState>()((set) => ({
-    activeProject: collapsedProject,
-    wishlistIndex: 0,
+export const homeStore = create<HomeState>()(
+    devtools(
+        immer(
+            (set) => ({
+                activeProject: collapsedProject,
+                wishlistIndex: 0,
 
-    // 在唯一修改入口检查索引，保证展开的卡片始终能找到对应数据。
-    setActiveProject: (index) => {
-        if (index === collapsedProject) {
-            set({ activeProject: index });
+                // 在唯一修改入口检查索引，保证展开的卡片始终能找到对应数据。
+                setActiveProject: (index) => {
+                    if (index === collapsedProject) {
+                        set({ activeProject: index });
 
-            return;
-        }
+                        return;
+                    }
 
-        if (!Number.isInteger(index) || index < 0 || index >= projectPhases.length) {
-            return;
-        }
+                    if (!Number.isInteger(index) || index < 0 || index >= projectPhases.length) {
+                        return;
+                    }
 
-        set({ activeProject: index });
-    },
+                    set({ activeProject: index });
+                },
 
-    setWishlistIndex: (index) => {
-        if (!Number.isInteger(index) || index < 0 || index >= wishItems.length) {
-            return;
-        }
+                setWishlistIndex: (index) => {
+                    if (!Number.isInteger(index) || index < 0 || index >= wishItems.length) {
+                        return;
+                    }
 
-        set({ wishlistIndex: index });
-    },
-}));
+                    set({ wishlistIndex: index });
+                },
+            })
+        )
+    )
+);

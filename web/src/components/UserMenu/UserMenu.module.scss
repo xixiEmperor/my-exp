@@ -1,0 +1,172 @@
+/* 顶栏的账号入口，展开后是一张下拉卡片。
+   高度和圆角跟旁边的主题按钮、登录按钮对齐，三个控件并排才不会参差。 */
+.user-menu {
+    position: relative;
+
+    @media print {
+        display: none;
+    }
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    // 名字过长时靠省略号收窄，顶栏永远撑不破。
+    max-width: 176px;
+    min-height: 39px;
+    padding: 0 11px 0 6px;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    font-size: 14px;
+    font-weight: 750;
+    transition:
+        border-color 0.2s,
+        color 0.2s;
+
+    &:hover,
+    &[aria-expanded='true'] {
+        border-color: var(--accent);
+        color: var(--accent-deep);
+    }
+
+    // 展开时箭头翻过来，指向下方那张卡片。
+    &[aria-expanded='true'] .caret {
+        rotate: 180deg;
+    }
+
+    // 窄屏收掉名字，只留头像和箭头，和主题按钮同高。
+    @media (max-width: 700px) {
+        min-height: 40px;
+        padding: 0 8px 0 5px;
+        gap: 6px;
+    }
+}
+
+.avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 9px;
+    // 和品牌角标同一套渐变，账号区看起来是一家人。
+    color: #08141d;
+    background: linear-gradient(135deg, var(--mint) 0%, var(--accent) 56%, var(--purple) 100%);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    @media (max-width: 700px) {
+        display: none;
+    }
+}
+
+.caret {
+    transition: rotate 0.2s;
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.menu {
+    position: absolute;
+    // 贴右边缘对齐入口，顶栏右侧的留白不会被菜单顶出去。
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 1;
+    width: 204px;
+    padding: 7px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    animation: user-menu-in 0.18s ease both;
+}
+
+.identity {
+    display: grid;
+    gap: 2px;
+    margin-bottom: 6px;
+    padding: 8px 11px 10px;
+    border-bottom: 1px solid var(--line);
+
+    &-name {
+        overflow: hidden;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 850;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &-role {
+        color: var(--muted-2);
+        font-size: 12px;
+        font-weight: 700;
+    }
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 10px 11px;
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    transition:
+        color 0.2s,
+        background-color 0.2s;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    &:hover {
+        color: var(--accent-deep);
+        background: var(--accent-soft);
+    }
+
+    // 退出登录是破坏性动作，常态就用语义色标出来，和上面的入口拉开差别。
+    &[data-danger] {
+        color: var(--danger);
+
+        &:hover {
+            background: color-mix(in srgb, var(--danger) 12%, transparent);
+        }
+    }
+}
+
+/* 从上方落下进场，和提示条保持同一种动效语气。 */
+@keyframes user-menu-in {
+    from {
+        opacity: 0;
+        translate: 0 -7px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .menu {
+        animation: none;
+    }
+
+    .caret {
+        transition: none;
+    }
+}
