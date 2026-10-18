@@ -3,6 +3,7 @@ import App from '../App';
 import HomeView from '../views/home/HomeView';
 import KnowledgeView from '../views/knowledge/KnowledgeView';
 import NotFoundView from '../views/not-found/NotFoundView';
+import Prac from '@/views/Prac';
 
 // 所有路径集中在这一份配置中，首页、待开发入口和兜底页统一管理。
 export const router = createBrowserRouter([
@@ -15,6 +16,10 @@ export const router = createBrowserRouter([
             { index: true, Component: HomeView },
             { path: 'knowledge', Component: KnowledgeView },
             { path: '*', Component: NotFoundView },
+            {
+                path: '/prac',
+                Component: Prac,
+            },
         ],
     },
 ]);

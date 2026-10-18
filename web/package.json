@@ -18,11 +18,13 @@
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
+        "@mdxeditor/editor": "^4.3.3",
         "antd": "^6.6.6",
         "immer": "^11.1.21",
         "lucide-react": "1.58.0",
         "react": "19.3.0",
         "react-dom": "19.3.0",
+        "react-markdown": "^10.1.0",
         "react-router-dom": "6.30.6",
         "swiper": "14.3.0",
         "zustand": "5.0.15"

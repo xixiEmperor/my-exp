@@ -42,6 +42,7 @@ CREATE TABLE articles (
   preview          TEXT            NULL     COMMENT '游客可读的预览部分',
   status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft' COMMENT '草稿/已发布',
   folder_id        BIGINT UNSIGNED NULL     COMMENT '所属文件夹id，NULL表示根目录',
+  views            BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文章浏览次数',
   slug             VARCHAR(255)    NULL     COMMENT '友好URL，可选',
   created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   published_at     DATETIME        NULL     COMMENT '发布时间',
