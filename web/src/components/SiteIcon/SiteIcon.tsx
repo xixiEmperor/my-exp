@@ -36,6 +36,8 @@ import {
     User,
     Wind,
     X,
+    FolderClosed,
+    File,
     type LucideIcon,
 } from 'lucide-react';
 import styles from './SiteIcon.module.scss';
@@ -80,6 +82,8 @@ const icons = {
     droplet: Droplet,
     gauge: Gauge,
     pin: MapPin,
+    folder: FolderClosed,
+    file: File,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

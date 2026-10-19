@@ -1,0 +1,77 @@
+// 树形列表根节点与子节点列表的基础重置
+.tree,
+.tree-children {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.tree {
+    // 每一行条目，整行可点击
+    .tree-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        cursor: pointer;
+        user-select: none;
+
+        // 鼠标移入时给出浅色背景反馈
+        &:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tree-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+
+            // 文件夹名和文章标题共用，过长时省略，避免把行撑宽
+            .tree-label {
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+
+    /* 箭头旋转 */
+    .tree-arrow {
+        display: inline-block;
+        font-size: 10px;
+        transition: transform 0.2s ease;
+
+        // 展开状态下箭头转 90 度
+        &.open {
+            transform: rotate(90deg);
+        }
+
+        /* 文件没有箭头，但保留占位，让文字对齐 */
+        &.placeholder {
+            visibility: hidden;
+        }
+    }
+
+    /* 展开收起动画 */
+    .tree-children-wrapper {
+        display: grid;
+        grid-template-rows: 0fr;
+        visibility: hidden;
+        transition:
+            grid-template-rows 0.25s ease,
+            visibility 0.25s;
+
+        // 展开时把行高从 0fr 过渡到 1fr
+        &.open {
+            grid-template-rows: 1fr;
+            visibility: visible;
+        }
+    }
+
+    // 子列表负责裁剪内容，配合 grid 行高变化实现高度过渡
+    .tree-children {
+        overflow: hidden;
+        min-height: 0;
+    }
+}

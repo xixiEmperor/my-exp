@@ -8,15 +8,15 @@ interface Options {
     signal?: AbortSignal;
 }
 
-interface ResponseBody {
+interface ResponseBody<T> {
     code: number;
     msg: string;
-    data?: unknown;
+    data?: T;
 }
 
 const testBaseUrl = 'http://localhost:8080/api/v1';
 
-export const request = async (options: Options) => {
+export const request = async <T>(options: Options) => {
     // 发起请求
     const r = await fetch(`${testBaseUrl}${options.path}`, {
         method: options.method ?? 'GET',
@@ -27,7 +27,7 @@ export const request = async (options: Options) => {
     });
 
     // 拿到响应体
-    const res: ResponseBody = await r.json();
+    const res: ResponseBody<T> = await r.json();
 
     // 如果状态码处于200-299，直接返回响应体
     if (r.ok) {
