@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS my_exp CHARACTER SET 'utf8mb4';
 
 USE my_exp;
 
-CREATE TABLE users (
+CREATE TABLE users IF NOT EXISTS (
   id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   openid         VARCHAR(64)     NOT NULL COMMENT '微信 openid，不返回给前端',
   name           VARCHAR(255)    NOT NULL COMMENT '昵称，初始为16位随机字符串',
@@ -19,6 +19,7 @@ CREATE TABLE users (
 -- 2. 文件夹表
 CREATE TABLE folders (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id   CHAR(21)        NOT NULL COMMENT '对外暴露的ID（NanoID）',
   name        VARCHAR(255)    NOT NULL COMMENT '文件夹名称',
   parent_id   BIGINT UNSIGNED NULL     COMMENT '父文件夹id，NULL表示根目录',
   sort_order  INT             NOT NULL DEFAULT 0 COMMENT '手动排序',
@@ -37,6 +38,7 @@ CREATE TABLE folders (
 -- 3. 文章表
 CREATE TABLE articles (
   id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  public_id   CHAR(21)        NOT NULL COMMENT '对外暴露的ID（NanoID）',
   title            VARCHAR(255)    NOT NULL COMMENT '标题',
   content          MEDIUMTEXT      NOT NULL COMMENT '正文',
   preview          TEXT            NULL     COMMENT '游客可读的预览部分',
