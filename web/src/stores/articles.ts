@@ -25,7 +25,16 @@ export const useArticlesStore = create<ArticlesStoreState>()(
     devtools(
         immer((set) => ({
             articles: {},
-            folders: {},
+            // 根文件夹是个虚拟节点，页面一进来就能拿它发起第一层查询，不用等后端单独返回
+            folders: {
+                root: {
+                    id: 'root',
+                    folderName: '全部文章',
+                    parentId: null,
+                    children: [],
+                    status: 'idle',
+                },
+            },
 
             setFolderStatus: (id, status) => {
                 set((state) => {

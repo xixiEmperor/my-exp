@@ -38,6 +38,7 @@ import {
     X,
     FolderClosed,
     File,
+    UserRoundPen,
     type LucideIcon,
 } from 'lucide-react';
 import styles from './SiteIcon.module.scss';
@@ -84,6 +85,7 @@ const icons = {
     pin: MapPin,
     folder: FolderClosed,
     file: File,
+    admin: UserRoundPen,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

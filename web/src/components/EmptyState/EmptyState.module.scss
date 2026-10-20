@@ -1,0 +1,100 @@
+/* 通用空状态：竖向居中排列图标、标题、说明和操作区。
+   不画边框和卡片底，放在任何容器里都不会多出一层视觉噪音。 */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 56px 24px;
+    text-align: center;
+}
+
+.icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+
+    // SiteIcon 默认 20px，这里放大一档，让空状态的图标更有存在感
+    svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+.title {
+    margin: 4px 0 0;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.description {
+    max-width: 38em;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+
+    // 说明内容可能是任意节点，段落自带的外边距在这里统一收掉
+    :global(p) {
+        margin: 0;
+    }
+
+    // 说明里的链接沿用站内强调色，悬停时变亮
+    :global(a) {
+        color: var(--accent-deep);
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--accent);
+        }
+    }
+}
+
+.action {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* 紧凑模式：图标和字号整体收一档，适合塞进侧栏和列表项之间 */
+.compact {
+    gap: 8px;
+    padding: 28px 16px;
+
+    .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    .title {
+        font-size: 14px;
+    }
+
+    .description {
+        font-size: 13px;
+    }
+
+    .action {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 700px) {
+    .empty {
+        padding: 40px 16px;
+    }
+}

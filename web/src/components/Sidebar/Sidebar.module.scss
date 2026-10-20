@@ -1,0 +1,68 @@
+/* 通用左右两栏：左侧侧边栏吸顶，右侧内容自适应剩余宽度。
+   宽度走全站统一的 --shell，和顶栏、页脚对齐。 */
+.layout {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 32px;
+    width: calc(100% - 60px);
+    margin: 0 auto;
+}
+
+.sidebar {
+    /* 顶栏本身是 sticky 的，侧边栏从顶栏下沿开始吸顶，两列互不干扰 */
+    position: sticky;
+    top: var(--header);
+    display: flex;
+    flex-direction: column;
+
+    /* 高度锁在视口内，下半部分的滚动条才会落在侧边栏里面 */
+    height: calc(100vh - var(--header));
+    min-height: 0;
+    padding: 4px 24px 24px 0;
+    border-right: 1px solid var(--line);
+
+    /* 上半部分交给内容自己决定高度 */
+    .top {
+        flex: none;
+        padding-bottom: 16px;
+    }
+
+    /* 下半部分吃掉剩余高度，列表再长也只在这一块滚动 */
+    .bottom {
+        flex: 1;
+        min-height: 0;
+        padding-top: 16px;
+        overflow-y: auto;
+
+        /* 滚到底之后不再把滚动传给页面，避免整页跟着一起动 */
+        overscroll-behavior: contain;
+    }
+}
+
+/* 上下两部分同时存在时才画分隔线，单独一块时不会多出一条线 */
+.top + .bottom {
+    border-top: 1px solid var(--line);
+}
+
+.content {
+    min-width: 0;
+}
+
+/* 窄屏放不下两栏，改成上下排列，侧边栏收到内容上方并限制高度 */
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+        width: min(var(--shell), 100% - 30px);
+        padding: 18px 0 40px;
+    }
+
+    .sidebar {
+        position: static;
+        height: auto;
+        max-height: 48vh;
+        padding: 0 0 16px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+    }
+}

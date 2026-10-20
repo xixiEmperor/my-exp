@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import type { UserInfo } from '../../types/user';
 import styles from './UserMenu.module.scss';
+import { useUserStore } from '@/stores/user';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
     userInfo: UserInfo;
@@ -14,6 +16,8 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
+    const role = useUserStore((state) => state.userInfo?.role);
+    const navigate = useNavigate();
 
     // 展开期间才挂全局监听，收起之后不留多余的监听器。
     useEffect(() => {
@@ -60,6 +64,11 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
         setIsOpen(false);
     };
 
+    const handleEnterAdmin = () => {
+        setIsOpen(false);
+        navigate('/admin');
+    };
+
     const handleLogout = () => {
         setIsOpen(false);
         onLogout();
@@ -88,8 +97,18 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
                     {/* 菜单顶部再报一次身份，展开后不必回头看入口文字。 */}
                     <div className={styles.identity}>
                         <span className={styles['identity-name']}>{userInfo.name}</span>
-                        <span className={styles['identity-role']}>{userInfo.role}</span>
                     </div>
+                    {role === 'admin' && (
+                        <button
+                            type="button"
+                            role="menuitem"
+                            className={styles.item}
+                            onClick={handleEnterAdmin}
+                        >
+                            <SiteIcon name="admin" />
+                            <span>管理后台</span>
+                        </button>
+                    )}
                     <button
                         type="button"
                         role="menuitem"
