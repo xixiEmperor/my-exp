@@ -9,9 +9,9 @@ export interface FolderNode {
     /** 节点类型：文件夹 或 文章 */
     type: NodeType;
     /** 名称 */
-    name?: string;
+    name: string;
     /** 所属文件夹id */
-    parentId?: string;
+    parentId: string | null;
 }
 
 export interface Folder {

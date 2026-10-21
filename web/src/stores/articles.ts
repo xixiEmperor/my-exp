@@ -19,6 +19,8 @@ interface ArticlesStoreState {
     setFolderStatus: (id: string, status: FolderStatus) => void;
     /** 文件夹子节点追加 */
     appendFolderNodes: (id: string, nodes: GetFolderChildrenResp) => void;
+    /** 文件夹初始化 */
+    initFolder: (id: string, name: string, parentId: string | null) => void;
 }
 
 export const useArticlesStore = create<ArticlesStoreState>()(
@@ -47,9 +49,24 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                 set((state) => {
                     const targetFolder = state.folders[id];
                     for (let n of nodes) {
+                        // if (targetFolder.children.some((item) => item.id === n.id)) {
+                        //     return;
+                        // }
                         // 直接整条塞进去，name、parentId 这些展示要用的字段不能丢
                         targetFolder.children.push(n);
                     }
+                });
+            },
+
+            initFolder: (id, name, parentId) => {
+                set((state) => {
+                    state.folders[id] = {
+                        id,
+                        folderName: name,
+                        parentId,
+                        children: [],
+                        status: 'idle',
+                    };
                 });
             },
         })),

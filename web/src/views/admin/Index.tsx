@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import AuthGuard from '@/components/AuthGuard/AuthGuard';
 import Sidebar from '@/components/Sidebar/Sidebar';
@@ -7,19 +7,21 @@ import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
 
 export default function AdminIndex() {
+    const root = useArticlesStore((state) => state.folders.root);
     const { find } = useArticles();
-    // 只订阅根文件夹的状态，等它加载完成后再把数据喂给文章树
-    const rootStatus = useArticlesStore((state) => state.folders.root?.status);
 
     useEffect(() => {
         // 首次进入后台时把根目录的请求发出去，状态停留在 idle 时也能补一次
-        if (rootStatus === 'idle') {
-            find('root');
+        if (root.status === 'idle') {
+            find('root', root.folderName, null);
         }
-    }, [rootStatus, find]);
+    }, [root.status, root.folderName, find]);
 
-    // 根目录加载完成前先给空数组，树组件会自己把空列表渲染成空白
-    const rootNodes = rootStatus === 'loaded' ? find('root') : [];
+    // 派生列表放在 useMemo 里，避免每次渲染都生成新数组
+    const rootNodes = useMemo(
+        () => (root.status === 'loaded' ? find('root', root.folderName, null) : []),
+        [root.status, root.folderName, find],
+    );
 
     // 文章点击暂时留空，等文章编辑页的路由定下来再在这里做跳转
     const handleArticleClick = () => {};
@@ -32,7 +34,7 @@ export default function AdminIndex() {
                     <ArticleTree
                         data={rootNodes}
                         // 文件夹展开时按需加载下一层，结果写回 store 后组件会跟着重渲染
-                        onFolderClick={(node) => find(node.id)}
+                        onFolderClick={(node) => find(node.id, node.name!, node.parentId)}
                         onArticleClick={handleArticleClick}
                     />
                 }

@@ -1,76 +1,90 @@
+import { useCallback } from 'react';
 import { useArticlesStore } from '@/stores/articles';
-import { useStore } from 'zustand';
 import { getFolderChildren } from '@/api/articles';
-import type { FolderNode, GetFolderChildrenResp } from '@/types/articles';
-import { handleError } from '@/utils/errorHandler';
+import { useRequest } from './useRequest';
 
 export function useArticles() {
-    const state = useArticlesStore.getState();
-    const articles = useStore(useArticlesStore, (state) => state.articles);
-    const folders = useStore(useArticlesStore, (state) => state.folders);
+    // 方法引用稳定，直接从 getState 解构，不参与订阅
+    const { initFolder, setFolderStatus, appendFolderNodes } = useArticlesStore.getState();
 
-    /** 有缓存的情况下，根据当前文件夹id找到所有子节点 */
-    const findFromCache = (id: string) => {
-        // 这里拿到的还只是简化的数据模型，只有id和type
-        const children = folders[id].children;
+    // 渲染要用的源数据只订阅这一个字段，选择器里不生成新对象
+    const folders = useArticlesStore((state) => state.folders);
 
-        let f: FolderNode[] = [];
-        let a: FolderNode[] = [];
+    // service 只依赖稳定方法，用 useCallback 固定引用，useRequest 的 run 才能跟着稳定
+    const fetchFolderChildren = useCallback(
+        async (id: string) => {
+            setFolderStatus(id, 'loading');
 
-        for (let c of children) {
-            const node = {
-                id: c.id,
-                type: c.type,
-                name: c.name,
-            };
-
-            if (c.type === 'article') {
-                a.push(node);
-            } else {
-                f.push(node);
-            }
-        }
-
-        // 拼接文件夹+文件数组并返回，文件夹在前
-        return [...f, ...a];
-    };
-
-    /** 无缓存的情况下，根据文件夹id向后端请求某个文件夹所有子节点 */
-    const requestChildren = async (id: string) => {
-        try {
-            state.setFolderStatus(id, 'loading');
-
-            const res = await getFolderChildren<GetFolderChildrenResp>(id);
+            // 请求层已经解掉了统一响应结构，这里拿到的就是节点数组
+            const nodes = await getFolderChildren(id);
 
             // 这里将请求得到的节点追加到zustand中，视作缓存
-            state.appendFolderNodes(id, res.data!);
-            state.setFolderStatus(id, 'loaded');
-        } catch (error) {
-            state.setFolderStatus(id, 'error');
-            handleError(error);
-        }
-    };
+            appendFolderNodes(id, nodes ?? []);
+            setFolderStatus(id, 'loaded');
 
-    /** 找文件节子节点的聚合函数 */
-    const find = (id: string) => {
-        const target = folders[id];
+            // 把节点交给调用方，外层用它区分成功和失败
+            return nodes ?? [];
+        },
+        [appendFolderNodes, setFolderStatus],
+    );
 
-        // 1. 先去 zustand 里面检查该文件夹是否有缓存
-        if (target.status === 'loaded') {
+    // 文件夹子节点请求交给 useRequest 管理，loading 和错误提示不用再手写
+    const folderChildrenRequest = useRequest(fetchFolderChildren);
+    const { run: runFolderChildren } = folderChildrenRequest;
+
+    /** 有缓存的情况下，根据当前文件夹id找到所有子节点 */
+    const findFromCache = useCallback((id: string) => {
+        // 回调执行时重新取最新状态，避免使用渲染时捕获的旧快照
+        const { children } = useArticlesStore.getState().folders[id];
+
+        // 文件夹排在文章前面
+        return [
+            ...children.filter((item) => item.type === 'folder'),
+            ...children.filter((item) => item.type === 'article'),
+        ];
+    }, []);
+
+    /** 无缓存的情况下，根据文件夹id向后端请求某个文件夹所有子节点 */
+    const requestChildren = useCallback(
+        async (id: string) => {
+            const nodes = await runFolderChildren(id);
+
+            // 请求失败时 run 返回 undefined，把文件夹状态标成失败，方便展示重试
+            if (!nodes) {
+                setFolderStatus(id, 'error');
+            }
+        },
+        [runFolderChildren, setFolderStatus],
+    );
+
+    /** 找文件夹子节点的聚合函数 */
+    const find = useCallback(
+        (id: string, name: string, parentId: string | null) => {
+            // 渲染和异步回调都会调用这里，统一读最新状态
+            if (!useArticlesStore.getState().folders[id]) {
+                initFolder(id, name, parentId);
+            }
+
+            const { status } = useArticlesStore.getState().folders[id];
+
+            // 1. 先去 zustand 里面检查该文件夹是否有缓存
+            if (status === 'loaded') {
+                return findFromCache(id);
+            }
+
+            // 2. 如果没有缓存，则发起请求查找所有子节点
+            if (status === 'idle') {
+                void requestChildren(id);
+            }
+
+            // 3. 请求完追加到 zustand 之后，还需要从里面找出来并返回给上层使用
             return findFromCache(id);
-        }
-
-        // 2. 如果没有缓存，则发起请求查找所有子节点
-        if (target.status === 'idle') {
-            const rid = id === 'root' ? 'root' : id;
-            requestChildren(rid);
-        }
-
-        // 3. 请求完追加到 zustand 之后，还需要从里面找出来并返回给上层使用
-        return findFromCache(id);
-    };
+        },
+        [findFromCache, initFolder, requestChildren],
+    );
 
     return {
         find,
+        folders,
     };
 }

@@ -3,7 +3,7 @@ import App from '../App';
 import HomeView from '../views/home/HomeView';
 import KnowledgeView from '../views/knowledge/KnowledgeView';
 import NotFoundView from '../views/not-found/NotFoundView';
-import Prac from '@/views/Prac';
+// import Prac from '@/views/Prac';
 import { lazy } from 'react';
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
@@ -17,10 +17,10 @@ export const router = createBrowserRouter([
             { index: true, Component: HomeView },
             { path: 'knowledge', Component: KnowledgeView },
             { path: '*', Component: NotFoundView },
-            {
-                path: '/prac',
-                Component: Prac,
-            },
+            // {
+            //     path: '/prac',
+            //     Component: Prac,
+            // },
             {
                 path: '/admin',
                 Component: AdminIndex,
