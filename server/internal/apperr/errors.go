@@ -7,4 +7,7 @@ import "errors"
 var (
 	RedisError = errors.New("Redis 内部错误")
 	MySQLError = errors.New("MySQL 内部错误")
+
+	ErrTokenInvalid = errors.New("token invalid")
+	ErrTokenExpired = errors.New("token expired")
 )

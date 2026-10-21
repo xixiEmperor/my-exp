@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/dto"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
@@ -54,7 +55,7 @@ func (a *AuthService) Login(ctx context.Context, loginId, code string) (*LoginRe
 
 type Claims struct {
 	// 与 MySQL BIGINT UNSIGNED 和 model.Users.ID 保持一致。
-	ID uint64 `json:"id"`
+	UserID uint64 `json:"id"`
 	jwt.RegisteredClaims
 }
 
@@ -150,7 +151,7 @@ func (a *AuthService) GenerateToken(id uint64) (string, error) {
 	}
 
 	claims := Claims{
-		ID: id,
+		UserID: id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -165,10 +166,11 @@ func (a *AuthService) GenerateToken(id uint64) (string, error) {
 }
 
 // VerifyToken 验证签名、算法、签发者和过期时间，不能只解码后就信任载荷。
-func (a *AuthService) VerifyToken(encoded string) (*Claims, error) {
+func VerifyToken(encoded string) (*Claims, error) {
 	secret := os.Getenv("JWT_SECRET")
 
 	if strings.TrimSpace(secret) == "" {
+		// 服务端配置问题，不是认证错误，原样往上抛
 		return nil, errors.New("缺少 JWT_SECRET 配置")
 	}
 
@@ -183,9 +185,21 @@ func (a *AuthService) VerifyToken(encoded string) (*Claims, error) {
 		jwt.WithIssuer("my-exp"),
 		jwt.WithExpirationRequired(),
 	)
-
 	if err != nil {
-		return nil, fmt.Errorf("校验登录令牌: %w", err)
+		switch {
+		case errors.Is(err, jwt.ErrTokenExpired):
+			return nil, apperr.ErrTokenExpired
+		case errors.Is(err, jwt.ErrTokenMalformed),
+			errors.Is(err, jwt.ErrTokenSignatureInvalid),
+			errors.Is(err, jwt.ErrTokenInvalidIssuer),
+			errors.Is(err, jwt.ErrTokenRequiredClaimMissing),
+			errors.Is(err, jwt.ErrTokenUnverifiable),
+			errors.Is(err, jwt.ErrTokenNotValidYet):
+			return nil, apperr.ErrTokenInvalid
+		default:
+			// 未知错误不要吞掉，原样返回，由中间件当成 500 并记日志
+			return nil, err
+		}
 	}
 
 	return claims, nil

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
 
@@ -18,7 +19,7 @@ func NewArticlesRepo(db *gorm.DB) *ArticlesRepo {
 }
 
 // 从表里根据id查找所有文件夹
-func (repo *ArticlesRepo) FindFoldersByID(public_id string) ([]model.FolderBrief, error) {
+func (repo *ArticlesRepo) FindFoldersByID(c context.Context, public_id string) ([]model.FolderBrief, error) {
 	var folders []model.FolderBrief
 
 	// 如果前端传了 root 作为 id，则查找所有 parent_id 为 NULL 的文件夹
@@ -59,7 +60,7 @@ func (repo *ArticlesRepo) FindFoldersByID(public_id string) ([]model.FolderBrief
 }
 
 // 根据 id 查找所有文章
-func (repo *ArticlesRepo) FindArticlesByID(public_id string) ([]model.ArticlesBrief, error) {
+func (repo *ArticlesRepo) FindArticlesByID(c context.Context, public_id string) ([]model.ArticlesBrief, error) {
 	var aricles []model.ArticlesBrief
 
 	// 如果前端传了 root 作为 id，则查找所有 parent_id 为 NULL 的文件夹
@@ -97,4 +98,28 @@ func (repo *ArticlesRepo) FindArticlesByID(public_id string) ([]model.ArticlesBr
 	}
 
 	return aricles, nil
+}
+
+// 根据 id 查找文章所有内容
+func (repo *ArticlesRepo) FindArticleContentByID(c context.Context, public_id string) (model.ArticlesDetail, error) {
+	var aricle model.ArticlesDetail
+
+	err := repo.db.Model(model.Articles{}).Where("public_id = ?", public_id).Take(&aricle).Error
+	if err != nil {
+		return model.ArticlesDetail{}, err
+	}
+
+	return aricle, nil
+}
+
+// 根据 id 查找文章预览内容
+func (repo *ArticlesRepo) FindArticlePreviewByID(c context.Context, public_id string) (model.ArticlesPreview, error) {
+	var aricle model.ArticlesPreview
+
+	err := repo.db.Model(model.Articles{}).Where("public_id = ?", public_id).Take(&aricle).Error
+	if err != nil {
+		return model.ArticlesPreview{}, err
+	}
+
+	return aricle, nil
 }

@@ -1,6 +1,10 @@
 package service
 
-import "zhiye/server/internal/repository"
+import (
+	"context"
+	"zhiye/server/internal/model"
+	"zhiye/server/internal/repository"
+)
 
 type ArticlesService struct {
 	repo *repository.ArticlesRepo
@@ -19,12 +23,13 @@ func NewArticlesService(repo *repository.ArticlesRepo) *ArticlesService {
 	}
 }
 
-func (s *ArticlesService) FindNodes(id string) ([]Node, error) {
+// 查找文件夹的所有子节点，需要处理管理员，游客登录两种情况，区分文章是否为草稿状态
+func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error) {
 	// 初始化结果数组
 	var nodes []Node
 
 	// 先找文件夹节点
-	folders, err := s.repo.FindFoldersByID(id)
+	folders, err := s.repo.FindFoldersByID(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +46,7 @@ func (s *ArticlesService) FindNodes(id string) ([]Node, error) {
 	}
 
 	// 再找文章节点
-	articles, err := s.repo.FindArticlesByID(id)
+	articles, err := s.repo.FindArticlesByID(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,4 +63,24 @@ func (s *ArticlesService) FindNodes(id string) ([]Node, error) {
 	}
 
 	return nodes, nil
+}
+
+// 根据 id 查找文章相关信息，需要处理登录和未登录两种情况返回的信息
+func (s *ArticlesService) FindArticleContent(c context.Context, article_id string) (model.ArticleContent, error) {
+	_, ok := c.Value("user_id").(uint64)
+
+	// 如果 context 中没有 user_id，说明没登录，则需要返回 preview 部分
+	if !ok {
+		preview, err := s.repo.FindArticlePreviewByID(c, article_id)
+		if err != nil {
+			return model.ArticlesPreview{}, err
+		}
+		return preview, nil
+	}
+
+	detail, err := s.repo.FindArticleContentByID(c, article_id)
+	if err != nil {
+		return model.ArticlesDetail{}, err
+	}
+	return detail, nil
 }
