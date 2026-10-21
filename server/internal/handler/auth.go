@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
 	"zhiye/server/internal/service"
@@ -132,7 +133,6 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 
 	// service 完成验证码验证和令牌签发，handler 只处理 HTTP 输入输出。
 	result, err := a.authService.Login(c.Request.Context(), body.LoginId, body.Code)
-
 	if err != nil {
 		// 业务错误按各自的语义回给前端，前端才能给出对应的提示。
 		switch {
@@ -168,21 +168,21 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 	// Path=/ 允许页面读取 userinfo；不设置 Domain，限制为当前主机。
 	// SameSite=Lax 适用于当前同站点部署；userinfo 仅供展示，不能作为权限依据。
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name: "token", 
-		Value: result.Token, 
-		Path: "/", 
-		MaxAge: maxAge,
-		HttpOnly: true, 
-		Secure: secure, 
+		Name:     "token",
+		Value:    result.Token,
+		Path:     "/",
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name: "userinfo", 
-		Value: userInfo, 
-		Path: "/", 
-		MaxAge: maxAge,
-		HttpOnly: false, 
-		Secure: secure, 
+		Name:     "userinfo",
+		Value:    userInfo,
+		Path:     "/",
+		MaxAge:   maxAge,
+		HttpOnly: false,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
 	c.JSON(http.StatusOK, dto.Success(0))
@@ -193,21 +193,21 @@ func (a *AuthHandler) Logout(c *gin.Context) {
 
 	// 删除两个cookie
 	c.SetCookieData(&http.Cookie{
-		Name: "token", 
-		Value: "", 
-		Path: "/", 
-		MaxAge: -1,
-		HttpOnly: true, 
-		Secure: secure, 
+		Name:     "token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
 	c.SetCookieData(&http.Cookie{
-		Name: "userinfo", 
-		Value: "", 
-		Path: "/", 
-		MaxAge: -1,
-		HttpOnly: false, 
-		Secure: secure, 
+		Name:     "userinfo",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: false,
+		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
 

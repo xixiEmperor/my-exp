@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
 
@@ -28,7 +29,6 @@ func (repo *ArticlesRepo) FindFoldersByID(c context.Context, public_id string) (
 			Select("public_id", "name", "parent_id").
 			Where("parent_id IS NULL").
 			Find(&folders).Error
-
 		if err != nil {
 			return nil, apperr.MySQLError
 		}
@@ -51,7 +51,6 @@ func (repo *ArticlesRepo) FindFoldersByID(c context.Context, public_id string) (
 		Select("public_id", "name", "parent_id").
 		Where("parent_id = ?", parent_id).
 		Find(&folders).Error
-
 	if err != nil {
 		return nil, apperr.MySQLError
 	}
@@ -69,7 +68,6 @@ func (repo *ArticlesRepo) FindArticlesByID(c context.Context, public_id string) 
 			Select("public_id", "title", "folder_id").
 			Where("folder_id IS NULL").
 			Find(&aricles).Error
-
 		if err != nil {
 			return nil, apperr.MySQLError
 		}
@@ -92,7 +90,6 @@ func (repo *ArticlesRepo) FindArticlesByID(c context.Context, public_id string) 
 		Select("public_id", "title", "folder_id").
 		Where("folder_id = ?", folder_id).
 		Find(&aricles).Error
-
 	if err != nil {
 		return nil, apperr.MySQLError
 	}
