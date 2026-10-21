@@ -1,7 +1,7 @@
 import { request } from './request';
 
 export const userLogin = (loginId: string, code: string) => {
-    return request({
+    return request<void>({
         path: '/auth/verify',
         method: 'POST',
         body: {
@@ -13,7 +13,7 @@ export const userLogin = (loginId: string, code: string) => {
 };
 
 export const userLogout = () => {
-    return request({
+    return request<void>({
         path: '/auth/logout',
         method: 'POST',
 
