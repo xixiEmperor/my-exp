@@ -10,6 +10,7 @@ import (
 
 func NewRouterGroup(
 	authHandler *handler.AuthHandler,
+	articleHandler *handler.ArticlesHandler,
 	corsCfg cors.Config,
 ) *gin.Engine {
 	// 创建 gin 的路由引擎
@@ -31,6 +32,7 @@ func NewRouterGroup(
 
 	// 装配各部分路由
 	registerAuthRouter(api, authHandler)
+	registerArticleRouter(api, articleHandler)
 
 	return r
 }

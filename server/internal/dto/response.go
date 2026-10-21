@@ -21,6 +21,7 @@ func Success(code int) *Response {
 }
 
 func SuccessWithData(code int, msg string, data any) *Response {
+	// 不要在这里提前 json.Marshal，否则 Data 是 []byte，外层再序列化一次会变成 base64 字符串
 	return &Response{
 		Code: code,
 		Msg:  msg,

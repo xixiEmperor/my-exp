@@ -53,17 +53,20 @@ func run() error {
 	// 1. 创建各部分 repo
 	userRepo := repository.NewUsersRepo(sqlDB)
 	codeRepo := repository.NewVerificationCodes(rdb)
+	articlesRepo := repository.NewArticlesRepo(sqlDB)
 
 	// 2. 创建各部分 service
 	userService := service.NewUsersService(userRepo)
 	authService := service.NewAuthService(codeRepo, userService)
+	articleService := service.NewArticlesService(articlesRepo)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken)
+	articleHandler := handler.NewArticlesHandler(articleService)
 
 	// 4. 创建装配后的路由，跨域配置随路由一起传入，保证中间件先于路由挂载。
 	// 前端 dev server 监听在 127.0.0.1，和 localhost 属于不同的源，两个都要放行。
-	engine := router.NewRouterGroup(authHandler, cors.Config{
+	engine := router.NewRouterGroup(authHandler, articleHandler, cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},

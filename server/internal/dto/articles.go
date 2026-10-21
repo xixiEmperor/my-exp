@@ -1,7 +1,7 @@
 package dto
 
 // 新建文章请求体
-type CreateArticleReq struct{
+type CreateArticleReq struct {
 	// 所属文件夹的id
 	FolderId string
 	// 文章标题
@@ -9,7 +9,7 @@ type CreateArticleReq struct{
 }
 
 // 新建文件夹请求体
-type CreateFolderReq struct{
+type CreateFolderReq struct {
 	// 所属文件夹的id
 	ParentId string
 	// 文件夹名称
@@ -35,7 +35,7 @@ type FolderNodes struct {
 	// 名称
 	Name string `json:"name"`
 	// 所属文件夹id
-	ParentId string `json:"parentId"`
+	ParentId *uint64 `json:"parentId"`
 }
 
-type GetFolderNodesResp = []FolderNodes;
+type GetFolderNodesResp = []FolderNodes
