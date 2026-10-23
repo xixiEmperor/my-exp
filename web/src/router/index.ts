@@ -7,6 +7,7 @@ import NotFoundView from '../views/not-found/NotFoundView';
 import { lazy } from 'react';
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
+const AdminArticles = lazy(() => import('@/views/admin/Articles'));
 
 // 所有路径集中在这一份配置中，首页、待开发入口和兜底页统一管理。
 export const router = createBrowserRouter([
@@ -24,7 +25,10 @@ export const router = createBrowserRouter([
             {
                 path: '/admin',
                 Component: AdminIndex,
-                children: [],
+                children: [
+                    // 文章详情页，文章 id 作为路径参数，页面自己按 id 读缓存或发请求
+                    { path: 'articles/:id', Component: AdminArticles },
+                ],
             },
         ],
     },

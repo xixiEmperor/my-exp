@@ -29,7 +29,7 @@ export interface Folder {
 
 export interface Article {
     /** 文章 id */
-    id: string;
+    public_id: string;
     /** 文章标题 */
     title: string;
     /** 文章内容 */
@@ -38,12 +38,20 @@ export interface Article {
     status: 'published' | 'draft';
     /** 浏览量 */
     views: number;
+    /** 文件路径 */
+    slug: string;
     /** 文章所属文件夹 id */
-    parentId: string | null;
+    folder_id: string | null;
     /** 文章创建时间 */
-    createdAt: Date;
+    created_at: Date;
     /** 文章最后更新时间 */
-    lastModifiedAt: Date;
+    last_modified_at: Date;
+    /** 文章发布时间 */
+    published_at: Date;
+    /** 删除时间 */
+    deleted_at: Date;
 }
 
 export type GetFolderChildrenResp = Array<FolderNode>;
+
+export type GetArticleDetailResp = Article;

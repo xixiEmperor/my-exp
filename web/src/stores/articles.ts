@@ -10,11 +10,13 @@ import type {
 } from '@/types/articles';
 
 interface ArticlesStoreState {
-    /** 文章实体映射 */
+    /** 文章实体映射，某个 id 有实体就说明详情已经缓存过 */
     articles: Record<string, Article>;
     /** 文件夹实体映射 */
     folders: Record<string, Folder>;
 
+    /** 文章详情写入缓存 */
+    setArticle: (id: string, article: Article) => void;
     /** 文件夹状态设置 */
     setFolderStatus: (id: string, status: FolderStatus) => void;
     /** 文件夹子节点追加 */
@@ -36,6 +38,13 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                     children: [],
                     status: 'idle',
                 },
+            },
+
+            setArticle: (id, article) => {
+                set((state) => {
+                    // 详情整条写进缓存，后续再点这篇文章直接从这里取
+                    state.articles[id] = article;
+                });
             },
 
             setFolderStatus: (id, status) => {

@@ -76,7 +76,17 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 		if err != nil {
 			return model.ArticlesPreview{}, err
 		}
-		return preview, nil
+
+		// 游客只有预览内容，这里统一塞进 content 字段，前端不用区分两种返回结构
+		content := ""
+		if preview.Preview != nil {
+			content = *preview.Preview
+		}
+
+		return model.ArticlesDetail{
+			ArticlesBasis: preview.ArticlesBasis,
+			Content:       content,
+		}, nil
 	}
 
 	detail, err := s.repo.FindArticleContentByID(c, article_id)

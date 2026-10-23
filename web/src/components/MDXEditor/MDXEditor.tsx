@@ -19,16 +19,28 @@ import {
     InsertCodeBlock,
     type MDXEditorMethods,
 } from '@mdxeditor/editor';
-import { useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import style from './MDXEditor.module.scss';
 
 interface Props {
     // 初始渲染内容由父组件传递
     content: string;
+    // 编辑器里内容变化时把最新 markdown 交回父组件
+    onChange?: (content: string) => void;
 }
 
-export default function MDWriteComponent({ content }: Props) {
+export default function MDWriteComponent({ content, onChange }: Props) {
     const mdRef = useRef<MDXEditorMethods>(null);
+
+    // MDXEditor 只在初始化时读一次 markdown，外部内容后到时必须手动同步进去
+    useEffect(() => {
+        const current = mdRef.current?.getMarkdown();
+
+        // 编辑器里的内容已经一致就不要再设置，否则会把用户正在输入的光标位置冲掉
+        if (current !== undefined && current !== content) {
+            mdRef.current?.setMarkdown(content);
+        }
+    }, [content]);
 
     return (
         <MDXEditor
@@ -67,7 +79,7 @@ export default function MDWriteComponent({ content }: Props) {
                     ),
                 }),
             ]}
-            onChange={console.log}
+            onChange={onChange}
         />
     );
 }

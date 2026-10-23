@@ -1,14 +1,16 @@
-import { useEffect, useMemo } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import AuthGuard from '@/components/AuthGuard/AuthGuard';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ArticleTree from '@/components/ArticleTree/ArticleTree';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
+import type { FolderNode } from '@/types/articles';
 
 export default function AdminIndex() {
     const root = useArticlesStore((state) => state.folders.root);
-    const { find } = useArticles();
+    const { find, findArticle } = useArticles();
+    const navigate = useNavigate();
 
     useEffect(() => {
         // 首次进入后台时把根目录的请求发出去，状态停留在 idle 时也能补一次
@@ -23,8 +25,15 @@ export default function AdminIndex() {
         [root.status, root.folderName, find],
     );
 
-    // 文章点击暂时留空，等文章编辑页的路由定下来再在这里做跳转
-    const handleArticleClick = () => {};
+    // 点击文章先把详情交给 hook 预取，有缓存时这里不会重复发请求
+    // 然后跳到编辑页，文章 id 走路径参数，编辑页再按 id 从缓存里取内容
+    const handleArticleClick = useCallback(
+        (node: FolderNode) => {
+            findArticle(node.id);
+            navigate(`/admin/articles/${node.id}`);
+        },
+        [findArticle, navigate],
+    );
 
     return (
         <AuthGuard>
