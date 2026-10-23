@@ -2,6 +2,8 @@ import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
 import HomeView from '../views/home/HomeView';
 import KnowledgeView from '../views/knowledge/KnowledgeView';
+import KnowledgeEmpty from '../views/knowledge/KnowledgeEmpty';
+import KnowledgeArticle from '../views/knowledge/KnowledgeArticle';
 import NotFoundView from '../views/not-found/NotFoundView';
 // import Prac from '@/views/Prac';
 import { lazy } from 'react';
@@ -16,7 +18,17 @@ export const router = createBrowserRouter([
         Component: App,
         children: [
             { index: true, Component: HomeView },
-            { path: 'knowledge', Component: KnowledgeView },
+            {
+                // 知识库是一个带侧边目录的布局路由，右侧内容由子路由决定
+                path: 'knowledge',
+                Component: KnowledgeView,
+                children: [
+                    // 只停在 /knowledge 时右侧展示空状态
+                    { index: true, Component: KnowledgeEmpty },
+                    // 前台文章详情，文章 id 走路径参数
+                    { path: ':id', Component: KnowledgeArticle },
+                ],
+            },
             { path: '*', Component: NotFoundView },
             // {
             //     path: '/prac',

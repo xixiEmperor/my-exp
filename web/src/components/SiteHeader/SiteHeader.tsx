@@ -31,7 +31,10 @@ export default function SiteHeader({
 
     // 当前路径只影响主导航状态，锚点入口保持普通链接语义。
     mainNavigation.forEach((item) => {
-        const isActive = item.activePath === activePath;
+        // 子路由也算在这个入口下，比如 /knowledge/:id 时知识库仍然保持高亮
+        const isActive =
+            item.activePath === activePath ||
+            (item.activePath ? activePath.startsWith(`${item.activePath}/`) : false);
 
         mainLinks.push(
             <Link

@@ -1,0 +1,27 @@
+/* 前台阅读页容器。左侧目录由 Sidebar 负责，这里只给右侧正文留上下空白 */
+.page {
+    min-width: 0;
+    padding: 32px 0 64px;
+}
+
+/* 正文在左，目录在右。目录列宽度固定，正文吃掉剩下的空间 */
+.reading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 168px;
+    align-items: start;
+    gap: 40px;
+}
+
+/* 窄屏放不下右侧目录，目录组件自己会隐藏，这里同时把两列收成一列 */
+@media (max-width: 1100px) {
+    .reading {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* 窄屏下侧边栏会收到内容上方，正文的顶部留白跟着收一档 */
+@media (max-width: 900px) {
+    .page {
+        padding: 8px 0 40px;
+    }
+}

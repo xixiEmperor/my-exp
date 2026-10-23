@@ -1,0 +1,53 @@
+/* 右侧目录。相对正文独立滚动，页面往下翻时保持在顶栏下方 */
+.toc {
+    position: sticky;
+    top: calc(var(--header) + 32px);
+    max-height: calc(100vh - var(--header) - 64px);
+    padding-left: 4px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.6;
+
+    /* 目录自己滚到底之后不再带着页面一起动 */
+    overscroll-behavior: contain;
+}
+
+.title {
+    margin: 0 0 10px;
+    color: var(--muted-2);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.link {
+    display: block;
+    padding: 6px 0;
+    border-left: 1px solid var(--line);
+    color: var(--muted-2);
+    text-decoration: none;
+    transition:
+        color 0.2s,
+        border-color 0.2s;
+
+    /* 长标题折行，不把窄窄的目录列撑开 */
+    overflow-wrap: anywhere;
+
+    &:hover {
+        border-left-color: var(--accent);
+        color: var(--accent-deep);
+    }
+}
+
+/* 窄屏放不下右侧目录，直接隐藏，正文里的标题结构还在 */
+@media (max-width: 1100px) {
+    .toc {
+        display: none;
+    }
+}
