@@ -5,10 +5,13 @@ import styles from './MarkdownToc.module.scss';
 interface Props {
     /** markdown 原文，组件自己从里面提标题 */
     content: string;
+
+    /** 自定义跳转。预览页的滚动容器不是窗口，需要外部接管锚点滚动 */
+    onJump?: (id: string) => void;
 }
 
 // 文章右侧的目录导航，按标题层级缩进，正文滚动时保持吸顶。
-export default function MarkdownToc({ content }: Props) {
+export default function MarkdownToc({ content, onJump }: Props) {
     // 正文没变就复用结果，避免每次渲染都把整篇文章扫一遍
     const headings = useMemo(() => extractToc(content), [content]);
 
@@ -29,6 +32,13 @@ export default function MarkdownToc({ content }: Props) {
                         <a
                             className={styles.link}
                             href={`#${item.id}`}
+                            onClick={(event) => {
+                                // 外部接管跳转时拦掉默认的 hash 行为，避免改掉页面地址
+                                if (onJump) {
+                                    event.preventDefault();
+                                    onJump(item.id);
+                                }
+                            }}
 
                             // 每深一级往右缩进一档，层级关系一眼能看出来
                             style={{ paddingLeft: 12 + (item.depth - minDepth) * 12 }}

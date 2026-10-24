@@ -1,7 +1,258 @@
-.prose {
-    font-family: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+.wrap {
+    min-width: 0;
 }
 
-.codeMirrorWrapper {
-    background-color: bisque;
+// 编辑器上方的一条细工具栏，只在右侧放预览入口
+.bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.label {
+    color: var(--muted-2);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.previewButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    border-radius: 9px;
+    color: var(--accent-deep);
+    background: var(--paper);
+    font-size: 12px;
+    font-weight: 800;
+    transition:
+        background-color 0.2s,
+        box-shadow 0.2s;
+
+    &:hover {
+        background: var(--accent-soft);
+        box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+
+    :global(svg) {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+// MDXEditor 自带一套中性灰加蓝色的主题变量，这里逐个换成项目的令牌。
+// .mdxeditor 是组件根节点上的稳定类名，再叠一个模块类把优先级抬高，
+// 这样不管样式注入的先后顺序，覆盖都能生效。
+.editor:global(.mdxeditor) {
+    // 表面色。编辑器主体用卡片底色，弹出层用更深一档的内嵌色。
+    --basePageBg: var(--paper);
+    --baseBase: var(--bg);
+    --baseBgSubtle: var(--paper-2);
+    --baseBg: var(--paper-2);
+    --baseBgHover: var(--paper-3);
+    --baseBgActive: var(--paper-3);
+
+    // 线条与文字三档，全部跟随主题。
+    --baseLine: var(--line);
+    --baseBorder: var(--line);
+    --baseBorderHover: var(--muted-2);
+    --baseSolid: var(--muted-2);
+    --baseSolidHover: var(--muted);
+    --baseText: var(--muted);
+    --baseTextContrast: var(--ink);
+
+    // 强调色系由 --accent 派生，明暗主题下会自动换成靛蓝或青绿。
+    // 原组件的这一组值是阶梯式的蓝色色带，这里用 color-mix 现调，保持同样的明暗层次。
+    --accentBase: color-mix(in srgb, var(--accent) 6%, var(--paper));
+    --accentBgSubtle: var(--accent-soft);
+    --accentBg: color-mix(in srgb, var(--accent) 12%, var(--paper));
+    --accentBgHover: color-mix(in srgb, var(--accent) 20%, var(--paper));
+    --accentBgActive: color-mix(in srgb, var(--accent) 28%, var(--paper));
+    --accentLine: color-mix(in srgb, var(--accent) 42%, var(--line));
+    --accentBorder: color-mix(in srgb, var(--accent) 58%, var(--line));
+    --accentBorderHover: var(--accent);
+    --accentSolid: var(--accent);
+    --accentSolidHover: var(--accent-deep);
+    --accentText: var(--accent-deep);
+    --accentTextContrast: var(--accent-deep);
+
+    // 提示块用语义色，和站内其他提示条保持同一套观感。
+    --admonitionTipBg: color-mix(in srgb, var(--mint) 26%, var(--paper));
+    --admonitionTipBorder: color-mix(in srgb, var(--mint) 70%, var(--line));
+    --admonitionInfoBg: color-mix(in srgb, var(--accent) 10%, var(--paper));
+    --admonitionInfoBorder: color-mix(in srgb, var(--accent) 45%, var(--line));
+    --admonitionCautionBg: color-mix(in srgb, var(--warn) 12%, var(--paper));
+    --admonitionCautionBorder: color-mix(in srgb, var(--warn) 50%, var(--line));
+    --admonitionDangerBg: color-mix(in srgb, var(--danger) 10%, var(--paper));
+    --admonitionDangerBorder: color-mix(in srgb, var(--danger) 45%, var(--line));
+    --admonitionNoteBg: var(--paper-2);
+    --admonitionNoteBorder: var(--line);
+
+    --error-color: var(--danger);
+
+    // 字体跟随站点正文字体，等宽字体单独指定。
+    --font-body: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+// 组件会把根类原样复制到挂在 body 上的弹层容器，所以外观只写在编辑器的根节点上，
+// 用 :not 把弹层容器排除掉，否则页面底部会多出一个带边框的空盒子。
+.editor:global(.mdxeditor):not(:global(.mdxeditor-popup-container)) {
+    // 根节点本身做成一张卡片，和后台其他面板的边框、圆角对齐。
+    min-width: 0;
+    min-height: 560px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    color: var(--ink);
+    background: var(--paper);
+    overflow: hidden;
+
+    // 聚焦时用强调色描边，和全站焦点环的语气一致。
+    &:focus-within {
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+
+    // 源码编辑器。组件内置的白底主题和偏小的字号都在这里换成主题色。
+    :global(.cm-editor) {
+        padding: 18px 20px;
+        color: var(--ink);
+        background: transparent;
+        font-size: 14px;
+    }
+
+    :global(.cm-scroller) {
+        color: var(--ink);
+        font-family: var(--font-mono);
+        font-size: 14px;
+        line-height: 1.85;
+    }
+
+    :global(.cm-content) {
+        caret-color: var(--accent);
+    }
+
+    :global(.cm-gutters) {
+        color: var(--muted-2);
+        background: transparent;
+        border-right: 1px solid var(--line);
+    }
+
+    :global(.cm-activeLine) {
+        background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+
+    :global(.cm-selectionBackground),
+    :global(.cm-content ::selection) {
+        background: color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+
+    :global(.cm-cursor) {
+        border-left-color: var(--accent);
+    }
+}
+
+// 预览页。半透明遮罩加一层模糊，底下编辑器的轮廓还在，但不会被误触
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: color-mix(in srgb, #05080f 62%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+// 预览主体铺满可视区的大部分空间，正文和目录沿用阅读页的两列结构
+.modal {
+    display: flex;
+    flex-direction: column;
+    width: min(1180px, 100%);
+    max-height: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.modalHead {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px 12px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-2);
+}
+
+.modalTitle {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.closeButton {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    color: var(--muted);
+    transition:
+        color 0.2s,
+        background-color 0.2s;
+
+    &:hover {
+        color: var(--ink);
+        background: var(--paper-3);
+    }
+
+    :global(svg) {
+        width: 17px;
+        height: 17px;
+    }
+}
+
+.modalBody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 168px;
+    align-items: start;
+    gap: 40px;
+    padding: 30px 32px 64px;
+    overflow: auto;
+    min-height: 0;
+}
+
+.article {
+    min-width: 0;
+}
+
+// 预览页的滚动容器是弹层本身，目录的吸顶位置要从页面顶栏改成容器顶部
+.modalBody :global(nav[aria-label='文章目录']) {
+    top: 0;
+}
+
+@media (max-width: 1100px) {
+    .modalBody {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    .overlay {
+        padding: 12px;
+    }
+
+    .modalBody {
+        padding: 20px 18px 40px;
+    }
 }
