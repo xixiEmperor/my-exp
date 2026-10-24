@@ -3,12 +3,14 @@ package service
 import (
 	"context"
 
+	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
 )
 
 type ArticlesService struct {
-	repo *repository.ArticlesRepo
+	artiRepo *repository.ArticlesRepo
+	userRepo *repository.UsersRepo
 }
 
 type Node struct {
@@ -18,9 +20,10 @@ type Node struct {
 	ParentID *uint64 `json:"parentId"` // 所属父节点 id，根目录为 null
 }
 
-func NewArticlesService(repo *repository.ArticlesRepo) *ArticlesService {
+func NewArticlesService(artiRepo *repository.ArticlesRepo, userRepo *repository.UsersRepo) *ArticlesService {
 	return &ArticlesService{
-		repo: repo,
+		artiRepo: artiRepo,
+		userRepo: userRepo,
 	}
 }
 
@@ -30,7 +33,7 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error
 	var nodes []Node
 
 	// 先找文件夹节点
-	folders, err := s.repo.FindFoldersByID(c, id)
+	folders, err := s.artiRepo.FindFoldersByID(c, id)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +50,15 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error
 	}
 
 	// 再找文章节点
-	articles, err := s.repo.FindArticlesByID(c, id)
+	// 找之前需要判断用户角色，先从上下文中获取中间件设置的user_id，用于查询用户身份
+	user_id, ok := c.Value(cons.CtxUserID).(uint64)
+	user, err := s.userRepo.FindUserByID(c, user_id)
+	if err != nil {
+		return nil, err
+	}
+
+	// 如果未登录或用户角色不为管理员，则不返回草稿文章
+	articles, err := s.artiRepo.FindArticlesByID(c, id, !ok || user.Role != "admin")
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +79,11 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error
 
 // 根据 id 查找文章相关信息，需要处理登录和未登录两种情况返回的信息
 func (s *ArticlesService) FindArticleContent(c context.Context, article_id string) (model.ArticleContent, error) {
-	_, ok := c.Value("user_id").(uint64)
+	_, ok := c.Value(cons.CtxUserID).(uint64)
 
 	// 如果 context 中没有 user_id，说明没登录，则需要返回 preview 部分
 	if !ok {
-		preview, err := s.repo.FindArticlePreviewByID(c, article_id)
+		preview, err := s.artiRepo.FindArticlePreviewByID(c, article_id)
 		if err != nil {
 			return model.ArticlesPreview{}, err
 		}
@@ -89,7 +100,7 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 		}, nil
 	}
 
-	detail, err := s.repo.FindArticleContentByID(c, article_id)
+	detail, err := s.artiRepo.FindArticleContentByID(c, article_id)
 	if err != nil {
 		return model.ArticlesDetail{}, err
 	}

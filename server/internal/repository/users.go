@@ -35,6 +35,19 @@ func (u *UsersRepo) FindUserByOpenID(ctx context.Context, openid string) (*model
 	return &user, nil
 }
 
+// 根据 id 查找用户信息
+// 返回完整用户，调用方既能取 ID 签发令牌，也能复用昵称等资料。
+func (u *UsersRepo) FindUserByID(ctx context.Context, id uint64) (*model.Users, error) {
+	// WithContext 让数据库查询响应请求取消；仅接收标准库类型，不依赖 Gin。
+	var user model.Users
+	err := u.db.WithContext(ctx).Where("id = ?", id).Take(&user).Error
+	if err != nil {
+		// 保留原始错误，调用方才能区分记录不存在与数据库故障。
+		return nil, fmt.Errorf("根据 id 查询用户: %w", err)
+	}
+	return &user, nil
+}
+
 // 创建一个新用户
 func (u *UsersRepo) CreateUser(ctx context.Context, openid, name string) (*model.Users, error) {
 	now := time.Now()

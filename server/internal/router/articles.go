@@ -11,7 +11,7 @@ func registerArticleRouter(
 	parent *gin.RouterGroup,
 	handler *handler.ArticlesHandler,
 ) {
-	folder := parent.Group("/folder")
+	folder := parent.Group("/folder", middlewares.OptionalAuth())
 	folder.GET("/children", handler.GetFolderNodes)
 
 	publicArticles := parent.Group("/articles", middlewares.OptionalAuth())

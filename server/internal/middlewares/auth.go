@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	CtxUserID = "user_id"
 	// 登录成功后写入的 HttpOnly Cookie 名称，和 handler 里保持一致
 	TokenCookieName = "token"
 )
@@ -60,7 +59,12 @@ func VerifyToken() gin.HandlerFunc {
 			return
 		}
 
-		c.Set(CtxUserID, info.UserID)
+		ctx := context.WithValue(
+			c.Request.Context(),
+			cons.CtxUserID,
+			info.UserID,
+		)
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}
@@ -94,7 +98,7 @@ func OptionalAuth() gin.HandlerFunc {
 
 		ctx := context.WithValue(
 			c.Request.Context(),
-			CtxUserID,
+			cons.CtxUserID,
 			info.UserID,
 		)
 		c.Request = c.Request.WithContext(ctx)

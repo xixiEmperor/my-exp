@@ -58,43 +58,42 @@ func (repo *ArticlesRepo) FindFoldersByID(c context.Context, public_id string) (
 	return folders, nil
 }
 
-// 根据 id 查找所有文章
-func (repo *ArticlesRepo) FindArticlesByID(c context.Context, public_id string) ([]model.ArticlesBrief, error) {
-	var aricles []model.ArticlesBrief
+func (repo *ArticlesRepo) FindArticlesByID(c context.Context, public_id string, without_draft bool) ([]model.ArticlesBrief, error) {
+	var articles []model.ArticlesBrief
 
-	// 如果前端传了 root 作为 id，则查找所有 parent_id 为 NULL 的文件夹
+	query := repo.db.WithContext(c).
+		Model(&model.Articles{}).
+		Select("public_id", "title", "folder_id")
+
 	if public_id == "root" {
-		err := repo.db.Model(model.Articles{}).
-			Select("public_id", "title", "folder_id").
-			Where("folder_id IS NULL").
-			Find(&aricles).Error
+		// root：查找 folder_id 为 NULL 的文章
+		query = query.Where("folder_id IS NULL")
+	} else {
+		// 先把 public_id 转成外键 id
+		var folder_id uint64
+		err := repo.db.WithContext(c).
+			Model(&model.Folders{}).
+			Select("id").
+			Where("public_id = ?", public_id).
+			Take(&folder_id).Error
 		if err != nil {
 			return nil, apperr.MySQLError
 		}
 
-		return aricles, nil
+		query = query.Where("folder_id = ?", folder_id)
 	}
 
-	// 查找之前需要先将传入的public_id转换为外键id，这里用一条简单查询，不用JOIN
-	var folder_id uint64
-	err := repo.db.Model(model.Folders{}).
-		Select("id").
-		Where("public_id = ?", public_id).
-		Find(&folder_id).Error
-	if err != nil {
-		return nil, err
+	// 不需要草稿时，只查已发布的
+	if without_draft {
+		query = query.Where("status = ?", "published")
 	}
 
-	// 否则查找对应 parent_id 的文件夹
-	err = repo.db.Model(model.Articles{}).
-		Select("public_id", "title", "folder_id").
-		Where("folder_id = ?", folder_id).
-		Find(&aricles).Error
+	err := query.Find(&articles).Error
 	if err != nil {
 		return nil, apperr.MySQLError
 	}
 
-	return aricles, nil
+	return articles, nil
 }
 
 // 根据 id 查找文章所有内容

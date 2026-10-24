@@ -59,7 +59,7 @@ func run() error {
 	// 2. 创建各部分 service
 	userService := service.NewUsersService(userRepo)
 	authService := service.NewAuthService(codeRepo, userService)
-	articleService := service.NewArticlesService(articlesRepo)
+	articleService := service.NewArticlesService(articlesRepo, userRepo)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken)
