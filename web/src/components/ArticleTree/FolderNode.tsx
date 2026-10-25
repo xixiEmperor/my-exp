@@ -8,11 +8,13 @@ interface FolderNodeProps {
     node: FolderNodeData;
     /** 节点所在层级，从 0 开始，用来计算缩进 */
     level: number;
+    /** 当前文件列表是否是在后台渲染 */
+    fromAdmin: boolean;
     /** 子节点渲染函数，由 ArticleTreeNode 提供，只有展开时才会被调用 */
     renderChildren: () => ReactNode;
 }
 
-export default function FolderNode({ node, level, renderChildren }: FolderNodeProps) {
+export default function FolderNode({ node, level, fromAdmin, renderChildren }: FolderNodeProps) {
     // 展开状态由文件夹自己持有，文章节点完全不用关心
     const [open, setOpen] = useState(false);
     // 展开过一次之后就让子节点一直留在 DOM 里，收起时才能撑住高度做过渡动画
@@ -25,7 +27,7 @@ export default function FolderNode({ node, level, renderChildren }: FolderNodePr
 
     return (
         <>
-            <TreeRow level={level} hasArrow open={open} onClick={toggle}>
+            <TreeRow level={level} fromAdmin={fromAdmin} hasArrow open={open} onClick={toggle}>
                 {node.name ?? ''}
             </TreeRow>
 

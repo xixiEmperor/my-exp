@@ -73,6 +73,20 @@
     --shadow: 0 22px 60px rgba(33, 42, 90, 0.1);
     --shadow-sm: 0 8px 24px rgba(33, 42, 90, 0.06);
 
+    // 页面环境光，body 和吸顶工具栏共用同一层。
+    // 渐变里引用的强调色按当前主题取值，所以深色主题下不用另外再写一份。
+    --page-glow:
+        radial-gradient(
+            ellipse at 12% 0%,
+            color-mix(in srgb, var(--purple) 10%, transparent),
+            transparent 34rem
+        ),
+        radial-gradient(
+            ellipse at 92% 22%,
+            color-mix(in srgb, var(--accent) 7%, transparent),
+            transparent 32rem
+        );
+
     // 焦点环由强调色派生。强调色换了，焦点环自动跟着换。
     --ring: color-mix(in srgb, var(--accent) 66%, white);
 

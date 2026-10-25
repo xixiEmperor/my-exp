@@ -58,9 +58,9 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                 set((state) => {
                     const targetFolder = state.folders[id];
                     for (let n of nodes) {
-                        // if (targetFolder.children.some((item) => item.id === n.id)) {
-                        //     return;
-                        // }
+                        if (targetFolder.children.some((item) => item.id === n.id)) {
+                            continue;
+                        }
                         // 直接整条塞进去，name、parentId 这些展示要用的字段不能丢
                         targetFolder.children.push(n);
                     }

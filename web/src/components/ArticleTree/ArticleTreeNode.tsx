@@ -7,6 +7,8 @@ export interface ArticleTreeNodeProps {
     node: FolderNodeData;
     /** 节点所在层级，从 0 开始，用来计算缩进 */
     level: number;
+    /** 当前文件列表是否是在后台渲染 */
+    fromAdmin: boolean;
     /** 文件夹展开时触发，返回该文件夹的子节点 */
     onFolderClick?: (node: FolderNodeData) => Array<FolderNodeData>;
     /** 文章被点击时的回调，会随递归一直往下传 */
@@ -21,6 +23,7 @@ export function isFolderNode(node: FolderNodeData): boolean {
 export default function ArticleTreeNode({
     node,
     level,
+    fromAdmin,
     onFolderClick,
     onArticleClick,
 }: ArticleTreeNodeProps) {
@@ -32,6 +35,7 @@ export default function ArticleTreeNode({
                 <FolderNode
                     node={node}
                     level={level}
+                    fromAdmin={fromAdmin}
                     // 用函数延迟到展开时再取子节点，避免一进页面就把整棵树都请求一遍
                     renderChildren={() =>
                         // 回调没传时当作空文件夹处理，避免展开时直接报错
@@ -39,6 +43,7 @@ export default function ArticleTreeNode({
                             <ArticleTreeNode
                                 key={child.id}
                                 node={child}
+                                fromAdmin={fromAdmin}
                                 level={level + 1}
                                 onFolderClick={onFolderClick}
                                 onArticleClick={onArticleClick}
@@ -47,7 +52,12 @@ export default function ArticleTreeNode({
                     }
                 />
             ) : (
-                <ArticleNode node={node} level={level} onArticleClick={onArticleClick} />
+                <ArticleNode
+                    node={node}
+                    level={level}
+                    fromAdmin={fromAdmin}
+                    onArticleClick={onArticleClick}
+                />
             )}
         </li>
     );

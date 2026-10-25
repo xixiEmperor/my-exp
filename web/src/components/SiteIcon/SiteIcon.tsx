@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import {
     ArrowDown,
     ArrowLeft,
@@ -39,6 +40,12 @@ import {
     FolderClosed,
     File,
     UserRoundPen,
+    FilePlus,
+    FolderPlus,
+    FolderPen,
+    Save,
+    SavePen,
+    Send,
     type LucideIcon,
 } from 'lucide-react';
 import styles from './SiteIcon.module.scss';
@@ -86,17 +93,50 @@ const icons = {
     folder: FolderClosed,
     file: File,
     admin: UserRoundPen,
+    createFile: FilePlus,
+    createFolder: FolderPlus,
+    renameFile: SavePen,
+    renameFolder: FolderPen,
+
+    // 编辑器工具栏用：存草稿和发布各留一个语义化的名字
+    save: Save,
+    publish: Send,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;
 
 interface Props {
     name: IconName;
+    /** 调用方追加的类名，用来覆盖 .icon 管不到的颜色、间距等样式 */
+    className?: string;
+    /** 图标边长，数字按 px 处理，字符串会原样透传给 CSS，不传沿用 .icon 里的 20px */
+    size?: number | string;
+    /** 线宽，不传沿用 .icon 里的默认值 */
+    strokeWidth?: number;
+    /** 行内样式，优先级最高，留给个别需要微调的位置 */
+    style?: CSSProperties;
 }
 
 // 无障碍名称一律由外层控件提供，图标本身对读屏隐藏。
-export default function SiteIcon({ name }: Props) {
+export default function SiteIcon({ name, className, size, strokeWidth, style }: Props) {
     const Icon = icons[name];
 
-    return <Icon className={styles.icon} aria-hidden="true" focusable="false" />;
+    // 尺寸和线宽通过 CSS 变量下发，让调用方既能用 props 控制，
+    // 也能继续用外部样式覆盖，不用和 .icon 里的默认值抢优先级
+    const vars: Record<string, string> = {};
+    if (size !== undefined) {
+        vars['--icon-size'] = typeof size === 'number' ? `${size}px` : size;
+    }
+    if (strokeWidth !== undefined) {
+        vars['--icon-stroke'] = String(strokeWidth);
+    }
+
+    return (
+        <Icon
+            className={className ? `${styles.icon} ${className}` : styles.icon}
+            style={{ ...vars, ...style } as CSSProperties}
+            aria-hidden="true"
+            focusable="false"
+        />
+    );
 }

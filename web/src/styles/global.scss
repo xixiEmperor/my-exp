@@ -34,18 +34,8 @@ body {
     color: var(--ink);
     background-color: var(--bg);
     // 两层很淡的径向光晕，给主题色一点环境光。旧浏览器不支持 color-mix 时会被忽略，
-    // 只留下纯色底，不影响可读性。
-    background-image:
-        radial-gradient(
-            ellipse at 12% 0%,
-            color-mix(in srgb, var(--purple) 10%, transparent),
-            transparent 34rem
-        ),
-        radial-gradient(
-            ellipse at 92% 22%,
-            color-mix(in srgb, var(--accent) 7%, transparent),
-            transparent 32rem
-        );
+    // 只留下纯色底，不影响可读性。渐变收在令牌里，吸顶工具栏要复用同一层。
+    background-image: var(--page-glow);
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     transition:

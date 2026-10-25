@@ -42,6 +42,7 @@ export default function AdminIndex() {
                 bottom={
                     <ArticleTree
                         data={rootNodes}
+                        fromAdmin={true}
                         // 文件夹展开时按需加载下一层，结果写回 store 后组件会跟着重渲染
                         onFolderClick={(node) => find(node.id, node.name!, node.parentId)}
                         onArticleClick={handleArticleClick}

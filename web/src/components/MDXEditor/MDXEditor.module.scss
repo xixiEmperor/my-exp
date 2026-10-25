@@ -2,13 +2,23 @@
     min-width: 0;
 }
 
-// 编辑器上方的一条细工具栏，只在右侧放预览入口
+// 编辑器上方的工具栏，右侧依次是存草稿、发布和预览。
+// 往下翻正文时它固定在站点顶栏下沿，操作入口始终在手边。
 .bar {
+    position: sticky;
+    top: var(--header);
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 10px;
+    padding: 10px 0 12px;
+    // 吸顶后必须有实底，不然滚过去的编辑器内容会从工具栏中间透出来。
+    // 底色和页面走同一套：纯色打底，再叠一层 fixed 定位的环境光，
+    // 光晕跟着视口走，和 body 那层完全重合，看起来就是页面本身而不是另一块色。
+    background-color: var(--bg);
+    background-image: var(--page-glow);
+    background-attachment: fixed;
 }
 
 .label {
@@ -18,29 +28,81 @@
     letter-spacing: 0.1em;
 }
 
-.previewButton {
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+// 三个按钮共用尺寸、图标间距和过渡，下面的变体只负责换颜色
+.previewButton,
+.draftButton,
+.publishButton {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 7px 12px;
-    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    border: 1px solid transparent;
     border-radius: 9px;
-    color: var(--accent-deep);
-    background: var(--paper);
     font-size: 12px;
     font-weight: 800;
     transition:
         background-color 0.2s,
-        box-shadow 0.2s;
+        box-shadow 0.2s,
+        color 0.2s,
+        transform 0.2s,
+        filter 0.2s;
+
+    :global(svg) {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+.previewButton {
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+    color: var(--accent-deep);
+    background: var(--paper);
 
     &:hover {
         background: var(--accent-soft);
         box-shadow: 0 0 20px color-mix(in srgb, var(--accent) 10%, transparent);
     }
+}
 
-    :global(svg) {
-        width: 15px;
-        height: 15px;
+// 草稿是次要动作，用中性色和预览的强调色拉开层次
+.draftButton {
+    border-color: var(--line);
+    color: var(--muted);
+    background: var(--paper-2);
+
+    &:hover {
+        color: var(--ink);
+        background: var(--paper-3);
+    }
+}
+
+// 发布是主操作，和登录按钮共用同一套强调色渐变
+.publishButton {
+    color: var(--bg);
+    background: linear-gradient(115deg, var(--accent), var(--purple));
+
+    &:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.08);
+    }
+}
+
+// 窄屏放不下标签和三个按钮，让工具栏整体换行，别把按钮挤出去
+@media (max-width: 700px) {
+    .bar {
+        flex-wrap: wrap;
+    }
+
+    .toolbar {
+        width: 100%;
     }
 }
 

@@ -1,12 +1,14 @@
-// 图标只继承颜色，尺寸由组件自身或使用位置局部调整。
+// 图标只继承颜色，尺寸和线宽走 CSS 变量，调用方可以按单个图标调整。
 .icon {
-    width: 20px;
-    height: 20px;
+    width: var(--icon-size, 20px);
+    height: var(--icon-size, 20px);
     fill: none;
     stroke: currentColor;
-    stroke-width: 1.6;
+    stroke-width: var(--icon-stroke, 1.6);
     stroke-linecap: round;
     stroke-linejoin: round;
+    // svg 内部由 viewBox 自己排版，外层的 flex 属性对它没有作用，
+    // 这里保持块级并禁止在 flex 容器里被压缩
     display: block;
     flex: none;
 }

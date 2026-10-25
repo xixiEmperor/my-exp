@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { type MouseEventHandler, type ReactNode, useState } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './ArticleTree.module.scss';
 
@@ -18,21 +18,52 @@ interface TreeRowProps {
     open?: boolean;
     /** 行内的文字内容 */
     children: ReactNode;
+    /** 当前文件列表是否是在后台渲染 */
+    fromAdmin: boolean;
 }
 
 // 文件夹行和文件行共用的外壳，缩进计算和箭头占位只在这里维护一份
 export default function TreeRow({
     level,
     onClick,
+    fromAdmin,
     hasArrow = false,
     open = false,
     children,
 }: TreeRowProps) {
+    const [mouseIn, setMouseIn] = useState<boolean>(false);
+    const [renaming, setRenaming] = useState<boolean>(false);
+
+    const onEnter = () => {
+        setMouseIn(true);
+    };
+
+    const onLeave = () => {
+        setMouseIn(false);
+    };
+
+    const onCreateFile: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+    };
+    const onCreateFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+    };
+    const onRenameFile: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+        setRenaming(true);
+    };
+    const onRenameFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+        setRenaming(true);
+    };
+
     return (
         <div
             className={styles['tree-row']}
             style={{ paddingLeft: level * INDENT_STEP + INDENT_BASE }}
             onClick={onClick}
+            onMouseEnter={onEnter}
+            onMouseLeave={onLeave}
         >
             <span
                 className={`${styles['tree-arrow']} ${hasArrow ? '' : styles.placeholder} ${open ? styles.open : ''}`}
@@ -41,7 +72,50 @@ export default function TreeRow({
             </span>
             <div className={styles['tree-content']}>
                 <SiteIcon name={hasArrow ? 'folder' : 'file'}></SiteIcon>
-                <span className={styles['tree-label']}>{children}</span>
+                {renaming ? (
+                    <input
+                        onBlur={() => {
+                            setRenaming(false);
+                        }}
+                        type="text"
+                        autoFocus
+                        className={styles['tree-input']}
+                        defaultValue={children?.toString()}
+                    />
+                ) : (
+                    <span className={styles['tree-label']}>{children}</span>
+                )}
+
+                {/* 当前渲染位置处于后台，且光标进入时展示工具栏 */}
+                {mouseIn && fromAdmin && (
+                    <div className={styles['tree-toolbar']}>
+                        {/* 只有文件夹才展示创建文件夹和创建文件按钮 */}
+                        {hasArrow && !renaming && (
+                            <>
+                                <button className={styles['']} onClick={onRenameFolder}>
+                                    <SiteIcon name="renameFolder" size={18}></SiteIcon>
+                                </button>
+                                <button className={styles['']} onClick={onCreateFile}>
+                                    <SiteIcon name="createFile" size={18}></SiteIcon>
+                                </button>
+                                <button className={styles['']} onClick={onCreateFolder}>
+                                    <SiteIcon
+                                        name="createFolder"
+                                        size={19}
+                                        style={{ transform: 'translateY(1px)' }}
+                                    ></SiteIcon>
+                                </button>
+                            </>
+                        )}
+
+                        {/* 否则就只展示重命名文件按钮 */}
+                        {!hasArrow && !renaming && (
+                            <button className={styles['']} onClick={onRenameFile}>
+                                <SiteIcon name="renameFile" size={18}></SiteIcon>
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
