@@ -14,10 +14,11 @@ type ArticlesService struct {
 }
 
 type Node struct {
+	// 原来的 public_id 已合并到 id，节点和父节点统一使用 NanoID。
 	ID       string  `json:"id"`       // 节点 id，文件夹用 public_id，文章也用 public_id
 	Name     string  `json:"name"`     // 节点显示名称，文件夹是名字，文章是标题
 	Type     string  `json:"type"`     // 节点类型，folder 或 article
-	ParentID *uint64 `json:"parentId"` // 所属父节点 id，根目录为 null
+	ParentID *string `json:"parentId"` // 所属父节点 id，根目录为 null
 }
 
 func NewArticlesService(artiRepo *repository.ArticlesRepo, userRepo *repository.UsersRepo) *ArticlesService {
@@ -41,7 +42,7 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error
 	// 构造并追加进结果数组
 	for _, val := range folders {
 		node := Node{
-			ID:       val.PublicID,
+			ID:       val.ID,
 			Name:     val.Name,
 			Type:     "folder",
 			ParentID: val.ParentID,
@@ -66,7 +67,7 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) ([]Node, error
 	// 构造并追加进结果数组
 	for _, val := range articles {
 		node := Node{
-			ID:       val.PublicID,
+			ID:       val.ID,
 			Name:     val.Title,
 			Type:     "article", // 这里是文章，类型不能写成 folder
 			ParentID: val.FolderID,

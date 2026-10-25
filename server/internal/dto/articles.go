@@ -35,7 +35,7 @@ type FolderNodes struct {
 	// 名称
 	Name string `json:"name"`
 	// 所属文件夹id
-	ParentId *uint64 `json:"parentId"`
+	ParentId *string `json:"parentId"`
 }
 
 type GetFolderNodesResp = []FolderNodes

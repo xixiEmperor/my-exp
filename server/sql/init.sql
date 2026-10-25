@@ -18,10 +18,10 @@ CREATE TABLE users IF NOT EXISTS (
  
 -- 2. 文件夹表
 CREATE TABLE folders (
-  id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  public_id   CHAR(21)        NOT NULL COMMENT '对外暴露的ID（NanoID）',
+  -- 主键由应用生成，使用区分大小写的 NanoID。
+  id          CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '对外暴露的ID（NanoID）',
   name        VARCHAR(255)    NOT NULL COMMENT '文件夹名称',
-  parent_id   BIGINT UNSIGNED NULL     COMMENT '父文件夹id，NULL表示根目录',
+  parent_id   CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '父文件夹id，NULL表示根目录',
   sort_order  INT             NOT NULL DEFAULT 0 COMMENT '手动排序',
   created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -37,13 +37,13 @@ CREATE TABLE folders (
  
 -- 3. 文章表
 CREATE TABLE articles (
-  id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  public_id   CHAR(21)        NOT NULL COMMENT '对外暴露的ID（NanoID）',
+  -- 主键由应用生成，使用区分大小写的 NanoID。
+  id               CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '对外暴露的ID（NanoID）',
   title            VARCHAR(255)    NOT NULL COMMENT '标题',
   content          MEDIUMTEXT      NOT NULL COMMENT '正文',
   preview          TEXT            NULL     COMMENT '游客可读的预览部分',
   status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft' COMMENT '草稿/已发布',
-  folder_id        BIGINT UNSIGNED NULL     COMMENT '所属文件夹id，NULL表示根目录',
+  folder_id        CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '所属文件夹id，NULL表示根目录',
   views            BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文章浏览次数',
   slug             VARCHAR(255)    NULL     COMMENT '友好URL，可选',
   created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,4 +62,3 @@ CREATE TABLE articles (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci
   COMMENT = '文章表';
- 

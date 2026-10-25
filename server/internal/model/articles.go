@@ -8,23 +8,24 @@ import (
 
 // Articles 对应 articles 文章表。
 type Articles struct {
-	ID      uint64  `gorm:"column:id;primaryKey" json:"id"` // 文章主键
-	Content string  `gorm:"column:content" json:"content"`  // 正文
-	Preview *string `gorm:"column:preview" json:"preview"`  // 游客可读的预览部分，nil 表示未设置
+	Content string  `gorm:"column:content" json:"content"` // 正文
+	Preview *string `gorm:"column:preview" json:"preview"` // 游客可读的预览部分，nil 表示未设置
+	// 文章主键
+	// 主键统一由 ArticlesBasis 提供，详情和预览也返回相同的 NanoID。
 	ArticlesBasis
 }
 
 type ArticlesBrief struct {
-	PublicID string  `gorm:"column:public_id" json:"public_id"`
-	Title    string  `gorm:"column:title" json:"title"`         // 标题
-	FolderID *uint64 `gorm:"column:folder_id" json:"folder_id"` // 所属文件夹 id，nil 表示根目录
+	ID       string  `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"` // NanoID 主键
+	Title    string  `gorm:"column:title" json:"title"`                          // 标题
+	FolderID *string `gorm:"column:folder_id" json:"folder_id"`                  // 所属文件夹 id，nil 表示根目录
 }
 
 type ArticlesBasis struct {
-	PublicID       string         `gorm:"column:public_id" json:"public_id"`                              // 文章真正的ID（nanoid）
+	ID             string         `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"`             // 文章真正的ID（nanoid）
 	Title          string         `gorm:"column:title" json:"title"`                                      // 标题
 	Status         string         `gorm:"column:status" json:"status"`                                    // 文章状态：draft 为草稿，published 为已发布
-	FolderID       *uint64        `gorm:"column:folder_id" json:"folder_id"`                              // 所属文件夹 id，nil 表示根目录
+	FolderID       *string        `gorm:"column:folder_id" json:"folder_id"`                              // 所属文件夹 id，nil 表示根目录
 	Views          uint64         `gorm:"column:views" json:"views"`                                      // 文章浏览量
 	Slug           *string        `gorm:"column:slug" json:"slug"`                                        // 友好 URL，nil 表示未设置
 	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at"`                            // 创建时间

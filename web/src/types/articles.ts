@@ -29,7 +29,7 @@ export interface Folder {
 
 export interface Article {
     /** 文章 id */
-    public_id: string;
+    id: string;
     /** 文章标题 */
     title: string;
     /** 文章内容 */
