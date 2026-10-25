@@ -15,7 +15,7 @@ func registerArticleRouter(
 	folder.GET("/children", handler.GetFolderNodes)
 
 	admin := parent.Group("/articles", middlewares.VerifyToken())
-	admin.POST("/create")
+	admin.POST("/create", handler.CreateArticleOrFolder)
 
 	publicArticles := parent.Group("/articles", middlewares.OptionalAuth())
 	publicArticles.GET("/content", handler.GetArticles)

@@ -1,19 +1,11 @@
 package dto
 
-// 新建文章请求体
-type CreateArticleReq struct {
+// 新建文章 / 文件夹请求体
+type CreateArticleOrFolderReq struct {
 	// 所属文件夹的id
-	FolderId string
-	// 文章标题
-	Title string
-}
-
-// 新建文件夹请求体
-type CreateFolderReq struct {
-	// 所属文件夹的id
-	ParentId string
-	// 文件夹名称
-	Name string
+	FolderId string `json:"folder_id"`
+	// 具体要新建的类型: article | folder
+	Type string `json:"type"`
 }
 
 // 保存文章请求体
@@ -29,13 +21,13 @@ type SaveArticleReq struct {
 // 文件夹子节点类型
 type FolderNodes struct {
 	// 文件夹或文章id
-	Id string `json:"id"`
+	ID string `json:"id"`
 	// 节点类型：文件夹 或 文章
 	Type string `json:"type"`
 	// 名称
 	Name string `json:"name"`
 	// 所属文件夹id
-	ParentId *string `json:"parentId"`
+	ParentID *string `json:"parentId"`
 }
 
 type GetFolderNodesResp = []FolderNodes
