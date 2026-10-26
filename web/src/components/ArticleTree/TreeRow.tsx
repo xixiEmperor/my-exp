@@ -1,6 +1,7 @@
 import { type MouseEventHandler, type ReactNode, useState } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './ArticleTree.module.scss';
+import { useArticles } from '@/hooks/useArticles';
 
 /** 每往下一层增加的缩进距离 */
 const INDENT_STEP = 16;
@@ -20,6 +21,8 @@ interface TreeRowProps {
     children: ReactNode;
     /** 当前文件列表是否是在后台渲染 */
     fromAdmin: boolean;
+    /** 当前渲染的文件夹 id */
+    folderId?: string;
 }
 
 // 文件夹行和文件行共用的外壳，缩进计算和箭头占位只在这里维护一份
@@ -30,9 +33,12 @@ export default function TreeRow({
     hasArrow = false,
     open = false,
     children,
+    folderId,
 }: TreeRowProps) {
     const [mouseIn, setMouseIn] = useState<boolean>(false);
     const [renaming, setRenaming] = useState<boolean>(false);
+
+    const { createNodeRequest } = useArticles();
 
     const onEnter = () => {
         setMouseIn(true);
@@ -42,11 +48,13 @@ export default function TreeRow({
         setMouseIn(false);
     };
 
-    const onCreateFile: MouseEventHandler<HTMLButtonElement> = (e) => {
+    const onCreateArticle: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
+        createNodeRequest.run(folderId!, 'article');
     };
     const onCreateFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
+        createNodeRequest.run(folderId!, 'folder');
     };
     const onRenameFile: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
@@ -61,6 +69,7 @@ export default function TreeRow({
         <div
             className={styles['tree-row']}
             style={{ paddingLeft: level * INDENT_STEP + INDENT_BASE }}
+            title={children?.toString()}
             onClick={onClick}
             onMouseEnter={onEnter}
             onMouseLeave={onLeave}
@@ -92,13 +101,25 @@ export default function TreeRow({
                         {/* 只有文件夹才展示创建文件夹和创建文件按钮 */}
                         {hasArrow && !renaming && (
                             <>
-                                <button className={styles['']} onClick={onRenameFolder}>
+                                <button
+                                    className={styles['']}
+                                    onClick={onRenameFolder}
+                                    title="重命名"
+                                >
                                     <SiteIcon name="renameFolder" size={18}></SiteIcon>
                                 </button>
-                                <button className={styles['']} onClick={onCreateFile}>
+                                <button
+                                    className={styles['']}
+                                    onClick={onCreateArticle}
+                                    title="创建文章"
+                                >
                                     <SiteIcon name="createFile" size={18}></SiteIcon>
                                 </button>
-                                <button className={styles['']} onClick={onCreateFolder}>
+                                <button
+                                    className={styles['']}
+                                    onClick={onCreateFolder}
+                                    title="创建文件夹"
+                                >
                                     <SiteIcon
                                         name="createFolder"
                                         size={19}

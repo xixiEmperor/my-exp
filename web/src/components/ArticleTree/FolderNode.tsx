@@ -27,7 +27,14 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
 
     return (
         <>
-            <TreeRow level={level} fromAdmin={fromAdmin} hasArrow open={open} onClick={toggle}>
+            <TreeRow
+                level={level}
+                fromAdmin={fromAdmin}
+                hasArrow
+                open={open}
+                folderId={node.id}
+                onClick={toggle}
+            >
                 {node.name ?? ''}
             </TreeRow>
 

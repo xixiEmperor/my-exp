@@ -1,13 +1,12 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
-import type {
-    Folder,
-    Article,
-    FolderStatus,
-    GetFolderChildrenResp,
-    NodeType,
-} from '@/types/articles';
+import type { Folder, Article, FolderStatus, GetFolderChildrenResp } from '@/types/articles';
+
+interface Options {
+    status?: FolderStatus;
+    folderName?: string;
+}
 
 interface ArticlesStoreState {
     /** 文章实体映射，某个 id 有实体就说明详情已经缓存过 */
@@ -17,8 +16,8 @@ interface ArticlesStoreState {
 
     /** 文章详情写入缓存 */
     setArticle: (id: string, article: Article) => void;
-    /** 文件夹状态设置 */
-    setFolderStatus: (id: string, status: FolderStatus) => void;
+    /** 文件夹映射更新 */
+    setFolderStatus: (id: string, options: Options) => void;
     /** 文件夹子节点追加 */
     appendFolderNodes: (id: string, nodes: GetFolderChildrenResp) => void;
     /** 文件夹初始化 */
@@ -47,10 +46,10 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                 });
             },
 
-            setFolderStatus: (id, status) => {
+            setFolderStatus: (id, options) => {
                 set((state) => {
                     const targetFolder = state.folders[id];
-                    targetFolder.status = status;
+                    Object.assign(targetFolder, options);
                 });
             },
 
