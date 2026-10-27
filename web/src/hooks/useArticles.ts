@@ -1,4 +1,5 @@
 import { useArticlesStore } from '@/stores/articles';
+import { useDraftStore } from '@/stores/draft';
 import { getFolderChildren, getArticleDetail, createArticleOrFolder } from '@/api/articles';
 import { useRequest } from './useRequest';
 import type { Article, FolderNode, NodeType } from '@/types/articles';
@@ -10,6 +11,7 @@ export function useArticles() {
     // 方法引用稳定，直接从 getState 解构，不参与订阅
     const { initFolder, setFolderStatus, appendFolderNodes, setArticle } =
         useArticlesStore.getState();
+    const { getDraft } = useDraftStore.getState();
 
     // 渲染要用的源数据只订阅这一个字段，选择器里不生成新对象
     const folders = useArticlesStore((state) => state.folders);
@@ -126,9 +128,20 @@ export function useArticles() {
     };
 
     /** 找文章详情的聚合函数，缓存命中直接返回，没有缓存就发起请求 */
-    const findArticle = (id: string) => {
+    const findArticle = (id: string, fromAticle?: boolean) => {
         // 回调执行时重新取最新状态，避免使用渲染时捕获的旧快照
         const { articles } = useArticlesStore.getState();
+
+        // 0. 如果是在后台渲染，需要先查找是否有本地缓存
+        if (fromAticle) {
+            // 缓存里只有服务端内容，本地草稿更新时补齐一次。
+            // 写回后两边内容一致，下次调用不会重复更新，不会引起循环渲染
+            const cached = getDraft(id);
+
+            if (cached) {
+                return cached;
+            }
+        }
 
         // 1. zustand 里有这篇文章的实体，就说明缓存过，直接返回
         if (articles[id]) {
