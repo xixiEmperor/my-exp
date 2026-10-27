@@ -11,8 +11,8 @@
     .tree-row {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 6px 0;
+        gap: 8px;
+        padding: 4px 0;
         cursor: pointer;
         user-select: none;
 
@@ -30,6 +30,7 @@
 
             // 文件夹名和文章标题共用，过长时省略，避免把行撑宽
             .tree-label {
+                font-size: 15px;
                 flex: 1;
                 overflow: hidden;
                 white-space: nowrap;
@@ -62,7 +63,7 @@
     /* 箭头旋转 */
     .tree-arrow {
         display: inline-block;
-        font-size: 10px;
+        font-size: 8px;
         transition: transform 0.2s ease;
 
         // 展开状态下箭头转 90 度

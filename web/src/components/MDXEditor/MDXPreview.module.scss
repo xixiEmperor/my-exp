@@ -1,0 +1,100 @@
+// 预览页。半透明遮罩加一层模糊，底下编辑器的轮廓还在，但不会被误触
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    padding: 28px;
+    background: color-mix(in srgb, #05080f 62%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+// 预览主体铺满可视区的大部分空间，正文和目录沿用阅读页的两列结构
+.modal {
+    display: flex;
+    flex-direction: column;
+    width: min(1180px, 100%);
+    max-height: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.modalHead {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px 12px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-2);
+}
+
+.modalTitle {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+}
+
+.closeButton {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    color: var(--muted);
+    transition:
+        color 0.2s,
+        background-color 0.2s;
+
+    &:hover {
+        color: var(--ink);
+        background: var(--paper-3);
+    }
+
+    :global(svg) {
+        width: 17px;
+        height: 17px;
+    }
+}
+
+.modalBody {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 168px;
+    align-items: start;
+    gap: 40px;
+    padding: 30px 32px 64px;
+    overflow: auto;
+    min-height: 0;
+}
+
+.article {
+    min-width: 0;
+}
+
+// 预览页的滚动容器是弹层本身，目录的吸顶位置要从页面顶栏改成容器顶部
+.modalBody :global(nav[aria-label='文章目录']) {
+    top: 0;
+}
+
+@media (max-width: 1100px) {
+    .modalBody {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    .overlay {
+        padding: 12px;
+    }
+
+    .modalBody {
+        padding: 20px 18px 40px;
+    }
+}

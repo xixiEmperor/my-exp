@@ -80,7 +80,7 @@ export default function TreeRow({
                 ▶
             </span>
             <div className={styles['tree-content']}>
-                <SiteIcon name={hasArrow ? 'folder' : 'file'}></SiteIcon>
+                <SiteIcon name={hasArrow ? 'folder' : 'file'} size={14}></SiteIcon>
                 {renaming ? (
                     <input
                         onBlur={() => {
@@ -106,14 +106,14 @@ export default function TreeRow({
                                     onClick={onRenameFolder}
                                     title="重命名"
                                 >
-                                    <SiteIcon name="renameFolder" size={18}></SiteIcon>
+                                    <SiteIcon name="renameFolder" size={14}></SiteIcon>
                                 </button>
                                 <button
                                     className={styles['']}
                                     onClick={onCreateArticle}
                                     title="创建文章"
                                 >
-                                    <SiteIcon name="createFile" size={18}></SiteIcon>
+                                    <SiteIcon name="createFile" size={14}></SiteIcon>
                                 </button>
                                 <button
                                     className={styles['']}
@@ -122,7 +122,7 @@ export default function TreeRow({
                                 >
                                     <SiteIcon
                                         name="createFolder"
-                                        size={19}
+                                        size={15}
                                         style={{ transform: 'translateY(1px)' }}
                                     ></SiteIcon>
                                 </button>
@@ -132,7 +132,7 @@ export default function TreeRow({
                         {/* 否则就只展示重命名文件按钮 */}
                         {!hasArrow && !renaming && (
                             <button className={styles['']} onClick={onRenameFile}>
-                                <SiteIcon name="renameFile" size={18}></SiteIcon>
+                                <SiteIcon name="renameFile" size={14}></SiteIcon>
                             </button>
                         )}
                     </div>
