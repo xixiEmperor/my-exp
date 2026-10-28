@@ -13,12 +13,12 @@ func registerArticleRouter(
 	handler *handler.ArticlesHandler,
 	userService *service.UsersService,
 ) {
-	folder := parent.Group("/folder", middlewares.OptionalAuth())
+	folder := parent.Group("/folder", middlewares.OptionalAuth(userService))
 	folder.GET("/children", handler.GetFolderNodes)
 
 	admin := parent.Group("/articles", middlewares.MustLogin(), middlewares.RequireAdmin(userService))
 	admin.POST("/create", handler.CreateArticleOrFolder)
 
-	publicArticles := parent.Group("/articles", middlewares.OptionalAuth())
+	publicArticles := parent.Group("/articles", middlewares.OptionalAuth(userService))
 	publicArticles.GET("/content", handler.GetArticles)
 }

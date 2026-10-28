@@ -1,5 +1,6 @@
 package constant
 
 const (
-	CtxUserID = "user_id"
+	CtxUserID   = "user_id"
+	CtxUserInfo = "user_info"
 )

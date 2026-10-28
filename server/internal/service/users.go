@@ -26,6 +26,11 @@ func (u *UsersService) FindUser(ctx context.Context, openid string) (*model.User
 	return u.repo.FindUserByOpenID(ctx, openid)
 }
 
+// 根据 id 查找用户信息
+func (u *UsersService) FindUserByID(ctx context.Context, id uint64) (*model.Users, error) {
+	return u.repo.FindUserByID(ctx, id)
+}
+
 // FindOrCreateUser 把首次使用时自动创建用户的业务规则留在 service。
 func (u *UsersService) FindOrCreateUser(ctx context.Context, openid string) (*model.Users, error) {
 	// 新用户与已有用户返回相同类型，认证流程不必再额外查询资料。

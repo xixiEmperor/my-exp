@@ -10,6 +10,7 @@ import (
 	"zhiye/server/internal/apperr"
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/model"
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -20,8 +21,9 @@ const (
 	TokenCookieName = "token"
 )
 
-type RoleReader interface {
+type UserInfoReader interface {
 	GetRole(ctx context.Context, id uint64) (string, error)
+	FindUserByID(ctx context.Context, id uint64) (*model.Users, error)
 }
 
 // extractToken 按优先级取出令牌。
@@ -78,7 +80,7 @@ func MustLogin() gin.HandlerFunc {
 //   - 没带 token：视为游客，放行
 //   - 带了有效 token：写入 user_id 后放行
 //   - 带了无效或过期的 token：返回 401，让前端能感知并刷新/重新登录
-func OptionalAuth() gin.HandlerFunc {
+func OptionalAuth(s UserInfoReader) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, hasHeader := extractToken(c)
 
@@ -100,10 +102,13 @@ func OptionalAuth() gin.HandlerFunc {
 			return
 		}
 
+		// 能到这里说明已经能拿到用户 id，直接去查找用户信息
+		user, _ := s.FindUserByID(c, info.UserID)
+
 		ctx := context.WithValue(
 			c.Request.Context(),
-			cons.CtxUserID,
-			info.UserID,
+			cons.CtxUserInfo,
+			user,
 		)
 		c.Request = c.Request.WithContext(ctx)
 
@@ -112,7 +117,7 @@ func OptionalAuth() gin.HandlerFunc {
 }
 
 // 鉴权中间件
-func RequireAdmin(s RoleReader) gin.HandlerFunc {
+func RequireAdmin(s UserInfoReader) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 鉴权中间件只配合必须登录中间件一起使用，能走到这里，说明一定有userId
 		userId, _ := c.Request.Context().Value(cons.CtxUserID).(uint64)

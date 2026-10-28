@@ -48,15 +48,11 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) (dto.GetFolder
 	}
 
 	// 再找文章节点
-	// 找之前需要判断用户角色，先从上下文中获取中间件设置的user_id，用于查询用户身份
-	user_id, ok := c.Value(cons.CtxUserID).(uint64)
-	user, err := s.userRepo.FindUserByID(c, user_id)
-	if err != nil {
-		return nil, err
-	}
+	// 找之前需要判断用户角色，直接从上下文中获取用户信息
+	userInfo, ok := c.Value(cons.CtxUserInfo).(*model.Users)
 
 	// 如果未登录或用户角色不为管理员，则不返回草稿文章
-	articles, err := s.artiRepo.FindArticlesByID(c, id, !ok || user.Role != "admin")
+	articles, err := s.artiRepo.FindArticlesByID(c, id, !ok || userInfo.Role != "admin")
 	if err != nil {
 		return nil, err
 	}
