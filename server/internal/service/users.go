@@ -44,3 +44,8 @@ func (u *UsersService) FindOrCreateUser(ctx context.Context, openid string) (*mo
 	}
 	return u.repo.CreateUser(ctx, openid, hex.EncodeToString(bytes[:]))
 }
+
+// 获取用户角色信息
+func (u *UsersService) GetRole(ctx context.Context, id uint64) (string, error) {
+	return u.repo.FindRole(ctx, id)
+}

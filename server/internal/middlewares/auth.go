@@ -20,6 +20,10 @@ const (
 	TokenCookieName = "token"
 )
 
+type RoleReader interface {
+	GetRole(ctx context.Context, id uint64) (string, error)
+}
+
 // extractToken 按优先级取出令牌。
 // 先看 Authorization 头，兼容第三方或者调试时直接带 Bearer 的调用；
 // 头里没带的话再读 HttpOnly Cookie，浏览器会自动附带，前端拿不到明文也没关系。
@@ -42,7 +46,7 @@ func extractToken(c *gin.Context) (string, bool) {
 	return strings.TrimSpace(cookie), false
 }
 
-func VerifyToken() gin.HandlerFunc {
+func MustLogin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, _ := extractToken(c)
 		if token == "" {
@@ -102,6 +106,35 @@ func OptionalAuth() gin.HandlerFunc {
 			info.UserID,
 		)
 		c.Request = c.Request.WithContext(ctx)
+
+		c.Next()
+	}
+}
+
+// 鉴权中间件
+func RequireAdmin(s RoleReader) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 鉴权中间件只配合必须登录中间件一起使用，能走到这里，说明一定有userId
+		userId, _ := c.Request.Context().Value(cons.CtxUserID).(uint64)
+
+		// 拿到用户身份
+		role, err := s.GetRole(c, userId)
+		if err != nil {
+			c.AbortWithStatusJSON(
+				http.StatusInternalServerError,
+				dto.Fail(cons.WithoutToken, "后台服务错误"),
+			)
+			return
+		}
+
+		// 如果用户身份不是admin，直接拒绝请求
+		if role != "admin" {
+			c.AbortWithStatusJSON(
+				http.StatusForbidden,
+				dto.Fail(cons.WithoutToken, "无权限"),
+			)
+			return
+		}
 
 		c.Next()
 	}

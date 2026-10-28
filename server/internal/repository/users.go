@@ -75,3 +75,12 @@ func (u *UsersRepo) CreateUser(ctx context.Context, openid, name string) (*model
 	}
 	return &user, nil
 }
+
+func (u *UsersRepo) FindRole(ctx context.Context, id uint64) (string, error) {
+	var role string
+	err := u.db.WithContext(ctx).Model(model.Users{}).Select("role").Where("id = ?", id).Take(&role).Error
+	if err != nil {
+		return "", err
+	}
+	return role, nil
+}

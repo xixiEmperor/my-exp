@@ -68,12 +68,12 @@ func run() error {
 	// 4. 创建装配后的路由，跨域配置随路由一起传入，保证中间件先于路由挂载。
 	// 前端 dev server 监听在 127.0.0.1，和 localhost 属于不同的源，两个都要放行。
 	engine := router.NewRouterGroup(authHandler, articleHandler, cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:5173"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:5174"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-	})
+	}, userService)
 
 	// 本地默认使用 8080 端口，需要调整时通过 PORT 环境变量指定。
 	port := cfg.Port
