@@ -15,60 +15,25 @@ import (
 
 type ArticlesService struct {
 	artiRepo *repository.ArticlesRepo
-	userRepo *repository.UsersRepo
 }
 
-func NewArticlesService(artiRepo *repository.ArticlesRepo, userRepo *repository.UsersRepo) *ArticlesService {
+func NewArticlesService(artiRepo *repository.ArticlesRepo) *ArticlesService {
 	return &ArticlesService{
 		artiRepo: artiRepo,
-		userRepo: userRepo,
 	}
 }
 
-// 查找文件夹的所有子节点，需要处理管理员，游客登录两种情况，区分文章是否为草稿状态
-func (s *ArticlesService) FindNodes(c context.Context, id string) (dto.GetFolderNodesResp, error) {
-	// 初始化结果数组
-	var nodes dto.GetFolderNodesResp
-
-	// 先找文件夹节点
-	folders, err := s.artiRepo.FindFoldersByID(c, id)
+// GetArticlesByFolderID 只查询文章，草稿权限由业务层决定。
+func (s *ArticlesService) GetArticlesByFolderID(c context.Context, id string) (dto.GetArticlesByFolderIDResp, error) {
+	parentID, err := normalizeDirectoryID(id)
 	if err != nil {
 		return nil, err
 	}
-
-	// 构造并追加进结果数组
-	for _, val := range folders {
-		node := dto.FolderNodes{
-			ID:       val.ID,
-			Name:     val.Name,
-			Type:     "folder",
-			ParentID: val.ParentID,
-		}
-		nodes = append(nodes, node)
-	}
-
-	// 再找文章节点
 	// 找之前需要判断用户角色，直接从上下文中获取用户信息
 	userInfo, ok := c.Value(cons.CtxUserInfo).(*model.Users)
-
 	// 如果未登录或用户角色不为管理员，则不返回草稿文章
-	articles, err := s.artiRepo.FindArticlesByID(c, id, !ok || userInfo.Role != "admin")
-	if err != nil {
-		return nil, err
-	}
-
-	// 构造并追加进结果数组
-	for _, val := range articles {
-		node := dto.FolderNodes{
-			ID:       val.ID,
-			Name:     val.Title,
-			Type:     "article", // 这里是文章，类型不能写成 folder
-			ParentID: val.FolderID,
-		}
-		nodes = append(nodes, node)
-	}
-
-	return nodes, nil
+	withoutDraft := !ok || userInfo == nil || userInfo.Role != "admin"
+	return s.artiRepo.FindArticlesByFolderID(c, parentID, withoutDraft)
 }
 
 // 根据 id 查找文章相关信息，需要处理登录和未登录两种情况返回的信息
@@ -103,6 +68,12 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 
 // 创建文章
 func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (model.Articles, error) {
+	// 根目录在数据库中使用 NULL，与查询同级文章时的规则保持一致。
+	// 创建前先校验目录，根目录只在这里转换成空关联。
+	parentID, err := normalizeDirectoryID(folder_id)
+	if err != nil {
+		return model.Articles{}, err
+	}
 	// 为新文章生成21位nanoid
 	id, err := gonanoid.New()
 	if err != nil {
@@ -110,7 +81,7 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 	}
 
 	// 检查同一目录下的所有文章，草稿也需要参与名称去重。
-	articles, err := s.artiRepo.FindArticlesByID(c, folder_id, false)
+	articles, err := s.artiRepo.FindArticlesByFolderID(c, parentID, false)
 	if err != nil {
 		return model.Articles{}, err
 	}
@@ -119,12 +90,6 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 		names = append(names, article.Title)
 	}
 	title := utils.UniqueName("新建文件", names)
-
-	// 根目录在数据库中使用 NULL，与查询同级文章时的规则保持一致。
-	var parentID *string
-	if folder_id != "root" {
-		parentID = &folder_id
-	}
 
 	// 创建文章实体
 	newArticle := model.Articles{
@@ -141,45 +106,4 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 		return model.Articles{}, apperr.MySQLError
 	}
 	return newArticle, nil
-}
-
-// 创建文件夹
-func (s *ArticlesService) CreateFolder(c context.Context, folder_id string) (dto.FolderNodes, error) {
-	// 为文件夹生成与文章一致的 NanoID 主键。
-	id, err := gonanoid.New()
-	if err != nil {
-		return dto.FolderNodes{}, err
-	}
-
-	// 只检查同一父目录下的文件夹名称，复用统一的编号规则。
-	folders, err := s.artiRepo.FindFoldersByID(c, folder_id)
-	if err != nil {
-		return dto.FolderNodes{}, err
-	}
-	names := make([]string, 0, len(folders))
-	for _, folder := range folders {
-		names = append(names, folder.Name)
-	}
-
-	// 根目录使用 NULL，其他目录直接保存父文件夹的 NanoID。
-	var parentID *string
-	if folder_id != "root" {
-		parentID = &folder_id
-	}
-
-	name := utils.UniqueName("新建文件夹", names)
-	newFolder := model.Folders{
-		ID:       id,
-		Name:     name,
-		ParentID: parentID,
-	}
-	if err := s.artiRepo.CreateFolder(c, &newFolder); err != nil {
-		return dto.FolderNodes{}, apperr.MySQLError
-	}
-	return dto.FolderNodes{
-		ID:       id,
-		Name:     name,
-		Type:     "folder",
-		ParentID: &folder_id,
-	}, nil
 }

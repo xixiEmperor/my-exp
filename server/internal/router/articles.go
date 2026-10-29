@@ -12,12 +12,17 @@ func registerArticleRouter(
 	handler *handler.ArticlesHandler,
 	userService middlewares.UserInfoReader,
 ) {
-	folder := parent.Group("/folder", middlewares.OptionalAuth(userService))
-	folder.GET("/children", handler.GetFolderNodes)
+	// 需要鉴权的路由组，需要登录且身份为管理员才可调用
+	admin := parent.Group(
+		"/articles",
+		middlewares.MustLogin(),
+		middlewares.RequireAdmin(userService),
+	)
+	admin.POST("/create", handler.CreateArticle)
 
-	admin := parent.Group("/articles", middlewares.MustLogin(), middlewares.RequireAdmin(userService))
-	admin.POST("/create", handler.CreateArticleOrFolder)
-
+	// 无需管理员或可选登录即可调用
 	publicArticles := parent.Group("/articles", middlewares.OptionalAuth(userService))
-	publicArticles.GET("/content", handler.GetArticles)
+	// 目录内文章列表单独查询，草稿可见性由文章服务处理。
+	publicArticles.GET("/list", handler.GetArticlesByFolderID)
+	publicArticles.GET("/content", handler.GetArticleContent)
 }

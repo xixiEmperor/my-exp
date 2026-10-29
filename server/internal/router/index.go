@@ -13,6 +13,7 @@ import (
 func NewRouterGroup(
 	authHandler *handler.AuthHandler,
 	articleHandler *handler.ArticlesHandler,
+	folderHandler *handler.FoldersHandler,
 	corsCfg cors.Config,
 	userService middlewares.UserInfoReader,
 ) *gin.Engine {
@@ -36,6 +37,7 @@ func NewRouterGroup(
 	// 装配各部分路由
 	registerAuthRouter(api, authHandler)
 	registerArticleRouter(api, articleHandler, userService)
+	registerFolderRouter(api, folderHandler, userService)
 
 	return r
 }
