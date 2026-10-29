@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"zhiye/server/internal/handler"
-	"zhiye/server/internal/service"
+	"zhiye/server/internal/middlewares"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ func NewRouterGroup(
 	authHandler *handler.AuthHandler,
 	articleHandler *handler.ArticlesHandler,
 	corsCfg cors.Config,
-	userService *service.UsersService,
+	userService middlewares.UserInfoReader,
 ) *gin.Engine {
 	// 创建 gin 的路由引擎
 	r := gin.Default()

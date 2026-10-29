@@ -3,7 +3,6 @@ package router
 import (
 	"zhiye/server/internal/handler"
 	"zhiye/server/internal/middlewares"
-	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,7 +10,7 @@ import (
 func registerArticleRouter(
 	parent *gin.RouterGroup,
 	handler *handler.ArticlesHandler,
-	userService *service.UsersService,
+	userService middlewares.UserInfoReader,
 ) {
 	folder := parent.Group("/folder", middlewares.OptionalAuth(userService))
 	folder.GET("/children", handler.GetFolderNodes)

@@ -73,9 +73,9 @@ func (s *ArticlesService) FindNodes(c context.Context, id string) (dto.GetFolder
 
 // 根据 id 查找文章相关信息，需要处理登录和未登录两种情况返回的信息
 func (s *ArticlesService) FindArticleContent(c context.Context, article_id string) (model.ArticleContent, error) {
-	_, ok := c.Value(cons.CtxUserID).(uint64)
+	_, ok := c.Value(cons.CtxUserInfo).(*model.Users)
 
-	// 如果 context 中没有 user_id，说明没登录，则需要返回 preview 部分
+	// 如果 context 中没有 user_info，说明没登录，则需要返回 preview 部分
 	if !ok {
 		preview, err := s.artiRepo.FindArticlePreviewByID(c, article_id)
 		if err != nil {
