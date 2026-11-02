@@ -1,7 +1,7 @@
 import { type MouseEventHandler, type ReactNode, useState } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import styles from './ArticleTree.module.scss';
-import { useArticles } from '@/hooks/useArticles';
+import { useArticleTree } from '@/hooks/useArticleTree';
 
 /** 每往下一层增加的缩进距离 */
 const INDENT_STEP = 16;
@@ -38,7 +38,7 @@ export default function TreeRow({
     const [mouseIn, setMouseIn] = useState<boolean>(false);
     const [renaming, setRenaming] = useState<boolean>(false);
 
-    const { createNodeRequest } = useArticles();
+    const { createArticleRequest, createFolderRequest } = useArticleTree();
 
     const onEnter = () => {
         setMouseIn(true);
@@ -50,11 +50,11 @@ export default function TreeRow({
 
     const onCreateArticle: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
-        createNodeRequest.run(folderId!, 'article');
+        createArticleRequest.run(folderId!);
     };
     const onCreateFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
-        createNodeRequest.run(folderId!, 'folder');
+        createFolderRequest.run(folderId!);
     };
     const onRenameFile: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
@@ -111,6 +111,7 @@ export default function TreeRow({
                                 <button
                                     className={styles['']}
                                     onClick={onCreateArticle}
+                                    disabled={createArticleRequest.loading}
                                     title="创建文章"
                                 >
                                     <SiteIcon name="createFile" size={14}></SiteIcon>
@@ -118,6 +119,7 @@ export default function TreeRow({
                                 <button
                                     className={styles['']}
                                     onClick={onCreateFolder}
+                                    disabled={createFolderRequest.loading}
                                     title="创建文件夹"
                                 >
                                     <SiteIcon

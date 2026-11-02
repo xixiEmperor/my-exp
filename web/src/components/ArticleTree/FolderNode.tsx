@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import styles from './ArticleTree.module.scss';
 import TreeRow from './TreeRow';
-import type { FolderNode as FolderNodeData } from '@/types/articles';
+import { useArticlesStore } from '@/stores/articles';
+import { useArticleTree } from '@/hooks/useArticleTree';
+import type { TreeNode as FolderNodeData } from '@/types/article-tree';
 
 interface FolderNodeProps {
     /** 文件夹节点数据，只有 id、type、name 这些轻量信息 */
@@ -15,8 +17,12 @@ interface FolderNodeProps {
 }
 
 export default function FolderNode({ node, level, fromAdmin, renderChildren }: FolderNodeProps) {
+    const status = useArticlesStore((state) => state.folders[node.id]?.status);
+    const { folderChildrenRequest } = useArticleTree();
+
     // 展开状态由文件夹自己持有，文章节点完全不用关心
     const [open, setOpen] = useState(false);
+
     // 展开过一次之后就让子节点一直留在 DOM 里，收起时才能撑住高度做过渡动画
     const [mounted, setMounted] = useState(false);
 
@@ -43,6 +49,18 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
                 <ul className={styles['tree-children']} role="group">
                     {/* 第一次展开之前不渲染，也就不会触发 find 请求；之后一直保留 */}
                     {mounted ? renderChildren() : null}
+                    {/* 加载失败时通过明确操作重试，避免渲染过程中反复发送请求。 */}
+                    {open && status === 'error' && (
+                        <li>
+                            <button
+                                onClick={() => {
+                                    void folderChildrenRequest.run(node.id);
+                                }}
+                            >
+                                重试加载目录
+                            </button>
+                        </li>
+                    )}
                 </ul>
             </div>
         </>

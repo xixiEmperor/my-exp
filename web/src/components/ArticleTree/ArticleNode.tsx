@@ -1,15 +1,15 @@
 import TreeRow from './TreeRow';
-import type { FolderNode } from '@/types/articles';
+import type { TreeNode } from '@/types/article-tree';
 
 interface ArticleNodeProps {
     /** 文章节点数据，只有 id、type、name 这些轻量信息 */
-    node: FolderNode;
+    node: TreeNode;
     /** 节点所在层级，从 0 开始，用来计算缩进 */
     level: number;
     /** 当前文件列表是否是在后台渲染 */
     fromAdmin: boolean;
     /** 点击这一行时触发 */
-    onArticleClick?: (node: FolderNode) => void;
+    onArticleClick?: (node: TreeNode) => void;
 }
 
 export default function ArticleNode({ node, level, fromAdmin, onArticleClick }: ArticleNodeProps) {

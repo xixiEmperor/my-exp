@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
-import type { Folder, Article, FolderStatus, GetFolderChildrenResp } from '@/types/articles';
+import type { Article } from '@/types/articles';
+import type { Folder, FolderStatus } from '@/types/folders';
+import type { TreeNode } from '@/types/article-tree';
 
 interface Options {
     status?: FolderStatus;
@@ -19,7 +21,9 @@ interface ArticlesStoreState {
     /** 文件夹映射更新 */
     setFolderStatus: (id: string, options: Options) => void;
     /** 文件夹子节点追加 */
-    appendFolderNodes: (id: string, nodes: GetFolderChildrenResp) => void;
+    appendFolderNodes: (id: string, nodes: TreeNode[]) => void;
+    /** 完整目录查询替换子节点，不改变加载状态 */
+    setFolderNodes: (id: string, nodes: TreeNode[]) => void;
     /** 文件夹初始化 */
     initFolder: (id: string, name: string, parentId: string | null) => void;
 }
@@ -56,13 +60,26 @@ export const useArticlesStore = create<ArticlesStoreState>()(
             appendFolderNodes: (id, nodes) => {
                 set((state) => {
                     const targetFolder = state.folders[id];
-                    for (let n of nodes) {
-                        if (targetFolder.children.some((item) => item.id === n.id)) {
-                            continue;
+
+                    nodes.forEach((n) => {
+                        if (
+                            targetFolder.children.some(
+                                (item) => item.id === n.id && item.type === n.type,
+                            )
+                        ) {
+                            return;
                         }
+
                         // 直接整条塞进去，name、parentId 这些展示要用的字段不能丢
                         targetFolder.children.push(n);
-                    }
+                    });
+                });
+            },
+
+            setFolderNodes: (id, nodes) => {
+                set((state) => {
+                    // 只有两类查询都成功时才替换完整目录。
+                    state.folders[id].children = nodes;
                 });
             },
 

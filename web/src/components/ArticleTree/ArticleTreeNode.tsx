@@ -1,6 +1,6 @@
 import ArticleNode from './ArticleNode';
 import FolderNode from './FolderNode';
-import type { FolderNode as FolderNodeData } from '@/types/articles';
+import type { TreeNode as FolderNodeData } from '@/types/article-tree';
 
 export interface ArticleTreeNodeProps {
     /** 当前要渲染的节点，只是轻量引用，完整数据存在 zustand 里 */
@@ -36,12 +36,11 @@ export default function ArticleTreeNode({
                     node={node}
                     level={level}
                     fromAdmin={fromAdmin}
-                    // 用函数延迟到展开时再取子节点，避免一进页面就把整棵树都请求一遍
                     renderChildren={() =>
                         // 回调没传时当作空文件夹处理，避免展开时直接报错
                         (onFolderClick?.(node) ?? []).map((child) => (
                             <ArticleTreeNode
-                                key={child.id}
+                                key={child.type + child.id}
                                 node={child}
                                 fromAdmin={fromAdmin}
                                 level={level + 1}
