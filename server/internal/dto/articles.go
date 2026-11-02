@@ -9,13 +9,13 @@ type CreateArticleReq struct {
 }
 
 // 保存文章请求体
-type SaveArticleReq struct {
+type UpdateArticleReq struct {
 	// 文章标题
-	Title string
+	ID string `json:"id"`
 	// 文章内容
-	Content string
+	Content string `json:"content"`
 	// 文章状态
-	Status string
+	Status string `json:"status"`
 }
 
 // GetArticlesByFolderIDResp 只包含文章简要信息。

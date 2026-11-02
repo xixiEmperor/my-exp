@@ -2,12 +2,21 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
 
 	"gorm.io/gorm"
 )
+
+type ArticleUpdate struct {
+	Content     *string
+	Preview     *string
+	Status      *string
+	Slug        *string
+	PublishedAt *time.Time
+}
 
 type ArticlesRepo struct {
 	db *gorm.DB
@@ -90,4 +99,42 @@ func (repo *ArticlesRepo) FindArticlesByName(c context.Context, name string) ([]
 // 根据父文件夹 id 创建文章
 func (repo *ArticlesRepo) CreateArticle(c context.Context, article *model.Articles) error {
 	return repo.db.WithContext(c).Create(article).Error
+}
+
+// 部分更新文章内容
+func (repo *ArticlesRepo) UpdateArticle(c context.Context, article_id string, options ArticleUpdate) error {
+	fields := map[string]any{}
+
+	if options.Content != nil {
+		fields["content"] = *options.Content
+	}
+	if options.Preview != nil {
+		fields["preview"] = *options.Preview
+	}
+	if options.Status != nil {
+		fields["status"] = *options.Status
+	}
+	if options.Slug != nil {
+		fields["slug"] = *options.Slug
+	}
+	if options.PublishedAt != nil {
+		fields["published_at"] = *options.PublishedAt
+	}
+
+	if len(fields) == 0 {
+		return nil
+	}
+
+	result := repo.db.WithContext(c).
+		Model(&model.Articles{}).
+		Where("id = ?", article_id).
+		Updates(fields)
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrArticleNotFound
+	}
+	return nil
 }

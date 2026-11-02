@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"zhiye/server/internal/apperr"
 	cons "zhiye/server/internal/constant"
@@ -106,4 +107,26 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 		return model.Articles{}, apperr.MySQLError
 	}
 	return newArticle, nil
+}
+
+// 更新文章内容
+func (s *ArticlesService) UpdateArticle(c context.Context, article_id, content, status string) error {
+	// 先根据 preview 分割符分割出两部分
+	res := strings.Split(content, cons.SplitFlag)
+
+	// 这里直接拼接就可以得到完整的正文
+	content = strings.Join(res, "")
+
+	// 构造要更新的内容的结构体
+	options := repository.ArticleUpdate{
+		Status:  &status,
+		Preview: &res[0],
+		Content: &content,
+	}
+
+	err := s.artiRepo.UpdateArticle(c, article_id, options)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -68,3 +68,21 @@ func (h *ArticlesHandler) CreateArticle(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
 }
+
+// 更新文章内容
+func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
+	var req dto.UpdateArticleReq
+
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.JSON(400, dto.Fail(-1, "绑定失败"))
+		return
+	}
+
+	err = h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status)
+	if err != nil {
+		c.JSON(400, dto.Fail(-1, "更新失败"))
+		return
+	}
+	c.JSON(http.StatusOK, dto.Success(0))
+}
