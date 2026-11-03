@@ -1,7 +1,10 @@
 import SiteIcon from '../SiteIcon/SiteIcon';
+import type { ReactNode } from 'react';
 import style from './MDXToolbar.module.scss';
 
 interface Props {
+    // 自定义分隔符按钮由编辑器提供，工具栏只负责摆放。
+    separatorButton: ReactNode;
     // 点预览，打开预览页
     onPreview: () => void;
     // 点保存为草稿
@@ -11,7 +14,7 @@ interface Props {
 }
 
 /** 编辑器头部的状态栏。只负责展示和把点击事件抛给父组件，自身不持有任何状态 */
-export default function MDXToolbar({ onPreview, onSaveDraft, onPublish }: Props) {
+export default function MDXToolbar({ onPreview, onSaveDraft, onPublish, separatorButton }: Props) {
     return (
         // 这一栏吸顶，往下翻正文时预览和保存仍然点得到
         <div className={style.bar}>
@@ -23,6 +26,7 @@ export default function MDXToolbar({ onPreview, onSaveDraft, onPublish }: Props)
                 </span>
             </div>
             <div className={style.toolbar}>
+                {separatorButton}
                 <button type="button" className={style.previewButton} onClick={onPreview}>
                     <SiteIcon name="book" />
                     <span>预览</span>

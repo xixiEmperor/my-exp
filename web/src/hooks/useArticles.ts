@@ -1,7 +1,8 @@
 import { useArticlesStore } from '@/stores/articles';
 import { useDraftStore } from '@/stores/draft';
-import { getArticleDetail } from '@/api/articles';
+import { getArticleDetail, updateArticle } from '@/api/articles';
 import { useRequest } from './useRequest';
+import type { UpdateArticleReq } from '@/types/articles';
 
 // 模块级记录正在请求中的文章 id，点击预取和详情页初始化可能同时调用，靠它避免重复请求
 const pendingArticleIds = new Set<string>();
@@ -9,7 +10,19 @@ const pendingArticleIds = new Set<string>();
 export function useArticles() {
     // 方法引用稳定，直接从 getState 解构，不参与订阅
     const { setArticle } = useArticlesStore.getState();
-    const { getDraft } = useDraftStore.getState();
+    const { getDraft, removeDraft } = useDraftStore.getState();
+
+    /** 更新文章内容 */
+    const fetchUpdateArticle = async (options: UpdateArticleReq) => {
+        // 1. 调接口
+        const res = await updateArticle(options);
+
+        // 2. 如果接口调用成功，需要清空对应 id 的文章本地草稿
+        removeDraft(res.id);
+
+        // 3. 覆盖掉旧的 article 实体映射
+        setArticle(res.id, res);
+    };
 
     const fetchArticleDetail = async (id: string) => {
         // 请求发出前先登记，请求结束后不管成败都移除
@@ -29,6 +42,7 @@ export function useArticles() {
     };
 
     const articleDetailRequest = useRequest(fetchArticleDetail);
+    const updateArticleRequest = useRequest(fetchUpdateArticle);
     const { run: runArticleDetail } = articleDetailRequest;
 
     /** 找文章详情的聚合函数，缓存命中直接返回，没有缓存就发起请求 */
@@ -61,5 +75,5 @@ export function useArticles() {
         return undefined;
     };
 
-    return { findArticle };
+    return { findArticle, updateArticleRequest };
 }

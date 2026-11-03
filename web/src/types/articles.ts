@@ -26,6 +26,9 @@ export interface Article {
 // 目录列表只包含文章简要字段。
 export type ArticleBrief = Pick<Article, 'id' | 'title' | 'folder_id'>;
 
+/** 修改文章内容请求体 */
+export type UpdateArticleReq = Pick<Article, 'id' | 'content' | 'status'>;
+
 export interface CreateArticleReq {
     folder_id: string;
 }

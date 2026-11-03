@@ -27,6 +27,10 @@ func (h *ArticlesHandler) GetArticleContent(c *gin.Context) {
 
 	nodes, err := h.s.FindArticleContent(c.Request.Context(), article_id)
 	if err != nil {
+		if errors.Is(err, service.ErrNotPublished) {
+			c.JSON(http.StatusForbidden, dto.Fail(cons.Forbidden, "无权获取该文章"))
+			return
+		}
 		c.JSON(http.StatusBadRequest, dto.Fail(cons.InternalError, "文件查找错误"))
 		return
 	}
@@ -79,10 +83,10 @@ func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 
-	err = h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status)
+	res, err := h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status)
 	if err != nil {
 		c.JSON(400, dto.Fail(-1, "更新失败"))
 		return
 	}
-	c.JSON(http.StatusOK, dto.Success(0))
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
 }

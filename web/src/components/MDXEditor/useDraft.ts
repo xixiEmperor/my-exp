@@ -1,4 +1,4 @@
-import type { MDXEditorMethods } from '@mdxeditor/editor';
+import type { MarkdownSourceMethods } from './MarkdownSourceEditor';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { useDraftStore } from '@/stores/draft';
 
@@ -11,7 +11,7 @@ interface Options {
     // 外部传进来的基准内容，换文章时用它重置编辑器
     content: string;
     // 编辑器实例。同步外部内容、取即时文本都要经过它
-    mdRef: RefObject<MDXEditorMethods | null>;
+    mdRef: RefObject<MarkdownSourceMethods | null>;
 }
 
 /**

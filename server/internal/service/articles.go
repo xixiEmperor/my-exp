@@ -39,13 +39,16 @@ func (s *ArticlesService) GetArticlesByFolderID(c context.Context, id string) (d
 
 // 根据 id 查找文章相关信息，需要处理登录和未登录两种情况返回的信息
 func (s *ArticlesService) FindArticleContent(c context.Context, article_id string) (model.ArticleContent, error) {
-	_, ok := c.Value(cons.CtxUserInfo).(*model.Users)
+	user_info, ok := c.Value(cons.CtxUserInfo).(*model.Users)
 
 	// 如果 context 中没有 user_info，说明没登录，则需要返回 preview 部分
 	if !ok {
 		preview, err := s.artiRepo.FindArticlePreviewByID(c, article_id)
 		if err != nil {
 			return model.ArticlesPreview{}, err
+		}
+		if preview.Status == "draft" {
+			return model.ArticlesPreview{}, ErrNotPublished
 		}
 
 		// 游客只有预览内容，这里统一塞进 content 字段，前端不用区分两种返回结构
@@ -60,10 +63,23 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 		}, nil
 	}
 
+	// 这里查找到带有分隔符的基础内容
 	detail, err := s.artiRepo.FindArticleContentByID(c, article_id)
 	if err != nil {
 		return model.ArticlesDetail{}, err
 	}
+
+	// 如果是非管理员，这里需要把分隔符消除后再返回内容
+	if user_info.Role != "admin" {
+		// 非管理员也无权获取草稿文章
+		if detail.Status == "draft" {
+			return model.ArticlesPreview{}, ErrNotPublished
+		}
+
+		// 直接把分隔符变为空字符串
+		detail.Content = strings.ReplaceAll(detail.Content, cons.SplitFlag, "")
+	}
+
 	return detail, nil
 }
 
@@ -109,24 +125,32 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 	return newArticle, nil
 }
 
-// 更新文章内容
-func (s *ArticlesService) UpdateArticle(c context.Context, article_id, content, status string) error {
+// 更新文章内容，并返回更新后的文章详情
+func (s *ArticlesService) UpdateArticle(c context.Context, article_id, content, status string) (model.ArticlesDetail, error) {
+	// 重复分隔符只保留最后一个，和编辑器保持一致。
+	if last := strings.LastIndex(content, cons.SplitFlag); last >= 0 {
+		content = strings.ReplaceAll(content[:last], cons.SplitFlag, "") + content[last:]
+	}
 	// 先根据 preview 分割符分割出两部分
 	res := strings.Split(content, cons.SplitFlag)
-
-	// 这里直接拼接就可以得到完整的正文
-	content = strings.Join(res, "")
 
 	// 构造要更新的内容的结构体
 	options := repository.ArticleUpdate{
 		Status:  &status,
 		Preview: &res[0],
-		Content: &content,
+		Content: &content, // 这里直接存带有分隔符的内容，返回的时候再根据角色决定是否切割
 	}
 
 	err := s.artiRepo.UpdateArticle(c, article_id, options)
 	if err != nil {
-		return err
+		return model.ArticlesDetail{}, err
 	}
-	return nil
+
+	// 这里需要返回带有 ---<cutting>--- 的全文
+	article, err := s.artiRepo.FindArticleContentByID(c, article_id)
+	if err != nil {
+		return model.ArticlesDetail{}, err
+	}
+
+	return article, nil
 }

@@ -8,5 +8,5 @@ const (
 	// 文章相关常量
 	ArticlePub   = "published"
 	ArticleDraft = "draft"
-	SplitFlag    = "\n---<cutting>---\n" // 作为分割 preview 的标志
+	SplitFlag    = "\n<ArticleSeparator />\n" // 作为分割 preview 的标志
 )

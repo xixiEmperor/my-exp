@@ -22,12 +22,14 @@ type ArticlesRepo struct {
 	db *gorm.DB
 }
 
+// 创建实例
 func NewArticlesRepo(db *gorm.DB) *ArticlesRepo {
 	return &ArticlesRepo{
 		db: db,
 	}
 }
 
+// 基于文件夹id查找附属文章列表
 func (repo *ArticlesRepo) FindArticlesByFolderID(c context.Context, id *string, without_draft bool) ([]model.ArticlesBrief, error) {
 	// 空列表保留数组类型，调用方不需要处理 null。
 	articles := make([]model.ArticlesBrief, 0)

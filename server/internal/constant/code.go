@@ -15,6 +15,8 @@ const (
 	WrongToken = 4002
 	// token 过期
 	TokenExpires = 4003
+	// 无权限
+	Forbidden = 4004
 
 	// 服务内部错误与参数错误分开，前端才能提示用户稍后重试。
 	InternalError = 5000
