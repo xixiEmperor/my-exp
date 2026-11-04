@@ -201,3 +201,18 @@ func (s *ArticlesService) RenameArticle(c context.Context, article_id, title str
 
 	return dto.RenameArticleResp{ID: articleID, Title: name}, nil
 }
+
+// DeleteArticle 根据 id 删除文章
+func (s *ArticlesService) DeleteArticle(c context.Context, id string) error {
+	// 与重命名保持一致，先对传入 id 做基础校验
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return ErrInvalidResourceID
+	}
+
+	err := s.artiRepo.DeleteArticle(c, id)
+	if errors.Is(err, repository.ErrArticleNotFound) {
+		return ErrArticleNotFound
+	}
+	return err
+}

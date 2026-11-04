@@ -11,7 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// FoldersRepo 只管理现有 folders 表，共用程序入口提供的数据库连接。
+// FoldersRepo 管理现有 folders 表，共用程序入口提供的数据库连接。
+// 级联删除接口因事务需要同时操作 articles 表。
 type FoldersRepo struct {
 	db *gorm.DB
 }
@@ -87,4 +88,50 @@ func (repo *FoldersRepo) RenameFolder(c context.Context, id string, name string)
 		}
 	}
 	return nil
+}
+
+// DeleteCascade 级联删除指定文件夹及其全部子文件夹和文章，整体在同一个事务内完成。
+// 文章表的删除写在本仓库方法里，是为了把事务细节收在 repository 层，service 只需发起一次调用。
+func (repo *FoldersRepo) DeleteCascade(c context.Context, id string) error {
+	return repo.db.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		// 事务内先确认目标文件夹存在，不存在的删除请求按 ErrFolderNotFound 返回
+		var folder model.Folders
+		err := tx.Select("id").Where("id = ?", id).Take(&folder).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrFolderNotFound
+		}
+		if err != nil {
+			return fmt.Errorf("查询文件夹: %w", err)
+		}
+
+		// 一次性取出全部文件夹的 id 和 parent_id，在内存中收集子孙节点。
+		// 避免逐层查询，数据出现循环引用时也不会陷入无限递归。
+		var all []model.FolderBrief
+		if err := tx.Model(model.Folders{}).Select("id", "parent_id").Find(&all).Error; err != nil {
+			return fmt.Errorf("查询文件夹树: %w", err)
+		}
+		children := make(map[string][]string, len(all))
+		for _, f := range all {
+			// 只有有父节点的时候，才记录父节点对应的子节点id数组
+			// 换句话说，如果没有父节点就不管，因为根目录是没办法删除的，无需将根目录下的文件夹作为子节点看待
+			if f.ParentID != nil {
+				children[*f.ParentID] = append(children[*f.ParentID], f.ID)
+			}
+		}
+
+		// 从目标文件夹开始沿 parent 关系向下收集，包含它自己
+		ids := []string{id}
+		for i := 0; i < len(ids); i++ {
+			ids = append(ids, children[ids[i]]...)
+		}
+
+		// 先删文章再删文件夹，同一个事务内顺序不影响原子性
+		if err := tx.Where("folder_id IN ?", ids).Delete(&model.Articles{}).Error; err != nil {
+			return fmt.Errorf("级联删除文章: %w", err)
+		}
+		if err := tx.Where("id IN ?", ids).Delete(&model.Folders{}).Error; err != nil {
+			return fmt.Errorf("级联删除文件夹: %w", err)
+		}
+		return nil
+	})
 }

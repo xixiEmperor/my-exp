@@ -189,3 +189,15 @@ func (repo *ArticlesRepo) RenameArticle(c context.Context, article_id string, ti
 	}
 	return nil
 }
+
+// DeleteArticle 根据 id 删除文章
+func (repo *ArticlesRepo) DeleteArticle(c context.Context, id string) error {
+	result := repo.db.WithContext(c).Delete(&model.Articles{}, "id = ?", id)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrArticleNotFound
+	}
+	return nil
+}

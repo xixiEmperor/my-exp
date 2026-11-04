@@ -21,6 +21,7 @@ func registerArticleRouter(
 	admin.POST("/create", handler.CreateArticle)
 	admin.POST("/update", handler.UpdateArticle)
 	admin.POST("/rename", handler.RenameArticle)
+	admin.DELETE("/:id", handler.Delete)
 
 	// 无需管理员或可选登录即可调用
 	publicArticles := parent.Group("/articles", middlewares.OptionalAuth(userService))

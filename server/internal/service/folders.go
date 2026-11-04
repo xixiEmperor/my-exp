@@ -15,7 +15,7 @@ import (
 	gonanoid "github.com/matoous/go-nanoid/v2"
 )
 
-// FoldersService 只依赖文件夹仓库，不调用文章模块。
+// FoldersService 只依赖文件夹仓库，级联删除的事务细节在仓库层完成。
 type FoldersService struct {
 	folderRepo *repository.FoldersRepo
 }
@@ -139,4 +139,21 @@ func (s *FoldersService) RenameFolder(c context.Context, folder_id, name string)
 		Name:     newName,
 		ParentID: folder.ParentID,
 	}, nil
+}
+
+// DeleteFolder 删除文件夹及其全部子项，级联和事务由仓库层的 DeleteCascade 完成。
+func (s *FoldersService) DeleteFolder(c context.Context, folderID string) error {
+	// 与重命名保持一致，先对传入 id 做基础校验
+	folderID = strings.TrimSpace(folderID)
+	if folderID == "" {
+		return ErrInvalidResourceID
+	}
+
+	if err := s.folderRepo.DeleteCascade(c, folderID); err != nil {
+		if errors.Is(err, repository.ErrFolderNotFound) {
+			return fmt.Errorf("%w: %s", ErrFolderNotFound, folderID)
+		}
+		return err
+	}
+	return nil
 }

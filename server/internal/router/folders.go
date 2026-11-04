@@ -16,4 +16,5 @@ func registerFolderRouter(parent *gin.RouterGroup, handler *handler.FoldersHandl
 	admin := parent.Group("/folder", middlewares.MustLogin(), middlewares.RequireAdmin(userService))
 	admin.POST("/create", handler.CreateFolder)
 	admin.POST("/rename", handler.RenameFolder)
+	admin.DELETE("/:id", handler.Delete)
 }

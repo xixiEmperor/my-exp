@@ -114,3 +114,22 @@ func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
 }
+
+// Delete 文章删除
+func (h *ArticlesHandler) Delete(c *gin.Context) {
+	id := c.Param("id")
+	if err := h.s.DeleteArticle(c.Request.Context(), id); err != nil {
+		switch {
+		// 标识缺失属于请求参数问题。
+		case errors.Is(err, service.ErrInvalidResourceID):
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "文章标识不能为空"))
+		case errors.Is(err, service.ErrArticleNotFound):
+			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
+		default:
+			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "删除失败"))
+		}
+		return
+	}
+	// 删除成功按统一响应格式返回
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", nil))
+}
