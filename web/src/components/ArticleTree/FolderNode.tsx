@@ -38,7 +38,7 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
                 fromAdmin={fromAdmin}
                 hasArrow
                 open={open}
-                folderId={node.id}
+                nodeId={node.id}
                 onClick={toggle}
             >
                 {node.name ?? ''}

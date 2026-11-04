@@ -29,6 +29,9 @@ export type ArticleBrief = Pick<Article, 'id' | 'title' | 'folder_id'>;
 /** 修改文章内容请求体 */
 export type UpdateArticleReq = Pick<Article, 'id' | 'content' | 'status'>;
 
+/** 重命名文章请求体，返回结构相同 */
+export type RenameArticleReq = Pick<Article, 'id' | 'title'>;
+
 export interface CreateArticleReq {
     folder_id: string;
 }

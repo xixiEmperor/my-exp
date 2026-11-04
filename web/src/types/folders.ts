@@ -27,4 +27,10 @@ export interface CreateFolderReq {
     parent_id: string;
 }
 
+/** 重命名文件夹请求体，响应复用 FolderResp */
+export interface RenameFolderReq {
+    id: string;
+    name: string;
+}
+
 export type GetFolderChildrenResp = FolderResp[];

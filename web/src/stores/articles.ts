@@ -22,10 +22,16 @@ interface ArticlesStoreState {
     setFolderStatus: (id: string, options: Options) => void;
     /** 文件夹子节点追加 */
     appendFolderNodes: (id: string, nodes: TreeNode[]) => void;
+    /** 追加新创建的节点，父目录还没有缓存时先补一个空实体 */
+    appendCreatedNode: (parentId: string, node: TreeNode) => void;
     /** 完整目录查询替换子节点，不改变加载状态 */
     setFolderNodes: (id: string, nodes: TreeNode[]) => void;
     /** 文件夹初始化 */
     initFolder: (id: string, name: string, parentId: string | null) => void;
+    /** 重命名成功后同步文章实体和目录树里的标题 */
+    renameArticleNode: (id: string, title: string) => void;
+    /** 重命名成功后同步文件夹实体和目录树里的名称 */
+    renameFolderNode: (id: string, name: string) => void;
 }
 
 export const useArticlesStore = create<ArticlesStoreState>()(
@@ -76,6 +82,23 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                 });
             },
 
+            appendCreatedNode: (parentId, node) => {
+                set((state) => {
+                    // 父目录可能还没有展开过，没有实体时先补一个，名称和原来创建时的占位规则一致
+                    if (!state.folders[parentId]) {
+                        state.folders[parentId] = {
+                            id: parentId,
+                            folderName: parentId === 'root' ? '全部文章' : parentId,
+                            parentId: null,
+                            children: [],
+                            status: 'idle',
+                        };
+                    }
+
+                    state.folders[parentId].children.push(node);
+                });
+            },
+
             setFolderNodes: (id, nodes) => {
                 set((state) => {
                     // 只有两类查询都成功时才替换完整目录。
@@ -92,6 +115,46 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                         children: [],
                         status: 'idle',
                     };
+                });
+            },
+
+            renameArticleNode: (id, title) => {
+                set((state) => {
+                    // 详情缓存里可能还没有这篇文章，有才更新
+                    if (state.articles[id]) {
+                        state.articles[id].title = title;
+                    }
+
+                    // 目录树里的节点是多处轻量引用，逐个文件夹找出同一个节点改掉
+                    Object.values(state.folders).forEach((folder) => {
+                        const node = folder.children.find(
+                            (item) => item.type === 'article' && item.id === id,
+                        );
+
+                        if (node) {
+                            node.name = title;
+                        }
+                    });
+                });
+            },
+
+            renameFolderNode: (id, name) => {
+                set((state) => {
+                    // 文件夹实体只有展开或创建过才存在，存在才更新
+                    if (state.folders[id]) {
+                        state.folders[id].folderName = name;
+                    }
+
+                    // 目录树里的节点可能还没初始化实体，单独再扫一遍
+                    Object.values(state.folders).forEach((folder) => {
+                        const node = folder.children.find(
+                            (item) => item.type === 'folder' && item.id === id,
+                        );
+
+                        if (node) {
+                            node.name = name;
+                        }
+                    });
                 });
             },
         })),

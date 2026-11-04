@@ -3,6 +3,7 @@ import type {
     Article,
     GetArticleDetailResp,
     GetArticlesByFolderIDResp,
+    RenameArticleReq,
     UpdateArticleReq,
 } from '@/types/articles';
 
@@ -32,6 +33,17 @@ export const createArticle = async (folderId: string, signal?: AbortSignal) => {
         method: 'POST',
         path: '/articles/create',
         body: { folder_id: folderId },
+        credentials: 'include',
+        signal,
+    });
+};
+
+/** 重命名文章标题 */
+export const renameArticle = async (body: RenameArticleReq, signal?: AbortSignal) => {
+    return await request<RenameArticleReq>({
+        method: 'POST',
+        path: '/articles/rename',
+        body,
         credentials: 'include',
         signal,
     });
