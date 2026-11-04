@@ -2,6 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"strings"
 
 	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/dto"
@@ -86,5 +89,54 @@ func (s *FoldersService) CreateFolder(c context.Context, parent_id string) (dto.
 		ID:       newFolder.ID,
 		Name:     newFolder.Name,
 		ParentID: newFolder.ParentID,
+	}, nil
+}
+
+// 重命名文件夹，返回实际保存后的文件夹信息
+func (s *FoldersService) RenameFolder(c context.Context, folder_id, name string) (dto.FolderResp, error) {
+	// 依旧先对文件夹 ID 和新标题做校验
+	folderID := strings.TrimSpace(folder_id)
+	if folderID == "" {
+		return dto.FolderResp{}, ErrInvalidResourceID
+	}
+	newName, err := normalizeResourceName(name)
+	if err != nil {
+		return dto.FolderResp{}, err
+	}
+
+	// 先查出文件夹本身，重点是要拿到它所在的父目录。
+	folder, err := s.folderRepo.FindFolderByID(c, folderID)
+	if err != nil {
+		if errors.Is(err, repository.ErrFolderNotFound) {
+			return dto.FolderResp{}, fmt.Errorf("%w: %s", ErrFolderNotFound, folderID)
+		}
+		return dto.FolderResp{}, err
+	}
+
+	// 同级文件夹的名称参与重名检查，同样排除文件夹自己。
+	siblings, err := s.folderRepo.FindFoldersByParentID(c, folder.ParentID)
+	if err != nil {
+		return dto.FolderResp{}, err
+	}
+	names := make([]string, 0, len(siblings))
+	for _, sibling := range siblings {
+		if sibling.ID != folderID {
+			names = append(names, sibling.Name)
+		}
+	}
+	newName = utils.UniqueName(newName, names)
+
+	if err := s.folderRepo.RenameFolder(c, folderID, newName); err != nil {
+		// 查询和更新之间文件夹被删除时，按资源不存在处理。
+		if errors.Is(err, repository.ErrFolderNotFound) {
+			return dto.FolderResp{}, fmt.Errorf("%w: %s", ErrFolderNotFound, folderID)
+		}
+		return dto.FolderResp{}, err
+	}
+
+	return dto.FolderResp{
+		ID:       folderID,
+		Name:     newName,
+		ParentID: folder.ParentID,
 	}, nil
 }

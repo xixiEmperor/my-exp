@@ -17,6 +17,8 @@ const (
 	TokenExpires = 4003
 	// 无权限
 	Forbidden = 4004
+	// 资源不存在
+	NotFound = 4005
 
 	// 服务内部错误与参数错误分开，前端才能提示用户稍后重试。
 	InternalError = 5000

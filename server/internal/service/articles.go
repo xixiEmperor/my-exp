@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
 	"zhiye/server/internal/apperr"
@@ -153,4 +155,49 @@ func (s *ArticlesService) UpdateArticle(c context.Context, article_id, content, 
 	}
 
 	return article, nil
+}
+
+// 重命名文章标题，返回实际保存的标题
+func (s *ArticlesService) RenameArticle(c context.Context, article_id, title string) (dto.RenameArticleResp, error) {
+	// 标识和名称都属于业务参数，放在业务层统一校验。
+	articleID := strings.TrimSpace(article_id)
+	if articleID == "" {
+		return dto.RenameArticleResp{}, ErrInvalidResourceID
+	}
+	name, err := normalizeResourceName(title)
+	if err != nil {
+		return dto.RenameArticleResp{}, err
+	}
+
+	// 先查到文章所属目录，才能按同级文件做重名检查。
+	brief, err := s.artiRepo.FindArticleBriefByID(c, articleID)
+	if err != nil {
+		if errors.Is(err, repository.ErrArticleNotFound) {
+			return dto.RenameArticleResp{}, fmt.Errorf("%w: %s", ErrArticleNotFound, articleID)
+		}
+		return dto.RenameArticleResp{}, err
+	}
+
+	articles, err := s.artiRepo.FindArticlesByFolderID(c, brief.FolderID, false)
+	if err != nil {
+		return dto.RenameArticleResp{}, err
+	}
+	// 重名检查要排除文章自己，否则改回原名也会被追加编号。
+	names := make([]string, 0, len(articles))
+	for _, article := range articles {
+		if article.ID != articleID {
+			names = append(names, article.Title)
+		}
+	}
+	name = utils.UniqueName(name, names)
+
+	if err := s.artiRepo.RenameArticle(c, articleID, name); err != nil {
+		// 查询到更新之间文章可能被删除，这里同样按资源不存在处理。
+		if errors.Is(err, repository.ErrArticleNotFound) {
+			return dto.RenameArticleResp{}, fmt.Errorf("%w: %s", ErrArticleNotFound, articleID)
+		}
+		return dto.RenameArticleResp{}, err
+	}
+
+	return dto.RenameArticleResp{ID: articleID, Title: name}, nil
 }

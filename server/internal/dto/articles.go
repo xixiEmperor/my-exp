@@ -18,5 +18,15 @@ type UpdateArticleReq struct {
 	Status string `json:"status"`
 }
 
+type RenameArticleReq struct {
+	// 文章 ID
+	ID string `json:"id"`
+	// 文章标题
+	Title string `json:"title"`
+}
+
+// RenameArticleResp 只返回前端同步目录树需要的字段。
+type RenameArticleResp = RenameArticleReq
+
 // GetArticlesByFolderIDResp 只包含文章简要信息。
 type GetArticlesByFolderIDResp = []model.ArticlesBrief

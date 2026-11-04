@@ -73,6 +73,30 @@ func (h *ArticlesHandler) CreateArticle(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
 }
 
+// 重命名文章标题
+func (h *ArticlesHandler) RenameArticle(c *gin.Context) {
+	var req dto.RenameArticleReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "重命名参数非法"))
+		return
+	}
+
+	res, err := h.s.RenameArticle(c.Request.Context(), req.ID, req.Title)
+	if err != nil {
+		switch {
+		// 标识缺失和名称非法都属于请求参数问题。
+		case errors.Is(err, service.ErrInvalidResourceID), errors.Is(err, service.ErrInvalidName):
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "名称不能为空或过长"))
+		case errors.Is(err, service.ErrArticleNotFound):
+			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
+		default:
+			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "重命名失败"))
+		}
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
+}
+
 // 更新文章内容
 func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 	var req dto.UpdateArticleReq

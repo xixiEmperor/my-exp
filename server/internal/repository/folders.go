@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
@@ -44,4 +46,45 @@ func (repo *FoldersRepo) FindFoldersByParentID(c context.Context, id *string) ([
 func (repo *FoldersRepo) CreateFolder(c context.Context, folder *model.Folders) error {
 	// 将请求上下文传给数据库，取消请求时可以终止写入。
 	return repo.db.WithContext(c).Create(folder).Error
+}
+
+// 根据 id 查找单个文件夹，重命名时需要它的父目录来判断同级重名
+func (repo *FoldersRepo) FindFolderByID(c context.Context, id string) (model.Folders, error) {
+	var folder model.Folders
+
+	err := repo.db.WithContext(c).Where("id = ?", id).Take(&folder).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.Folders{}, ErrFolderNotFound
+	}
+	if err != nil {
+		return model.Folders{}, fmt.Errorf("查询文件夹: %w", err)
+	}
+
+	return folder, nil
+}
+
+// 重命名文件夹名称
+func (repo *FoldersRepo) RenameFolder(c context.Context, id string, name string) error {
+	result := repo.db.WithContext(c).
+		Model(&model.Folders{}).
+		Where("id = ?", id).
+		Update("name", name)
+
+	if result.Error != nil {
+		return fmt.Errorf("重命名文件夹: %w", result.Error)
+	}
+	// 名称没有变化时 MySQL 返回 0 行，这里再确认文件夹是否仍然存在。
+	if result.RowsAffected == 0 {
+		var count int64
+		if err := repo.db.WithContext(c).
+			Model(&model.Folders{}).
+			Where("id = ?", id).
+			Count(&count).Error; err != nil {
+			return fmt.Errorf("确认文件夹是否存在: %w", err)
+		}
+		if count == 0 {
+			return ErrFolderNotFound
+		}
+	}
+	return nil
 }

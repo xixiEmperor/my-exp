@@ -15,4 +15,5 @@ func registerFolderRouter(parent *gin.RouterGroup, handler *handler.FoldersHandl
 	// 新建文件夹继续要求登录和管理员身份。
 	admin := parent.Group("/folder", middlewares.MustLogin(), middlewares.RequireAdmin(userService))
 	admin.POST("/create", handler.CreateFolder)
+	admin.POST("/rename", handler.RenameFolder)
 }

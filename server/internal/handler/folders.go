@@ -57,3 +57,27 @@ func (h *FoldersHandler) CreateFolder(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
 }
+
+// RenameFolder 只修改文件夹名称。
+func (h *FoldersHandler) RenameFolder(c *gin.Context) {
+	var req dto.RenameFolderReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "重命名参数非法"))
+		return
+	}
+
+	res, err := h.s.RenameFolder(c.Request.Context(), req.ID, req.Name)
+	if err != nil {
+		switch {
+		// 标识缺失和名称非法都属于请求参数问题。
+		case errors.Is(err, service.ErrInvalidResourceID), errors.Is(err, service.ErrInvalidName):
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "名称不能为空或过长"))
+		case errors.Is(err, service.ErrFolderNotFound):
+			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文件夹不存在"))
+		default:
+			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "重命名失败"))
+		}
+		return
+	}
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))
+}

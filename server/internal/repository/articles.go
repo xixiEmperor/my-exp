@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"zhiye/server/internal/apperr"
@@ -86,6 +88,27 @@ func (repo *ArticlesRepo) FindArticlePreviewByID(c context.Context, id string) (
 	return aricle, nil
 }
 
+// 根据 id 查找文章简要信息，只取重命名需要的字段，不读取正文
+func (repo *ArticlesRepo) FindArticleBriefByID(c context.Context, id string) (model.ArticlesBrief, error) {
+	var article model.ArticlesBrief
+
+	// 复用软删除条件，已删除的文章按不存在处理。
+	err := repo.db.WithContext(c).
+		Model(&model.Articles{}).
+		Select("id", "title", "folder_id").
+		Where("id = ?", id).
+		Take(&article).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.ArticlesBrief{}, ErrArticleNotFound
+	}
+	if err != nil {
+		// 保留底层错误链，交给上层映射为服务端错误。
+		return model.ArticlesBrief{}, fmt.Errorf("查询文章简要信息: %w", err)
+	}
+
+	return article, nil
+}
+
 // 根据名称查找文章
 func (repo *ArticlesRepo) FindArticlesByName(c context.Context, name string) ([]string, error) {
 	var names []string
@@ -137,6 +160,32 @@ func (repo *ArticlesRepo) UpdateArticle(c context.Context, article_id string, op
 	}
 	if result.RowsAffected == 0 {
 		return ErrArticleNotFound
+	}
+	return nil
+}
+
+// 重命名文章标题
+func (repo *ArticlesRepo) RenameArticle(c context.Context, article_id string, title string) error {
+	result := repo.db.WithContext(c).
+		Model(&model.Articles{}).
+		Where("id = ?", article_id).
+		Update("title", title)
+
+	if result.Error != nil {
+		return fmt.Errorf("重命名文章: %w", result.Error)
+	}
+	// MySQL 在新标题和旧标题相同时返回 0 行，需要再确认记录是否真的存在。
+	if result.RowsAffected == 0 {
+		var count int64
+		if err := repo.db.WithContext(c).
+			Model(&model.Articles{}).
+			Where("id = ?", article_id).
+			Count(&count).Error; err != nil {
+			return fmt.Errorf("确认文章是否存在: %w", err)
+		}
+		if count == 0 {
+			return ErrArticleNotFound
+		}
 	}
 	return nil
 }
