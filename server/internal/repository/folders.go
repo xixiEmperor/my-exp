@@ -126,7 +126,10 @@ func (repo *FoldersRepo) DeleteCascade(c context.Context, id string) error {
 		}
 
 		// 先删文章再删文件夹，同一个事务内顺序不影响原子性
-		if err := tx.Where("folder_id IN ?", ids).Delete(&model.Articles{}).Error; err != nil {
+		// Articles 带 gorm.DeletedAt，默认 Delete 只会软删除（UPDATE deleted_at），
+		// 行还留在表里会触发外键 fk_articles_folder 的 RESTRICT 限制导致 1451 报错，
+		// 所以这里用 Unscoped 物理删除，让后续删除文件夹能通过外键校验
+		if err := tx.Unscoped().Where("folder_id IN ?", ids).Delete(&model.Articles{}).Error; err != nil {
 			return fmt.Errorf("级联删除文章: %w", err)
 		}
 		if err := tx.Where("id IN ?", ids).Delete(&model.Folders{}).Error; err != nil {
