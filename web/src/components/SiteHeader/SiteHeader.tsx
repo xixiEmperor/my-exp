@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
+import CursorToggle from '../CursorToggle/CursorToggle';
 import type { ReactNode } from 'react';
 import type { ResolvedTheme } from '../../config/theme';
+import type { CursorPreference } from '../../config/cursor';
 import { mainNavigation } from '../../constants/navigation';
 import styles from './SiteHeader.module.scss';
 import { useUserStore } from '@/stores/user';
@@ -11,8 +13,10 @@ import UserMenu from '../UserMenu/UserMenu';
 interface Props {
     activePath: string;
     resolvedTheme: ResolvedTheme;
+    cursor: CursorPreference;
     onOpenLogin: () => void;
     onToggleTheme: () => void;
+    onToggleCursor: () => void;
     onLogout: () => void;
 }
 
@@ -20,8 +24,10 @@ interface Props {
 export default function SiteHeader({
     activePath,
     resolvedTheme,
+    cursor,
     onOpenLogin,
     onToggleTheme,
+    onToggleCursor,
     onLogout,
 }: Props) {
     const isLogin = useUserStore((state) => state.isLogin);
@@ -55,6 +61,7 @@ export default function SiteHeader({
                     {mainLinks}
                 </nav>
                 <div className={styles['home-header-actions']}>
+                    <CursorToggle cursor={cursor} onToggle={onToggleCursor} />
                     <ThemeToggle resolvedTheme={resolvedTheme} onToggle={onToggleTheme} />
                     {isLogin ? (
                         <UserMenu userInfo={userInfo!} onLogout={onLogout} />

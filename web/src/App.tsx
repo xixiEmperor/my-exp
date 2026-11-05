@@ -7,6 +7,7 @@ import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
 import Toast from './components/Toast/Toast';
 import { useSiteShell } from './hooks/useSiteShell';
 import { useTheme } from './hooks/useTheme';
+import { useCursor } from './hooks/useCursor';
 import styles from './App.module.scss';
 import { useLogin } from './hooks/useLogin';
 
@@ -14,6 +15,7 @@ import { useLogin } from './hooks/useLogin';
 export default function App() {
     const shell = useSiteShell();
     const theme = useTheme();
+    const cursor = useCursor();
     const { login, checkLogin, logout } = useLogin();
 
     // 退出登录先弹确认框，用户确认后才真正清理登录态。
@@ -35,8 +37,10 @@ export default function App() {
             <SiteHeader
                 activePath={shell.activePath}
                 resolvedTheme={theme.resolvedTheme}
+                cursor={cursor.cursor}
                 onOpenLogin={shell.openLogin}
                 onToggleTheme={theme.toggleTheme}
+                onToggleCursor={cursor.toggleCursor}
                 onLogout={() => setLogoutOpen(true)}
             />
             <Outlet />

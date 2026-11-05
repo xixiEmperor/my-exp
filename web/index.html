@@ -10,8 +10,9 @@
         />
         <title>xixiEmperor的个人主页</title>
         <!--
-      防首屏闪烁：在 React 挂载之前同步把主题落到 html 上，深色用户不会看到一帧白底。
-      存储键 xixi-theme 必须和 src/config/theme.ts 里的 THEME_STORAGE_KEY 保持一致。
+      防首屏闪烁：在 React 挂载之前同步把主题和光标落到 html 上，深色用户不会看到一帧白底。
+      存储键 xixi-theme 必须和 src/config/theme.ts 里的 THEME_STORAGE_KEY 保持一致，
+      xixi-cursor 必须和 src/config/cursor.ts 里的 CURSOR_STORAGE_KEY 保持一致。
     -->
         <script>
             (function () {
@@ -28,6 +29,9 @@
                     if (meta) {
                         meta.setAttribute('content', dark ? '#080c16' : '#f2f5ff');
                     }
+                    // 光标默认 classic，只有明确存过 new 才切换，两套图标由 cursor.scss 按属性接管。
+                    var cursor = localStorage.getItem('xixi-cursor');
+                    document.documentElement.dataset.cursor = cursor === 'new' ? 'new' : 'classic';
                 } catch (error) {
                     /* 隐私模式下 localStorage 不可用，保持默认浅色即可，不用打断渲染 */
                 }

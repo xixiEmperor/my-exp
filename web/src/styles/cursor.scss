@@ -1,0 +1,103 @@
+// 全局光标皮肤：素材在 assets/cursor 下，偏好通过 html 上的 data-cursor 属性切换。
+// classic 套装包含 classic、pointer、link select、unavalible 四个图标；
+// new 套装只区分链接（pointer）和其他（new）两种情况。
+// unavalible 是素材文件的原始拼写，保持和 assets 目录一致。
+// 所有声明都加 !important，组件 module 里的 cursor: pointer / not-allowed 不再各自为政。
+// 默认规则命中所有元素，会切断 cursor 的继承，所以可点击规则必须同时覆盖子孙元素，
+// 否则按钮里的 span 会拿回 classic 图标。
+
+// 可点击元素及其子孙的选择器集合。真实链接、按钮和语义化可点击元素之外，
+// 留了 data-cursor='pointer' 作为手动指定单个元素的逃生口。
+@mixin clickable-pointer {
+    a,
+    a *,
+    button,
+    button *,
+    [role='button'],
+    [role='button'] *,
+    label,
+    summary,
+    select,
+    [data-cursor='pointer'],
+    [data-cursor='pointer'] * {
+        cursor: url('../assets/cursor/pointer.cur'), pointer !important;
+    }
+}
+
+// 输入类元素保留系统文本光标，否则编辑器里无法定位插入点。
+// contenteditable 的子孙也要覆盖，active 变体放在按下规则之后，
+// 避免点击输入框时被 link select 抢走。
+@mixin editable-text {
+    input,
+    textarea,
+    [contenteditable='true'],
+    [contenteditable='true'] * {
+        cursor: text !important;
+    }
+
+    input:active,
+    textarea:active,
+    [contenteditable='true']:active,
+    [contenteditable='true'] *:active {
+        cursor: text !important;
+    }
+}
+
+// classic 套装：默认箭头，链接 pointer，不可点击 unavalible，按下变 link select。
+[data-cursor='classic'] {
+    &,
+    & * {
+        cursor: url('../assets/cursor/classic.cur'), default !important;
+    }
+
+    @include clickable-pointer;
+
+    // 不可点击的元素给出 unavalible 图标，组件里的 cursor: not-allowed 位置同样命中。
+    button:disabled,
+    button:disabled *,
+    [disabled],
+    [disabled] *,
+    [aria-disabled='true'],
+    [aria-disabled='true'] * {
+        cursor: url('../assets/cursor/unavalible.cur'), not-allowed !important;
+    }
+
+    // 平常按下时变成 link select，:active 会沿激活链传播到祖先。
+    &:active,
+    & *:active {
+        cursor: url('../assets/cursor/link select.cur'), text !important;
+    }
+
+    // 可跳转的链接和按钮上按住时保持 pointer，不被 link select 覆盖，
+    // 子孙元素同样要保住，不然按在文字上又会变回 link select。
+    a:active,
+    a *:active,
+    button:active,
+    button *:active {
+        cursor: url('../assets/cursor/pointer.cur'), pointer !important;
+    }
+
+    // 禁用元素按住时保持 unavalible。
+    button:disabled:active,
+    button:disabled *:active,
+    [disabled]:active,
+    [disabled] *:active,
+    [aria-disabled='true']:active,
+    [aria-disabled='true'] *:active {
+        cursor: url('../assets/cursor/unavalible.cur'), not-allowed !important;
+    }
+
+    @include editable-text;
+}
+
+// new 套装：只处理两种情况，链接用 pointer，其他一律 new。
+[data-cursor='new'] {
+    &,
+    & * {
+        cursor: url('../assets/cursor/new.cur'), default !important;
+    }
+
+    @include clickable-pointer;
+
+    @include editable-text;
+}
