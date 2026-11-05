@@ -1,11 +1,11 @@
 import {
     type FocusEventHandler,
     type KeyboardEvent,
-    type MouseEventHandler,
     type ReactNode,
     useState,
 } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
+import TreeRowActions from './TreeRowActions';
 import styles from './ArticleTree.module.scss';
 import { useArticleTree } from '@/hooks/useArticleTree';
 
@@ -44,8 +44,7 @@ export default function TreeRow({
     const [mouseIn, setMouseIn] = useState<boolean>(false);
     const [renaming, setRenaming] = useState<boolean>(false);
 
-    const { createArticleRequest, createFolderRequest, renameArticleRequest, renameFolderRequest } =
-        useArticleTree();
+    const { renameArticleRequest, renameFolderRequest } = useArticleTree();
 
     /** 显示中的节点名称，输入框的初始值和改名比较都用它 */
     const currentName = children?.toString() ?? '';
@@ -58,20 +57,8 @@ export default function TreeRow({
         setMouseIn(false);
     };
 
-    const onCreateArticle: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.stopPropagation();
-        createArticleRequest.run(nodeId);
-    };
-    const onCreateFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.stopPropagation();
-        createFolderRequest.run(nodeId);
-    };
-    const onRenameFile: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.stopPropagation();
-        setRenaming(true);
-    };
-    const onRenameFolder: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.stopPropagation();
+    /** 重命名的输入框和提交逻辑都在行上，托盘只需要一个开关 */
+    const onRenameStart = () => {
         setRenaming(true);
     };
 
@@ -134,52 +121,19 @@ export default function TreeRow({
                 ) : (
                     <span className={styles['tree-label']}>{children}</span>
                 )}
-
-                {/* 当前渲染位置处于后台，且光标进入时展示工具栏 */}
-                {mouseIn && fromAdmin && (
-                    <div className={styles['tree-toolbar']}>
-                        {/* 只有文件夹才展示创建文件夹和创建文件按钮 */}
-                        {hasArrow && !renaming && (
-                            <>
-                                <button
-                                    className={styles['']}
-                                    onClick={onRenameFolder}
-                                    title="重命名"
-                                >
-                                    <SiteIcon name="renameFolder" size={14}></SiteIcon>
-                                </button>
-                                <button
-                                    className={styles['']}
-                                    onClick={onCreateArticle}
-                                    disabled={createArticleRequest.loading}
-                                    title="创建文章"
-                                >
-                                    <SiteIcon name="createFile" size={14}></SiteIcon>
-                                </button>
-                                <button
-                                    className={styles['']}
-                                    onClick={onCreateFolder}
-                                    disabled={createFolderRequest.loading}
-                                    title="创建文件夹"
-                                >
-                                    <SiteIcon
-                                        name="createFolder"
-                                        size={15}
-                                        style={{ transform: 'translateY(1px)' }}
-                                    ></SiteIcon>
-                                </button>
-                            </>
-                        )}
-
-                        {/* 否则就只展示重命名文件按钮 */}
-                        {!hasArrow && !renaming && (
-                            <button className={styles['']} onClick={onRenameFile}>
-                                <SiteIcon name="renameFile" size={14}></SiteIcon>
-                            </button>
-                        )}
-                    </div>
-                )}
             </div>
+
+            {/* 当前渲染位置处于后台时挂载行操作托盘，重命名期间收起避免误触。
+                组件常驻挂载，触发按钮靠 visible 控制显隐，托盘展开后移出行的过程中菜单不能消失 */}
+            {fromAdmin && !renaming && (
+                <TreeRowActions
+                    nodeId={nodeId}
+                    name={currentName}
+                    hasArrow={hasArrow}
+                    visible={mouseIn}
+                    onRename={onRenameStart}
+                ></TreeRowActions>
+            )}
         </div>
     );
 }

@@ -1,0 +1,65 @@
+// 托盘整体作为行内最后一个元素，按钮和弹出的菜单都包在这里
+.root {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: none;
+}
+
+// ··· 触发按钮，悬停行时才由外层控制显隐
+.trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: inherit;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+}
+
+// 行未悬停且托盘未展开时整体隐藏，不占位
+.hiddenTrigger {
+    display: none;
+}
+
+// 点开后的纵向菜单，通过 portal 挂在 body 下，坐标由组件按触发按钮位置内联计算
+.panel {
+    z-index: 20;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+// 菜单项，图标加文字横向排列
+.item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: left;
+    white-space: nowrap;
+    color: inherit;
+
+    &:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // 删除属于危险操作，文字和图标统一标红
+    &.danger {
+        color: #d03050;
+    }
+}

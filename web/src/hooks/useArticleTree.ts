@@ -1,8 +1,13 @@
 import { useCallback } from 'react';
 import { useArticlesStore } from '@/stores/articles';
 import type { TreeNode } from '@/types/article-tree';
-import { createArticle, getArticlesByFolderID, renameArticle } from '@/api/articles';
-import { createFolder, getFolderChildren, renameFolder } from '@/api/folders';
+import {
+    createArticle,
+    deleteArticle as deleteArticleApi,
+    getArticlesByFolderID,
+    renameArticle,
+} from '@/api/articles';
+import { createFolder, deleteFolder as deleteFolderApi, getFolderChildren, renameFolder } from '@/api/folders';
 import { useRequest } from './useRequest';
 
 /** 请求某个文件夹下所有子节点，包括文章和子文件夹 */
@@ -102,6 +107,22 @@ async function renameFolderNode(id: string, name: string) {
     return folder;
 }
 
+/** 删除文章，成功后把实体和目录树里的节点一起清掉 */
+async function deleteArticleNode(id: string) {
+    await deleteArticleApi(id);
+
+    // 后端删除成功才动本地缓存，失败时 useRequest 会统一提示
+    useArticlesStore.getState().removeArticleNode(id);
+}
+
+/** 删除文件夹，后端级联删除子项，成功后把本地缓存一起清掉 */
+async function deleteFolderNode(id: string) {
+    await deleteFolderApi(id);
+
+    // 后端删除成功才动本地缓存，失败时 useRequest 会统一提示
+    useArticlesStore.getState().removeFolderNode(id);
+}
+
 export function useArticleTree() {
     // 渲染要用的源数据只订阅这一个字段，选择器里不生成新对象
     const folders = useArticlesStore((state) => state.folders);
@@ -115,6 +136,8 @@ export function useArticleTree() {
     const createFolderRequest = useRequest(createFolderNode);
     const renameArticleRequest = useRequest(renameArticleNode);
     const renameFolderRequest = useRequest(renameFolderNode);
+    const deleteArticleRequest = useRequest(deleteArticleNode);
+    const deleteFolderRequest = useRequest(deleteFolderNode);
     const { run } = folderChildrenRequest;
 
     /** 有缓存的情况下，根据当前文件夹id找到所有子节点 */
@@ -162,5 +185,7 @@ export function useArticleTree() {
         createFolderRequest,
         renameArticleRequest,
         renameFolderRequest,
+        deleteArticleRequest,
+        deleteFolderRequest,
     };
 }

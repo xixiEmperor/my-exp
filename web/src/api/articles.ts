@@ -49,6 +49,16 @@ export const renameArticle = async (body: RenameArticleReq, signal?: AbortSignal
     });
 };
 
+/** 删除文章，后端按 id 做软删除 */
+export const deleteArticle = async (id: string, signal?: AbortSignal) => {
+    return await request<null>({
+        method: 'DELETE',
+        path: `/articles/${id}`,
+        credentials: 'include',
+        signal,
+    });
+};
+
 /** 修改文章内容 */
 export const updateArticle = async (body: UpdateArticleReq, signal?: AbortSignal) => {
     return await request<Article>({

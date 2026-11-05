@@ -32,6 +32,10 @@ interface ArticlesStoreState {
     renameArticleNode: (id: string, title: string) => void;
     /** 重命名成功后同步文件夹实体和目录树里的名称 */
     renameFolderNode: (id: string, name: string) => void;
+    /** 删除成功后把文章实体和目录树里的节点一起移除 */
+    removeArticleNode: (id: string) => void;
+    /** 删除成功后把文件夹实体、其所有后代缓存和目录树里的节点一起移除 */
+    removeFolderNode: (id: string) => void;
 }
 
 export const useArticlesStore = create<ArticlesStoreState>()(
@@ -155,6 +159,84 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                             node.name = name;
                         }
                     });
+                });
+            },
+
+            removeArticleNode: (id) => {
+                set((state) => {
+                    const article = state.articles[id];
+
+                    // 详情缓存里有就删掉，避免留下已经不存在的文章
+                    delete state.articles[id];
+
+                    // 文章只属于一个文件夹，优先用实体上的 folder_id 反查父目录
+                    let parentId: string | null = null;
+
+                    if (article) {
+                        parentId = article.folder_id ?? 'root';
+                    } else {
+                        // 实体没进过缓存时兜底扫一遍目录树，正常流程里创建文章都会写缓存
+                        const hit = Object.values(state.folders).find((folder) =>
+                            folder.children.some(
+                                (item) => item.type === 'article' && item.id === id,
+                            ),
+                        );
+
+                        parentId = hit?.id ?? null;
+                    }
+
+                    const parent = parentId ? state.folders[parentId] : undefined;
+
+                    // 直接去父目录里移除这一个节点，不用全树过滤
+                    if (parent) {
+                        parent.children = parent.children.filter(
+                            (item) => !(item.type === 'article' && item.id === id),
+                        );
+                    }
+                });
+            },
+            removeFolderNode: (id) => {
+                set((state) => {
+                    const target = state.folders[id];
+
+                    // 文件夹只属于一个父目录，用实体上的 parentId 反查，根目录用虚拟节点兜底
+                    const parent = state.folders[target.parentId ?? 'root'];
+
+                    // 顺着缓存关系收集全部子孙：文件夹实体里挂着子节点，
+                    // 没展开过的文件夹 children 是空数组，遍历时自然跳过
+                    const folderIds: string[] = [];
+                    const articleIds: string[] = [];
+                    const pending = [target.children];
+
+                    while (pending.length > 0) {
+                        const children = pending.pop() as TreeNode[];
+
+                        children.forEach((item) => {
+                            if (item.type === 'folder') {
+                                folderIds.push(item.id);
+                                pending.push(state.folders[item.id]?.children ?? []);
+                            } else {
+                                articleIds.push(item.id);
+                            }
+                        });
+                    }
+
+                    // 目标文件夹和子孙文件夹实体一起清掉
+                    delete state.folders[id];
+
+                    folderIds.forEach((folderId) => {
+                        delete state.folders[folderId];
+                    });
+
+                    // 子孙文章的详情缓存一并清掉，没缓存的删除是空操作
+                    articleIds.forEach((articleId) => {
+                        delete state.articles[articleId];
+                    });
+
+                    // 最后去父目录里移除这个文件夹节点
+                    parent.children = parent.children.filter(
+                        (item) => !(item.type === 'folder' && item.id === id),
+                    );
                 });
             },
         })),
