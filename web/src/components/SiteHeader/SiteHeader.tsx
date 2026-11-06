@@ -9,13 +9,15 @@ import { mainNavigation } from '../../constants/navigation';
 import styles from './SiteHeader.module.scss';
 import { useUserStore } from '@/stores/user';
 import UserMenu from '../UserMenu/UserMenu';
+import { useHomeMagnet } from '../HomeExperience/HomeMagnetic';
+import HomeHeader from '../HomeExperience/HomeHeader';
 
 interface Props {
     activePath: string;
     resolvedTheme: ResolvedTheme;
     cursor: CursorPreference;
     onOpenLogin: () => void;
-    onToggleTheme: () => void;
+    onToggleTheme: (origin?: { x: number; y: number }) => void;
     onToggleCursor: () => void;
     onLogout: () => void;
 }
@@ -30,6 +32,7 @@ export default function SiteHeader({
     onToggleCursor,
     onLogout,
 }: Props) {
+    const magnet = useHomeMagnet();
     const isLogin = useUserStore((state) => state.isLogin);
     const userInfo = useUserStore((state) => state.userInfo);
 
@@ -53,6 +56,47 @@ export default function SiteHeader({
             </Link>,
         );
     });
+
+    // 首页的视觉壳层独立，登录和光标仍调用同一套真实操作。
+    if (activePath === '/') {
+        return (
+            <HomeHeader
+                actions={
+                    <>
+                        <button
+                            {...magnet}
+                            id="theme-toggle"
+                            className="theme-button"
+                            data-magnet
+                            aria-label={
+                                resolvedTheme === 'dark' ? '切换到浅色主题' : '切换到深色主题'
+                            }
+                            aria-pressed={resolvedTheme === 'dark'}
+                            onClick={(event) => {
+                                // 圆心由触发按钮提供，主题 hook 不查找页面元素。
+                                const bounds = event.currentTarget.getBoundingClientRect();
+
+                                onToggleTheme({
+                                    x: bounds.left + bounds.width / 2,
+                                    y: bounds.top + bounds.height / 2,
+                                });
+                            }}
+                        >
+                            <span aria-hidden="true">{resolvedTheme === 'dark' ? '☀' : '☾'}</span>
+                        </button>
+                        <CursorToggle cursor={cursor} onToggle={onToggleCursor} />
+                        {isLogin ? (
+                            <UserMenu userInfo={userInfo!} onLogout={onLogout} />
+                        ) : (
+                            <button className="home-login" onClick={onOpenLogin}>
+                                登录
+                            </button>
+                        )}
+                    </>
+                }
+            />
+        );
+    }
 
     return (
         <header className={styles['site-header']}>

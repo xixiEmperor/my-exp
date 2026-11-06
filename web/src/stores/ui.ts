@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { readStoredTheme, type ThemePreference } from '../config/theme';
 import { readStoredCursor, type CursorPreference } from '../config/cursor';
+import { readStoredHomeAccent, type HomeAccent } from '../config/homeAccent';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
 
@@ -10,6 +11,7 @@ interface UiState {
     loginOpen: boolean;
     theme: ThemePreference;
     cursor: CursorPreference;
+    homeAccent: HomeAccent;
     toggleMenu: () => void;
     closeMenu: () => void;
     openLogin: () => void;
@@ -17,6 +19,7 @@ interface UiState {
     closeOverlays: () => void;
     setTheme: (theme: ThemePreference) => void;
     setCursor: (cursor: CursorPreference) => void;
+    setHomeAccent: (accent: HomeAccent) => void;
 }
 
 export const useUIStore = create<UiState>()(
@@ -30,6 +33,7 @@ export const useUIStore = create<UiState>()(
 
             // 光标皮肤同理，classic 和 new 两套之间的切换不走主题状态。
             cursor: readStoredCursor(),
+            homeAccent: readStoredHomeAccent(),
 
             toggleMenu: () => {
                 set((state) => ({ menuOpen: !state.menuOpen }));
@@ -58,6 +62,9 @@ export const useUIStore = create<UiState>()(
 
             setCursor: (cursor) => {
                 set({ cursor });
+            },
+            setHomeAccent: (homeAccent) => {
+                set({ homeAccent });
             },
         })),
     ),

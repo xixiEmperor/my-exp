@@ -81,6 +81,7 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
                 type="button"
                 className={styles.trigger}
                 aria-haspopup="menu"
+                aria-label={`账号菜单，${userInfo.name}`}
                 aria-expanded={isOpen}
                 onClick={handleToggle}
             >

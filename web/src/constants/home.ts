@@ -5,6 +5,12 @@ import type { FutureItem, HeroContent, JourneyItem, ProjectPhase, WishItem } fro
 // 联系方式还没有真实内容。填入邮箱后，联系面板的复制按钮会自动可用。
 export const contactEmail = '2559762795@qq.com';
 
+// 由站主手动维护，空值不展示，避免把占位内容当成实时近况。
+export const homeNow = {
+    reading: '',
+    writing: '',
+};
+
 export const heroContent: HeroContent = {
     title: {
         lead: '欢迎来到',

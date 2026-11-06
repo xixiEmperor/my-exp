@@ -63,6 +63,8 @@ export interface HeroContent {
 }
 
 export interface WeatherReading {
+    // 图形直接对应服务返回的代码，未查询时不假设晴天。
+    weatherCode?: number;
     temperature: number;
     symbol: string;
     description: string;

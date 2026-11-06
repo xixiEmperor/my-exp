@@ -17,7 +17,7 @@ interface HomeState {
 export const homeStore = create<HomeState>()(
     devtools(
         immer((set) => ({
-            activeProject: collapsedProject,
+            activeProject: 1,
             wishlistIndex: 0,
 
             // 在唯一修改入口检查索引，保证展开的卡片始终能找到对应数据。

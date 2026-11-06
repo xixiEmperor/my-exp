@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
 import SiteHeader from './components/SiteHeader/SiteHeader';
 import SiteFooter from './components/SiteFooter/SiteFooter';
+import HomeFooter from './components/HomeExperience/HomeFooter';
 import LoginPanel from './components/LoginPanel/LoginPanel';
 import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
 import Toast from './components/Toast/Toast';
@@ -9,14 +10,25 @@ import { useSiteShell } from './hooks/useSiteShell';
 import { useTheme } from './hooks/useTheme';
 import { useCursor } from './hooks/useCursor';
 import styles from './App.module.scss';
+import homeStyles from './components/HomeExperience/HomeExperience.module.scss';
 import { useLogin } from './hooks/useLogin';
+import { useHomeInteraction } from './stores/homeInteraction';
+import { useUIStore } from './stores/ui';
 
 // 应用壳层组合公共组件，实际页面通过路由出口展示。
 export default function App() {
     const shell = useSiteShell();
     const theme = useTheme();
     const cursor = useCursor();
+    const headerHeight = useHomeInteraction((state) => state.headerHeight);
+    const homeAccent = useUIStore((state) => state.homeAccent);
     const { login, checkLogin, logout } = useLogin();
+
+    useEffect(() => {
+        if (shell.activePath !== '/') return;
+
+        return useHomeInteraction.getState().registerAction('theme', theme.toggleTheme);
+    }, [shell.activePath, theme.toggleTheme]);
 
     // 退出登录先弹确认框，用户确认后才真正清理登录态。
     const [logoutOpen, setLogoutOpen] = useState(false);
@@ -29,7 +41,17 @@ export default function App() {
     }, [checkLogin]);
 
     return (
-        <div className={styles.app}>
+        <div
+            className={`${styles.app}${shell.activePath === '/' ? ` home-page ${homeStyles.homeRoot}` : ''}`}
+            style={
+                shell.activePath === '/'
+                    ? ({ '--home-header-offset': `${headerHeight}px` } as CSSProperties)
+                    : undefined
+            }
+            data-home-theme={shell.activePath === '/' ? theme.resolvedTheme : undefined}
+            data-accent={shell.activePath === '/' ? homeAccent : undefined}
+            data-home-root={shell.activePath === '/' ? '' : undefined}
+        >
             {/* 公共壳层只组装导航、页面出口、页脚和登录遮罩。 */}
             <a className={styles.skipLink} href="#main">
                 跳到主要内容
@@ -44,7 +66,7 @@ export default function App() {
                 onLogout={() => setLogoutOpen(true)}
             />
             <Outlet />
-            <SiteFooter />
+            {shell.activePath === '/' ? <HomeFooter /> : <SiteFooter />}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />
             {/* 退出确认挂在壳层，任何页面点退出登录都能弹出。 */}
             <ConfirmDialog

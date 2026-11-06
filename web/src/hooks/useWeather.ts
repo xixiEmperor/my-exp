@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { weatherCodes, weatherFallback } from '../constants/weather';
 import type { WeatherReading } from '../types/home';
 
@@ -25,6 +25,7 @@ interface WeatherState {
     reading: WeatherReading | null;
     status: string;
     isLoading: boolean;
+    hasError: boolean;
 }
 
 const updatedFormatter = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
@@ -64,7 +65,7 @@ function getPosition(): Promise<GeolocationPosition> {
     });
 }
 
-async function fetchCurrentWeather(latitude: number, longitude: number) {
+async function fetchCurrentWeather(latitude: number, longitude: number, signal: AbortSignal) {
     const url = new URL('https://api.open-meteo.com/v1/forecast');
 
     url.search = new URLSearchParams({
@@ -75,7 +76,10 @@ async function fetchCurrentWeather(latitude: number, longitude: number) {
         timezone: 'auto',
     }).toString();
 
-    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    const response = await fetch(url.toString(), {
+        headers: { Accept: 'application/json' },
+        signal,
+    });
 
     if (!response.ok) {
         throw new Error('天气服务暂时不可用，请稍后重试。');
@@ -83,7 +87,11 @@ async function fetchCurrentWeather(latitude: number, longitude: number) {
 
     const payload = (await response.json()) as OpenMeteoResponse;
 
-    if (!payload.current) {
+    if (
+        !payload.current ||
+        !Number.isFinite(payload.current.temperature_2m) ||
+        !Number.isFinite(payload.current.weather_code)
+    ) {
         throw new Error('没有获取到天气数据，请稍后重试。');
     }
 
@@ -117,7 +125,7 @@ function buildLocationLabel(payload: ReverseGeocodeResponse) {
 }
 
 // 地名只是锦上添花，查不到就留空，不影响天气本身是否显示。
-async function fetchLocationName(latitude: number, longitude: number) {
+async function fetchLocationName(latitude: number, longitude: number, signal: AbortSignal) {
     try {
         const url = new URL('https://api.bigdatacloud.net/data/reverse-geocode-client');
 
@@ -128,7 +136,10 @@ async function fetchLocationName(latitude: number, longitude: number) {
             localityLanguage: 'zh-Hans',
         }).toString();
 
-        const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+        const response = await fetch(url.toString(), {
+            headers: { Accept: 'application/json' },
+            signal,
+        });
 
         if (!response.ok) {
             return '';
@@ -143,36 +154,62 @@ async function fetchLocationName(latitude: number, longitude: number) {
 
 // 天气默认只显示占位，用户主动点击才会走定位和请求，避免一进首页就弹授权。
 export function useWeather() {
+    const mounted = useRef(false);
+    const requestController = useRef<AbortController | null>(null);
+
+    useEffect(() => {
+        mounted.current = true;
+
+        return () => {
+            mounted.current = false;
+            requestController.current?.abort();
+        };
+    }, []);
+
     const [weather, setWeather] = useState<WeatherState>({
         reading: null,
         status: idleStatus,
         isLoading: false,
+        hasError: false,
     });
 
     const load = useCallback(async () => {
+        requestController.current?.abort();
+        const controller = new AbortController();
+        requestController.current = controller;
+
         setWeather((previous) => ({
             ...previous,
             isLoading: true,
+            hasError: false,
             status: '请在浏览器弹窗中允许定位。坐标只用于本次查询，不会保存。',
         }));
 
         try {
             const position = await getPosition();
+
+            // 浏览器定位不能取消，晚到的坐标不能继续触发已卸载页面的请求。
+            if (!mounted.current || controller.signal.aborted) return;
+
             const { latitude, longitude, accuracy } = position.coords;
 
             // 天气和地名互不依赖，并发请求，地名失败也不影响天气。
             const [current, location] = await Promise.all([
-                fetchCurrentWeather(latitude, longitude),
-                fetchLocationName(latitude, longitude),
+                fetchCurrentWeather(latitude, longitude, controller.signal),
+                fetchLocationName(latitude, longitude, controller.signal),
             ]);
+
+            if (!mounted.current || controller.signal.aborted) return;
 
             const [description, symbol] = weatherCodes[current.weather_code] ?? weatherFallback;
             const stamp = `更新于 ${updatedFormatter.format(new Date())} · Open-Meteo、BigDataCloud`;
 
             setWeather({
                 isLoading: false,
+                hasError: false,
                 status: `${stamp}${buildAccuracyHint(accuracy)}`,
                 reading: {
+                    weatherCode: current.weather_code,
                     temperature: Math.round(current.temperature_2m),
                     symbol,
                     description,
@@ -184,9 +221,12 @@ export function useWeather() {
                 },
             });
         } catch (error) {
+            if (!mounted.current || controller.signal.aborted) return;
+
             setWeather((previous) => ({
                 ...previous,
                 isLoading: false,
+                hasError: true,
                 status: error instanceof Error ? error.message : '获取失败，请稍后重试。',
             }));
         }
