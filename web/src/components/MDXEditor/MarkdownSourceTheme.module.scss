@@ -1,0 +1,63 @@
+// 高亮类只依赖页面令牌，切换主题不会重建编辑器或丢失撤销记录。
+.heading {
+    color: var(--accent-deep);
+    font-weight: 700;
+}
+
+// Markdown 符号独立配色，不再与代码关键字或编辑器默认色混用。
+.marker {
+    color: var(--accent-deep);
+    font-weight: 600;
+}
+
+.language {
+    color: var(--reader-code-string);
+    font-weight: 600;
+}
+
+.punctuation {
+    color: var(--reader-code-ink);
+}
+
+.codeLine {
+    background: var(--reader-code-bg);
+    box-shadow: inset 2px 0 0 var(--line);
+}
+
+.keyword {
+    color: var(--reader-code-keyword);
+}
+
+.string {
+    color: var(--reader-code-string);
+}
+
+.comment {
+    color: var(--reader-code-muted);
+}
+
+.literal {
+    color: var(--accent-deep);
+}
+
+.link {
+    color: var(--accent-deep);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.strong {
+    font-weight: 700;
+}
+
+.emphasis {
+    font-style: italic;
+}
+
+.code {
+    color: var(--reader-code-ink);
+}
+
+.invalid {
+    color: var(--danger);
+}

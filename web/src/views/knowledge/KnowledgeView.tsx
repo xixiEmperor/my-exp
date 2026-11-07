@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ArticleTree from '@/components/ArticleTree/ArticleTree';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticleTree } from '@/hooks/useArticleTree';
 import { useArticlesStore } from '@/stores/articles';
 import type { TreeNode } from '@/types/article-tree';
+import styles from './KnowledgeView.module.scss';
 
 // 知识库前台布局：左侧是文章目录树，右侧交给子路由渲染空状态或文章详情。
 export default function KnowledgeView() {
@@ -43,6 +44,24 @@ export default function KnowledgeView() {
 
     return (
         <Sidebar
+            className={styles.layout}
+            top={
+                <>
+                    {/* 目录标识沿用阅读 demo，让真实文章入口更容易辨认。 */}
+                    <Link to="/" className={styles.backLink}>
+                        <span aria-hidden="true">←</span> 回到小站
+                    </Link>
+                    <div className={styles.heading}>
+                        <span className={styles.mark} aria-hidden="true">
+                            ▤
+                        </span>
+                        <div>
+                            <h2>我的知识库</h2>
+                            <p>学一点，做一点，再记下来。</p>
+                        </div>
+                    </div>
+                </>
+            }
             bottom={
                 <>
                     {root.status === 'error' && (

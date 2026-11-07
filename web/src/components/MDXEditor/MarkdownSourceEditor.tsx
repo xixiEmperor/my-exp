@@ -2,6 +2,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { Compartment, EditorState, type Extension } from '@codemirror/state';
 import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
+import { markdownSourceTheme, markdownSourceCodeBlocks } from './markdownSourceTheme';
+import { markdownCodeLanguage } from './markdownCodeLanguage';
 import { useEffect, useImperativeHandle, useRef, type RefObject } from 'react';
 
 // 草稿只需要读取和替换原文，不再经过 MDXEditor 的解析和序列化。
@@ -49,7 +51,9 @@ export default function MarkdownSourceEditor({
                 extensions: [
                     ...extensions,
                     basicSetup,
-                    markdown(),
+                    markdown({ codeLanguages: markdownCodeLanguage }),
+                    markdownSourceTheme,
+                    markdownSourceCodeBlocks,
                     EditorView.lineWrapping,
                     readOnlyCompartment.current.of([]),
                     EditorView.updateListener.of((update) => {

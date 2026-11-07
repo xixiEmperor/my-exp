@@ -1,0 +1,235 @@
+// 首页和阅读页共用同一导航排布，颜色继承各页面的主题令牌。
+.dock {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: var(--bg);
+    line-height: 1.65;
+    font-family: 'Alibaba PuHuiTi', 'Microsoft YaHei', sans-serif;
+    --header-height: 94px;
+}
+
+.dock .inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(24px, 4vw, 64px);
+    width: min(1312px, calc(100% - 104px));
+    height: var(--header-height);
+    margin-inline: auto;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+
+    :global(.brand) {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.8px;
+        white-space: nowrap;
+    }
+
+    :global(.brand-mark) {
+        color: var(--accent-text);
+        font:
+            36px/1 Georgia,
+            serif;
+        letter-spacing: 0;
+    }
+
+    :global(.desktop-nav) {
+        display: flex;
+        align-items: center;
+        gap: 36px;
+        font-size: 12px;
+
+        a {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            min-height: 44px;
+            padding: 12px 0;
+            color: var(--muted);
+
+            &:hover,
+            &[aria-current] {
+                color: var(--ink);
+            }
+
+            &[aria-current]::after {
+                content: '';
+                position: absolute;
+                bottom: 4px;
+                left: 50%;
+                width: 4px;
+                height: 4px;
+                border-radius: 50%;
+                background: var(--accent-text);
+            }
+        }
+    }
+
+    :global(.header-actions) {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+
+        > button,
+        button[aria-haspopup='menu'] {
+            min-width: 44px;
+            min-height: 44px;
+        }
+    }
+
+    :global(.theme-button) {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: transparent;
+        font:
+            22px Georgia,
+            serif;
+        transform: translate(var(--mx, 0), var(--my, 0));
+        transition:
+            transform 0.25s,
+            background-color 0.2s;
+
+        &:hover {
+            background: var(--soft);
+        }
+    }
+
+    :global(.home-login) {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--paper);
+        font-size: 12px;
+    }
+
+    a:focus-visible,
+    button:focus-visible {
+        outline: 3px solid var(--accent-text);
+        outline-offset: 6px;
+    }
+
+    :global([role='menu']) {
+        z-index: 70;
+    }
+}
+
+@media (max-width: 1100px) {
+    .dock .inner {
+        width: calc(100% - 64px);
+
+        :global(.desktop-nav) {
+            gap: 20px;
+        }
+    }
+}
+
+// 两行布局与首页一致，完整站名不会被窄屏挤成省略号。
+@media (max-width: 1000px) {
+    .dock .inner {
+        height: auto;
+        flex-wrap: wrap;
+        gap: 8px 26px;
+        padding-block: 20px 14px;
+
+        :global(.brand) {
+            flex-basis: 100%;
+            justify-content: center;
+            font-size: 22px;
+        }
+    }
+}
+
+@media (max-width: 800px) {
+    .dock .inner {
+        width: calc(100% - 40px);
+
+        :global(.header-actions) {
+            gap: 14px;
+        }
+    }
+}
+
+@media (max-width: 760px) {
+    .dock .inner {
+        gap: 8px 12px;
+
+        :global(.brand) {
+            font-size: 20px;
+        }
+
+        :global(.desktop-nav) {
+            gap: 10px;
+
+            a {
+                font-size: 11px;
+            }
+        }
+
+        :global(.header-actions) {
+            gap: 6px;
+        }
+
+        :global(.home-login) {
+            padding: 0 8px;
+        }
+    }
+}
+
+@media (max-width: 700px) {
+    .dock :global(button[aria-haspopup='menu']) {
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+        justify-content: center;
+
+        :global([data-icon]) {
+            display: none;
+        }
+    }
+}
+
+@media (max-width: 580px) {
+    .dock .inner {
+        width: calc(100% - 36px);
+
+        :global(.brand) {
+            gap: 7px;
+        }
+
+        :global(.brand-mark) {
+            font-size: 31px;
+        }
+    }
+}
+
+// 沿用首页最后一档字号和边距，手机切换页面时导航高度不跳动。
+@media (max-width: 480px) {
+    .dock .inner :global(.brand) {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .dock .inner {
+        width: calc(100% - 28px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dock :global(.theme-button) {
+        transform: none;
+        transition: none;
+    }
+}

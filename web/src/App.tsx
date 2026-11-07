@@ -10,6 +10,7 @@ import { useSiteShell } from './hooks/useSiteShell';
 import { useTheme } from './hooks/useTheme';
 import { useCursor } from './hooks/useCursor';
 import styles from './App.module.scss';
+import readingStyles from './views/knowledge/ReadingTheme.module.scss';
 import homeStyles from './components/HomeExperience/HomeExperience.module.scss';
 import { useLogin } from './hooks/useLogin';
 import { useHomeInteraction } from './stores/homeInteraction';
@@ -18,7 +19,11 @@ import { useUIStore } from './stores/ui';
 // 应用壳层组合公共组件，实际页面通过路由出口展示。
 export default function App() {
     const shell = useSiteShell();
-    const theme = useTheme();
+    const isReading =
+        shell.activePath === '/knowledge' || shell.activePath.startsWith('/knowledge/');
+    const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin/');
+    const isPaperPage = isReading || isAdmin;
+    const theme = useTheme(isPaperPage ? 'reading' : 'default');
     const cursor = useCursor();
     const headerHeight = useHomeInteraction((state) => state.headerHeight);
     const homeAccent = useUIStore((state) => state.homeAccent);
@@ -42,12 +47,16 @@ export default function App() {
 
     return (
         <div
-            className={`${styles.app}${shell.activePath === '/' ? ` home-page ${homeStyles.homeRoot}` : ''}`}
+            className={`${styles.app}${shell.activePath === '/' ? ` home-page ${homeStyles.homeRoot}` : ''}${isPaperPage ? ` paper-page ${readingStyles.readingRoot}` : ''}${isReading ? ' reading-page' : ''}${isAdmin ? ' admin-page' : ''}`}
             style={
-                shell.activePath === '/'
-                    ? ({ '--home-header-offset': `${headerHeight}px` } as CSSProperties)
+                shell.activePath === '/' || isPaperPage
+                    ? ({
+                          '--home-header-offset': `${headerHeight}px`,
+                          '--header': `${headerHeight}px`,
+                      } as CSSProperties)
                     : undefined
             }
+            data-reading-theme={isPaperPage ? theme.resolvedTheme : undefined}
             data-home-theme={shell.activePath === '/' ? theme.resolvedTheme : undefined}
             data-accent={shell.activePath === '/' ? homeAccent : undefined}
             data-home-root={shell.activePath === '/' ? '' : undefined}

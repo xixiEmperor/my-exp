@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useStore } from 'zustand';
-import { applyThemeToDocument, type ResolvedTheme, type ThemePreference } from '../config/theme';
+import {
+    applyThemeToDocument,
+    READING_THEME_COLOR,
+    THEME_COLOR,
+    type ResolvedTheme,
+    type ThemePreference,
+} from '../config/theme';
 import { useUIStore } from '../stores/ui';
 import { usePrefersDark } from './usePrefersDark';
 
@@ -15,15 +21,16 @@ function resolveTheme(theme: ThemePreference, prefersDark: boolean): ResolvedThe
 }
 
 // 主题编排：store 只存偏好，这里负责算出最终主题并同步到文档。
-export function useTheme() {
+export function useTheme(page: 'default' | 'reading' = 'default') {
+    const themeColors = page === 'reading' ? READING_THEME_COLOR : THEME_COLOR;
     const theme = useStore(useUIStore, (state) => state.theme);
     const prefersDark = usePrefersDark();
     const resolvedTheme = resolveTheme(theme, prefersDark);
     const transitionBusy = useRef(false);
 
     useEffect(() => {
-        applyThemeToDocument(theme, resolvedTheme);
-    }, [theme, resolvedTheme]);
+        applyThemeToDocument(theme, resolvedTheme, themeColors[resolvedTheme]);
+    }, [theme, resolvedTheme, themeColors]);
 
     // 二态按钮：第一次点击会离开 auto 并固定到与系统相反的主题，
     // 之后就是在明暗之间来回切，符合默认跟随系统、选择后记住的直觉。
@@ -35,7 +42,7 @@ export function useTheme() {
             const root = document.documentElement;
             const commit = () => {
                 // 快照前同步状态与令牌，避免先拍到旧主题再等待 React 的 effect。
-                applyThemeToDocument(nextTheme, nextTheme);
+                applyThemeToDocument(nextTheme, nextTheme, themeColors[nextTheme]);
                 flushSync(() => useUIStore.getState().setTheme(nextTheme));
             };
 
@@ -82,7 +89,7 @@ export function useTheme() {
                 root.classList.remove('is-theme-transition');
             }
         },
-        [resolvedTheme],
+        [resolvedTheme, themeColors],
     );
 
     return { theme, resolvedTheme, toggleTheme };

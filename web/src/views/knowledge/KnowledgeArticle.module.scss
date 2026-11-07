@@ -7,7 +7,8 @@
 /* 正文在左，目录在右。目录列宽度固定，正文吃掉剩下的空间 */
 .reading {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 168px;
+    grid-template-columns: minmax(0, 720px) 176px;
+    justify-content: space-between;
     align-items: start;
     gap: 40px;
 }

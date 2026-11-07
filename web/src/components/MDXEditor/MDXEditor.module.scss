@@ -1,5 +1,6 @@
 .wrap {
     min-width: 0;
+    padding-block: 20px 48px;
 }
 
 // MDXEditor 自带一套中性灰加蓝色的主题变量，这里逐个换成项目的令牌。
@@ -64,7 +65,9 @@
     min-width: 0;
     min-height: 560px;
     border: 1px solid var(--line);
-    border-radius: var(--r-lg);
+    // 源码与工具栏连成同一张工作面板，避免上下两块的边界割裂。
+    border-top: 0;
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
     color: var(--ink);
     background: var(--paper);
     overflow: hidden;
@@ -77,6 +80,7 @@
 
     // 源码编辑器。组件内置的白底主题和偏小的字号都在这里换成主题色。
     :global(.cm-editor) {
+        min-height: 558px;
         padding: 18px 20px;
         color: var(--ink);
         background: transparent;
@@ -96,12 +100,33 @@
 
     :global(.cm-gutters) {
         color: var(--muted-2);
-        background: transparent;
+        background: var(--paper-2);
         border-right: 1px solid var(--line);
+        padding-right: 5px;
+    }
+
+    :global(.cm-line) {
+        padding-inline: 12px;
+    }
+
+    :global(.cm-editor.cm-focused) {
+        outline: none;
+    }
+
+    :global(.cm-lineNumbers .cm-gutterElement) {
+        padding-inline: 8px;
     }
 
     :global(.cm-activeLine) {
         background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+
+    // 行号的当前行提示也跟随暖色主题，避免深色编辑区里留下浅蓝块。
+    :global(.cm-activeLineGutter),
+    :global(.cm-foldPlaceholder) {
+        border-color: var(--line);
+        color: var(--muted);
+        background: var(--accent-soft);
     }
 
     :global(.cm-selectionBackground),
@@ -111,5 +136,37 @@
 
     :global(.cm-cursor) {
         border-left-color: var(--accent);
+    }
+
+    // 搜索面板和补全弹层也继承页面主题，深色下不留下默认白色区域。
+    :global(.cm-panels),
+    :global(.cm-tooltip) {
+        border-color: var(--line);
+        color: var(--ink);
+        background: var(--paper-2);
+    }
+
+    :global(.cm-search input),
+    :global(.cm-search button) {
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: var(--paper);
+    }
+
+    @media (max-width: 700px) {
+        min-height: 460px;
+
+        :global(.cm-editor) {
+            min-height: 458px;
+            padding: 14px 10px;
+        }
+
+        :global(.cm-scroller) {
+            font-size: 13px;
+        }
+
+        :global(.cm-line) {
+            padding-inline: 8px;
+        }
     }
 }

@@ -1,0 +1,77 @@
+// 阅读目录与公共导航共用左右边界，正文保留 demo 的安静行宽。
+.layout {
+    width: min(1312px, calc(100% - 104px));
+    grid-template-columns: 244px minmax(0, 1fr);
+    gap: 40px;
+
+    > aside {
+        padding-top: 28px;
+    }
+
+    @media (max-width: 1100px) {
+        width: calc(100% - 64px);
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    @media (max-width: 900px) {
+        width: calc(100% - 40px);
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+
+        > aside {
+            padding-top: 0;
+        }
+    }
+
+    @media (max-width: 580px) {
+        width: calc(100% - 36px);
+    }
+
+    @media (max-width: 360px) {
+        width: calc(100% - 28px);
+    }
+}
+
+.backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    color: var(--muted);
+    font-size: 12px;
+
+    &:hover {
+        color: var(--accent-deep);
+    }
+}
+
+.heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 18px;
+
+    h2 {
+        margin: 0 0 4px;
+        font-size: 17px;
+    }
+
+    p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+    }
+}
+
+.mark {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 40px;
+    border-radius: 11px;
+    color: var(--accent-deep);
+    background: var(--accent-soft);
+    font-size: 24px;
+}

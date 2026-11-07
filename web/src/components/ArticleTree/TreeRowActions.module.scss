@@ -11,11 +11,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    // 按钮适配原有文字行高，显示时不会把目录条目撑高。
+    width: 24px;
+    height: 24px;
+    padding: 0;
     border-radius: 4px;
     color: inherit;
 
     &:hover {
-        background: rgba(0, 0, 0, 0.1);
+        background: var(--paper-2);
     }
 }
 
@@ -31,10 +35,11 @@
     display: flex;
     flex-direction: column;
     padding: 4px;
-    background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
     border-radius: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-sm);
 }
 
 // 菜单项，图标加文字横向排列
@@ -50,7 +55,7 @@
     color: inherit;
 
     &:hover:not(:disabled) {
-        background: rgba(0, 0, 0, 0.06);
+        background: var(--accent-soft);
     }
 
     &:disabled {
@@ -60,6 +65,6 @@
 
     // 删除属于危险操作，文字和图标统一标红
     &.danger {
-        color: #d03050;
+        color: var(--danger);
     }
 }

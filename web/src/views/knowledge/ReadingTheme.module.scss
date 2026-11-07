@@ -1,0 +1,193 @@
+// 同一套令牌同时提供给页面和挂在 body 下的编辑菜单，避免弹层脱离主题。
+@mixin paper-tokens {
+    color-scheme: light;
+    --bg: #f7f3ea;
+    --paper: #fffdf8;
+    --paper-2: #f0eadb;
+    --paper-3: #e8dfce;
+    --soft: #f0eadb;
+    --ink: #2b2a27;
+    --muted: #6f6a5f;
+    --muted-2: #6f6a5f;
+    --line: #e6dfce;
+    --accent: #a4562a;
+    --accent-deep: #8c4722;
+    --accent-soft: #f0e2cc;
+    --accent-text: var(--accent);
+    --blue: var(--accent);
+    --mint: #d7ddbf;
+    --purple: #c5ad8c;
+    --reader-code-bg: #f0eadb;
+    --reader-code-ink: #3e362c;
+    --reader-code-muted: #74644f;
+    --reader-code-keyword: #77508a;
+    --reader-code-string: #416444;
+    --selection: #f0d9b5;
+    --reader-font-size: 17px;
+    --page-glow: none;
+    --ring: var(--accent);
+    --action-ink: #fffdf8;
+    --ok: #416444;
+    --warn: #8c4722;
+    --danger: #a33035;
+    --shadow: 0 24px 70px #19161218;
+    --shadow-sm: 0 8px 26px #19161212;
+}
+
+@mixin dark-paper-tokens {
+    color-scheme: dark;
+    --bg: #191612;
+    --paper: #242019;
+    --paper-2: #1e1a15;
+    --paper-3: #15110d;
+    --soft: #1e1a15;
+    --ink: #eae0d1;
+    --muted: #b1a18b;
+    --muted-2: #b1a18b;
+    --line: #43382a;
+    --accent: #e9b879;
+    --accent-deep: #ffd39a;
+    --accent-soft: #41301e;
+    --mint: #b9c3a2;
+    --reader-code-bg: #15110d;
+    --reader-code-ink: #e9dcc6;
+    --reader-code-muted: #b1a18b;
+    --reader-code-keyword: #d7b5ff;
+    --reader-code-string: #a8d5a2;
+    --selection: #57412b;
+    --action-ink: #191612;
+    --ok: #a8d5a2;
+    --warn: #efc18d;
+    --danger: #f0a1a1;
+    --shadow: 0 24px 70px #0005;
+    --shadow-sm: 0 8px 26px #0003;
+}
+
+// 阅读配色取自 demo-reading 最后加载的 palette.css，避免受首页换色影响。
+.readingRoot {
+    @include paper-tokens;
+
+    background: var(--bg);
+    color: var(--ink);
+
+    &[data-reading-theme='dark'] {
+        @include dark-paper-tokens;
+    }
+
+    ::selection {
+        color: var(--ink);
+        background: var(--selection);
+    }
+
+    // 只覆盖正式阅读正文，后台编辑器继续使用自己的排版和高亮。
+    :global(.reader-prose) {
+        max-width: 720px;
+        font-size: var(--reader-font-size);
+        line-height: 1.95;
+
+        h1 {
+            margin: 18px 0 28px;
+            font-size: clamp(29px, 3.1vw, 44px);
+            line-height: 1.38;
+            letter-spacing: -0.045em;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            scroll-margin-top: calc(var(--header) + 28px);
+        }
+
+        pre {
+            border-color: var(--line);
+            color: var(--reader-code-ink);
+            background: var(--reader-code-bg);
+            line-height: 1.9;
+
+            code {
+                padding: 0;
+                color: inherit;
+                background: transparent;
+            }
+        }
+
+        // 高亮插件保留解析能力，颜色由纸张和暖岩令牌接管。
+        :global(.hljs) {
+            color: var(--reader-code-ink);
+            background: transparent;
+        }
+
+        :global(.hljs-comment),
+        :global(.hljs-quote) {
+            color: var(--reader-code-muted);
+        }
+
+        :global(.hljs-keyword),
+        :global(.hljs-selector-tag),
+        :global(.hljs-type),
+        :global(.hljs-built_in) {
+            color: var(--reader-code-keyword);
+        }
+
+        :global(.hljs-string),
+        :global(.hljs-regexp),
+        :global(.hljs-addition) {
+            color: var(--reader-code-string);
+        }
+
+        :global(.hljs-title),
+        :global(.hljs-number),
+        :global(.hljs-literal),
+        :global(.hljs-attr),
+        :global(.hljs-variable),
+        :global(.hljs-symbol),
+        :global(.hljs-meta) {
+            color: var(--accent-deep);
+        }
+
+        // 宽表格只在正文内部滚动，避免影响两侧目录和吸顶导航。
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        :global(.reader-prose) {
+            font-size: 16px;
+
+            pre {
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+// 页面外的滚动条预留区也使用同一底色，离开知识库后自动恢复。
+:global(html:has(.paper-page)),
+:global(body:has(.paper-page)) {
+    @include paper-tokens;
+    background-color: #f7f3ea;
+    background-image: none;
+    color-scheme: light;
+}
+
+:global(html:has(.paper-page[data-reading-theme='dark'])),
+:global(body:has(.paper-page[data-reading-theme='dark'])) {
+    @include dark-paper-tokens;
+    background-color: #191612;
+    color-scheme: dark;
+}
+
+// 标题已经预留了实测导航高度，取消旧的全站补偿以免锚点留白叠加。
+:global(html:has(.paper-page)) {
+    scroll-padding-top: 0;
+}

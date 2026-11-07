@@ -13,6 +13,12 @@ export const THEME_COLOR: Record<ResolvedTheme, string> = {
     dark: '#080c16',
 };
 
+// 阅读页的地址栏底色对应纸张和暖岩表面，不沿用旧的冷色背景。
+export const READING_THEME_COLOR: Record<ResolvedTheme, string> = {
+    light: '#f7f3ea',
+    dark: '#191612',
+};
+
 const preferences: readonly ThemePreference[] = ['auto', 'light', 'dark'];
 
 // 读取本地保存的偏好。隐私模式禁用 localStorage 时退回 auto，不影响正常使用。
@@ -29,7 +35,11 @@ export function readStoredTheme(): ThemePreference {
 
 // 把偏好落到文档上。auto 表示跟随系统，此时不写 data-theme，
 // 交给 tokens.scss 里的媒体查询接管。
-export function applyThemeToDocument(preference: ThemePreference, resolved: ResolvedTheme) {
+export function applyThemeToDocument(
+    preference: ThemePreference,
+    resolved: ResolvedTheme,
+    themeColor = THEME_COLOR[resolved],
+) {
     const root = document.documentElement;
 
     if (preference === 'auto') {
@@ -48,7 +58,5 @@ export function applyThemeToDocument(preference: ThemePreference, resolved: Reso
         // 存不下就只在本次会话里生效。
     }
 
-    document
-        .querySelector('meta[name="theme-color"]')
-        ?.setAttribute('content', THEME_COLOR[resolved]);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor);
 }

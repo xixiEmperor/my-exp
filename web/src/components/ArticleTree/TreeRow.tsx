@@ -1,9 +1,4 @@
-import {
-    type FocusEventHandler,
-    type KeyboardEvent,
-    type ReactNode,
-    useState,
-} from 'react';
+import { type FocusEventHandler, type KeyboardEvent, type ReactNode, useState } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import TreeRowActions from './TreeRowActions';
 import styles from './ArticleTree.module.scss';
@@ -111,6 +106,9 @@ export default function TreeRow({
                 <SiteIcon name={hasArrow ? 'folder' : 'file'} size={14}></SiteIcon>
                 {renaming ? (
                     <input
+                        aria-label={hasArrow ? '重命名文件夹' : '重命名文章'}
+                        onFocus={(event) => event.currentTarget.select()}
+                        onClick={(event) => event.stopPropagation()}
                         onBlur={onRenameBlur}
                         onKeyDown={onRenameKeyDown}
                         type="text"

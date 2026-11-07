@@ -2,11 +2,11 @@
 .overlay {
     position: fixed;
     inset: 0;
-    z-index: 60;
+    z-index: 80;
     display: grid;
     place-items: center;
     padding: 28px;
-    background: color-mix(in srgb, #05080f 62%, transparent);
+    background: color-mix(in srgb, #191612 62%, transparent);
     backdrop-filter: blur(6px);
 }
 
@@ -18,7 +18,7 @@
     max-height: 100%;
     border: 1px solid var(--line);
     border-radius: var(--r-xl);
-    background: var(--paper);
+    background: var(--bg);
     box-shadow: var(--shadow);
     overflow: hidden;
 }
@@ -44,8 +44,8 @@
 .closeButton {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border-radius: 9px;
     color: var(--muted);
     transition:

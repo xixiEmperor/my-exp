@@ -1,0 +1,74 @@
+// 后台和阅读页共用边界，编辑器继续占满右侧工作区。
+.layout {
+    width: min(1312px, calc(100% - 104px));
+    grid-template-columns: 244px minmax(0, 1fr);
+    gap: 40px;
+
+    > aside {
+        padding-top: 28px;
+    }
+
+    @media (max-width: 1100px) {
+        width: calc(100% - 64px);
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    @media (max-width: 900px) {
+        width: calc(100% - 40px);
+        grid-template-columns: minmax(0, 1fr);
+
+        > aside {
+            padding-top: 0;
+        }
+    }
+
+    @media (max-width: 580px) {
+        width: calc(100% - 36px);
+    }
+
+    @media (max-width: 360px) {
+        width: calc(100% - 28px);
+    }
+}
+
+.heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 10px;
+
+    > span {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: 36px;
+        height: 40px;
+        border-radius: 11px;
+        color: var(--accent-deep);
+        background: var(--accent-soft);
+        font-size: 24px;
+    }
+
+    h2 {
+        margin: 0 0 4px;
+        font-size: 17px;
+    }
+
+    p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+    }
+}
+
+.empty {
+    display: grid;
+    place-items: center;
+    min-height: calc(100dvh - var(--header) - 40px);
+    padding-block: 32px;
+
+    @media (max-width: 900px) {
+        min-height: 45dvh;
+    }
+}
