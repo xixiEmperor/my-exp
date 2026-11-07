@@ -1334,9 +1334,6 @@
         gap: 17px;
         font-size: 10px;
     }
-    :global(.home-page .desktop-nav a:nth-child(2)) {
-        display: none;
-    }
     :global(.home-page .theme-button) {
         width: 32px;
         height: 32px;
@@ -2729,10 +2726,6 @@
         transform: rotate(4deg);
     }
 }
-/* 顶部天气与导航同行，演示标识说明当前状态来源。 */
-:global(.home-page .site-header) {
-    padding-right: 160px;
-}
 :global(.home-page .weather-button) {
     display: flex;
     align-items: center;
@@ -3031,9 +3024,6 @@
         padding: 9px 12px;
         font-size: 11px;
     }
-    :global(.home-page .site-header) {
-        padding-right: 115px;
-    }
     :global(.home-page .weather-button small) {
         display: none;
     }
@@ -3042,9 +3032,6 @@
     }
 }
 @media (max-width: 760px) {
-    :global(.home-page .site-header) {
-        padding-right: 0;
-    }
     :global(.home-page .weather-button) {
         gap: 4px;
         font-size: 11px;
@@ -3125,33 +3112,8 @@
         transition: none;
     }
 }
-/* 导航在手机上分两行排布，品牌与天气保留完整的点击区域。 */
+/* 手机上天气按钮和小伙伴保留完整的点击区域。 */
 @media (max-width: 760px) {
-    :global(.home-page .site-header) {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 14px 10px;
-        padding-block: 20px 14px;
-    }
-    :global(.home-page .site-header .brand) {
-        font-size: 21px;
-        white-space: nowrap;
-    }
-    :global(.home-page .desktop-nav) {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        justify-content: flex-start;
-        gap: 24px;
-    }
-    :global(.home-page .desktop-nav a) {
-        white-space: nowrap;
-        font-size: 13px;
-    }
-    :global(.home-page .header-actions) {
-        grid-column: 2;
-        grid-row: 1;
-        gap: 9px;
-    }
     :global(.home-page .weather-button) {
         white-space: nowrap;
     }
@@ -3178,17 +3140,8 @@
         padding-right: 0;
     }
 }
-/* 平板留出导航空间，小站两侧在空间不足时改为上下排列。 */
+/* 平板尺寸下项目区收窄为不等宽双栏。 */
 @media (min-width: 761px) and (max-width: 1000px) {
-    :global(.home-page .site-header) {
-        padding-right: 85px;
-    }
-    :global(.home-page .desktop-nav) {
-        gap: 15px;
-    }
-    :global(.home-page .header-actions) {
-        gap: 12px;
-    }
     :global(.home-page .project-section) {
         grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
         gap: 30px;
@@ -3259,52 +3212,6 @@
         width: 100%;
     }
 }
-/* 顶部栏整体居中，不再为右侧挂件单独预留导致偏移的空间。 */
-:global(.home-page .site-header) {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: clamp(24px, 4vw, 64px);
-    padding-right: 0;
-}
-:global(.home-page .site-header .brand) {
-    font-size: 24px;
-    letter-spacing: -0.8px;
-}
-/* 窄屏把完整站名放在居中的第一行，导航和状态在第二行居中。 */
-@media (max-width: 1000px) {
-    :global(.home-page .site-header) {
-        flex-wrap: wrap;
-        gap: 8px 26px;
-        padding-block: 20px 14px;
-    }
-    :global(.home-page .site-header .brand) {
-        flex-basis: 100%;
-        justify-content: center;
-        font-size: 22px;
-    }
-    :global(.home-page .site-header .desktop-nav) {
-        justify-content: center;
-    }
-    :global(.home-page .site-header .header-actions) {
-        justify-content: center;
-    }
-}
-@media (max-width: 760px) {
-    :global(.home-page .site-header .brand) {
-        font-size: 20px;
-    }
-    :global(.home-page .site-header .desktop-nav) {
-        gap: 16px;
-    }
-    :global(.home-page .site-header .desktop-nav a:nth-child(2)) {
-        display: block;
-    }
-    :global(.home-page .site-header .header-actions) {
-        gap: 9px;
-    }
-}
-
 /* 强调色按钮用深色底，深色主题的文字另用明亮令牌保证可读。 */
 :global(.home-page[data-accent='blue']) {
     --blue: #254ddb;
@@ -4649,30 +4556,6 @@
     :global(.home-page .hero) {
         padding-top: 140px;
     }
-    /* 往下读时收起文字牌，保留可点击图形，避免固定挂件盖住长段正文。 */
-    :global(.home-page .weather-dock.is-reading .weather-widget-copy),
-    :global(.home-page .weather-dock.is-reading .weather-widget > small) {
-        display: none;
-    }
-    :global(.home-page .weather-dock.is-reading) {
-        top: 0;
-        padding-top: 4px;
-        width: 63px;
-    }
-    :global(.home-page .weather-dock.is-reading::before) {
-        height: 10px;
-    }
-    :global(.home-page .weather-dock.is-reading .weather-art) {
-        width: 58px;
-        height: 48px;
-    }
-    :global(.home-page .weather-dock.is-reading:focus-within .weather-widget-copy) {
-        display: grid;
-        width: 120px;
-    }
-    :global(.home-page .weather-dock.is-reading:focus-within .weather-widget > small) {
-        display: block;
-    }
     :global(.home-page .weather-status) {
         width: 190px;
     }
@@ -4931,49 +4814,6 @@
         height: 58px;
     }
 }
-:global(.home-page .weather-dock.is-reading.shell) {
-    width: 44px;
-    left: 4px;
-    padding-top: 2px;
-}
-:global(.home-page .weather-dock.is-reading .weather-art) {
-    width: 44px;
-    height: 44px;
-}
-:global(.home-page .weather-dock.is-reading .weather-widget-copy),
-:global(.home-page .weather-dock.is-reading .weather-widget > small) {
-    display: none;
-}
-:global(.home-page .weather-dock.is-reading:hover .weather-widget-copy),
-:global(.home-page .weather-dock.is-reading:focus-within .weather-widget-copy) {
-    display: grid;
-    width: 130px;
-    margin-left: 86px;
-}
-:global(.home-page .buddy-corner.is-reading) {
-    right: 2px;
-    width: 44px;
-    padding-top: 6px;
-}
-:global(.home-page .buddy-corner.is-reading::before) {
-    height: 14px;
-}
-:global(.home-page .buddy-corner.is-reading .buddy.is-chef) {
-    width: 44px;
-    height: 44px;
-}
-:global(.home-page .buddy-corner.is-reading .chef-art) {
-    transform: scale(0.65);
-    transform-origin: center top;
-}
-:global(.home-page .buddy-corner.is-reading p) {
-    display: none;
-}
-:global(.home-page .buddy-corner.is-reading.is-speaking p) {
-    display: block;
-    width: 140px;
-}
-
 /* 装饰光标由 React 挂载，系统与用户选择的光标始终保留。 */
 :global(.home-page .cursor-dot.is-active) {
     display: block;

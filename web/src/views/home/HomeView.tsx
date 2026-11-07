@@ -8,7 +8,7 @@ import {
     ExperienceContact,
 } from '../../components/HomeExperience/HomeContent';
 import { HomeWeatherHanger, HomeBuddyHanger } from '../../components/HomeExperience/HomeHangers';
-import { useHomeReading } from '../../hooks/useHomeExperience';
+import { useHomeDocumentHidden } from '../../hooks/useHomeExperience';
 import HomeFeedback from '../../components/HomeExperience/HomeFeedback';
 import type { SculptureAccent } from '../../utils/homeSculpture';
 import { useUIStore } from '../../stores/ui';
@@ -17,7 +17,7 @@ import styles from './HomeView.module.scss';
 
 // 视图只组合首页的区域，交互和生命周期交给页面 hook。
 export default function HomeView() {
-    const pageState = useHomeReading();
+    const pageHidden = useHomeDocumentHidden();
     const onAccent = useCallback((accent: SculptureAccent) => {
         // 视觉偏好交回现有 UI store，根节点属性由 React 声明，不手动修改应用壳层。
         useUIStore.getState().setHomeAccent(accent);
@@ -30,7 +30,7 @@ export default function HomeView() {
     }, []);
 
     return (
-        <main id="main" className={`${styles.view}${pageState.hidden ? ' is-page-hidden' : ''}`}>
+        <main id="main" className={`${styles.view}${pageHidden ? ' is-page-hidden' : ''}`}>
             <HomeWeatherHanger />
             <HomeBuddyHanger />
             <HomeFeedback />

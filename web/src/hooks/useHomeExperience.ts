@@ -174,37 +174,19 @@ export function useHomeTimeline() {
     return { ref, progress };
 }
 
-// 固定挂件收成小图标后留出正文空间，状态只在越过边界时改变。
-export function useHomeReading() {
-    const [reading, setReading] = useState(false);
+// 监听标签页可见性，页面切到后台时由 React 声明暂停状态。
+export function useHomeDocumentHidden() {
     const [hidden, setHidden] = useState(document.hidden);
 
     useEffect(() => {
-        let frame = 0;
-
-        function update() {
-            frame = 0;
-            setReading(scrollY > 80);
-        }
-
-        function scroll() {
-            if (!frame) frame = requestAnimationFrame(update);
-        }
-
         function visibility() {
             setHidden(document.hidden);
         }
 
-        window.addEventListener('scroll', scroll, { passive: true });
         document.addEventListener('visibilitychange', visibility);
-        update();
 
-        return () => {
-            cancelAnimationFrame(frame);
-            window.removeEventListener('scroll', scroll);
-            document.removeEventListener('visibilitychange', visibility);
-        };
+        return () => document.removeEventListener('visibilitychange', visibility);
     }, []);
 
-    return { reading, hidden };
+    return hidden;
 }

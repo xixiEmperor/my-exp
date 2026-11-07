@@ -135,18 +135,24 @@
     }
 }
 
-// 两行布局与首页一致，完整站名不会被窄屏挤成省略号。
+// 中小屏改成两行：第一行标题靠左、头像菜单和主题按钮靠右，第二行导航整行居中。
 @media (max-width: 1000px) {
     .dock .inner {
         height: auto;
         flex-wrap: wrap;
+        justify-content: space-between;
         gap: 8px 26px;
         padding-block: 20px 14px;
 
         :global(.brand) {
+            font-size: 22px;
+        }
+
+        // 导航排到第三位并占满整行，把自己内容居中后就落在第二行。
+        :global(.desktop-nav) {
+            order: 3;
             flex-basis: 100%;
             justify-content: center;
-            font-size: 22px;
         }
     }
 }

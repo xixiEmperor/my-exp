@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useWeather } from '../../hooks/useWeather';
 import { useHomeBuddy } from '../../hooks/useHomeBuddy';
-import { useHomeVisibility, useHomeReading } from '../../hooks/useHomeExperience';
+import { useHomeVisibility, useHomeDocumentHidden } from '../../hooks/useHomeExperience';
 import { useHomeInteraction } from '../../stores/homeInteraction';
 import { useUIStore } from '../../stores/ui';
 import { usePrefersDark } from '../../hooks/usePrefersDark';
@@ -38,7 +38,7 @@ export function HomeWeatherHanger() {
     const { reading, status, isLoading, hasError, load } = useWeather();
     const code = reading?.weatherCode;
     const visibility = useHomeVisibility<HTMLElement>();
-    const pageState = useHomeReading();
+    const pageHidden = useHomeDocumentHidden();
     useEffect(() => useHomeInteraction.getState().registerAction('weather', load), [load]);
 
     useEffect(() => {
@@ -67,7 +67,7 @@ export function HomeWeatherHanger() {
     return (
         <aside
             ref={visibility.ref}
-            className={`weather-dock shell${pageState.reading ? ' is-reading' : ''}${pageState.hidden ? ' is-page-hidden' : ''}${visibility.visible ? ' is-in-view' : ''}${isLoading ? ' is-loading' : ''}`}
+            className={`weather-dock shell${pageHidden ? ' is-page-hidden' : ''}${visibility.visible ? ' is-in-view' : ''}${isLoading ? ' is-loading' : ''}`}
             data-weather-dock
             data-weather-kind={weatherKind(code)}
             data-loop
@@ -109,7 +109,7 @@ export function HomeWeatherHanger() {
 export function HomeBuddyHanger() {
     const state = useHomeBuddy();
     const weatherIndex = useHomeInteraction((ui) => ui.weatherIndex);
-    const pageState = useHomeReading();
+    const pageHidden = useHomeDocumentHidden();
     const visibility = useHomeVisibility<HTMLDivElement>();
     const theme = useUIStore((ui) => ui.theme);
     const prefersDark = usePrefersDark();
@@ -127,7 +127,7 @@ export function HomeBuddyHanger() {
     return (
         <div
             ref={visibility.ref}
-            className={`buddy-corner ${expressions}${pageState.reading ? ' is-reading' : ''}${pageState.hidden ? ' is-page-hidden' : ''}${state.speaking ? ' is-speaking' : ''}${visibility.visible ? ' is-in-view' : ''}${lampOn ? ' is-lamp-on' : ''}`}
+            className={`buddy-corner ${expressions}${pageHidden ? ' is-page-hidden' : ''}${state.speaking ? ' is-speaking' : ''}${visibility.visible ? ' is-in-view' : ''}${lampOn ? ' is-lamp-on' : ''}`}
             data-weather={weatherIndex >= 0 ? weatherIndex : undefined}
             data-buddy-tag
             data-loop
