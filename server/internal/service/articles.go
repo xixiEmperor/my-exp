@@ -56,7 +56,7 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 		// 游客只有预览内容，这里统一塞进 content 字段，前端不用区分两种返回结构
 		content := ""
 		if preview.Preview != nil {
-			content = *preview.Preview
+			content = *preview.Preview + cons.SplitFlag
 		}
 
 		return model.ArticlesDetail{

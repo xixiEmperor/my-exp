@@ -3,7 +3,6 @@ import MarkdownReadonly from '../MarkdownReadonly/MarkdownReadonly';
 import MarkdownToc from '../MarkdownToc/MarkdownToc';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import style from './MDXPreview.module.scss';
-import { ARTICLE_SEPARATOR } from './ArticleSeparator';
 
 interface Props {
     // 预览页是否打开
@@ -84,9 +83,7 @@ export default function MDXPreview({ open, content, onClose }: Props) {
                         {/* 和前台文章详情页共用同一套阅读排版 */}
                         <div className="reader-prose">
                             {/* 阅读预览用横线呈现分界，保存的原文仍保留 JSX 标志。 */}
-                            <MarkdownReadonly
-                                content={content.replaceAll(ARTICLE_SEPARATOR, '\n\n---\n\n')}
-                            />
+                            <MarkdownReadonly content={content} />
                         </div>
                     </article>
 

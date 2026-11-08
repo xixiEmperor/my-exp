@@ -1,0 +1,42 @@
+/* 分隔线两侧平分剩余空间，登录提示固定居中。 */
+.separator {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 32px 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+
+    /* 使用伪元素画线，窄屏时文字可以换行，线条仍保持两侧对称。 */
+    &::before,
+    &::after {
+        content: '';
+        flex: 1 0 20px;
+        height: 1px;
+        background: var(--line);
+    }
+}
+
+/* 登录入口沿用站点强调色，悬停和键盘聚焦时提供清晰反馈。 */
+.login {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent-deep);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+    }
+}
