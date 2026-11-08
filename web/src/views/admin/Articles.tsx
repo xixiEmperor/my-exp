@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MarkdownSpace from '@/components/MarkdownSpace/MarkdownSpace';
 import { useArticles } from '@/hooks/useArticles';
@@ -9,36 +9,31 @@ import { useDraftStore } from '@/stores/draft';
 export default function ArticleManager() {
     const { id } = useParams<{ id: string }>();
     const { findArticle } = useArticles();
-    const [init, setInit] = useState<{ id: string; content: string } | undefined>(undefined);
 
-    // 订阅文章缓存，详情写回 store 之后这里会跟着重新渲染
+    // 订阅文章缓存和本地草稿，详情或草稿写回之后这里会跟着重新渲染
     const articles = useArticlesStore((state) => state.articles);
     const drafts = useDraftStore((state) => state.draft);
 
     useEffect(() => {
-        // 点击目录时已经预取过一次，这里命中缓存就不会重复发请求
+        // 点击目录时已经预取过一次，这里命中缓存就不会重复发请求。
+        // 即使有本地草稿也要取一次详情，右侧信息栏需要接口返回的时间和浏览量。
         if (id) {
-            // 如果已有本地草稿，直接用本地的
-            if (drafts[id]) {
-                setInit(drafts[id]);
-                return;
-            }
-
-            // 没有草稿再去查看是否有对应的文章实体映射
-            findArticle(id, true);
-            if (articles[id]) {
-                setInit(articles[id]);
-                return;
-            }
+            findArticle(id);
         }
     }, [id, findArticle]);
 
-    if (!init) {
+    const article = id ? articles[id] : undefined;
+    const draft = id ? drafts[id] : undefined;
+
+    if (!article) {
         return null;
     }
 
+    // 正文优先用本地草稿，没有草稿时再用服务端详情。
+    // 合并成一份文章实体传给编辑组件，正文和右侧信息都从同一个 article 里取。
+    const content = draft?.content ?? article.content;
+    const editableArticle = content === article.content ? article : { ...article, content };
+
     // 用文章 id 做 key，切换文章时强制重新挂载，编辑器会按新内容重新初始化
-    return (
-        <MarkdownSpace key={id} mode="editable" articleId={init.id} content={init.content ?? ''} />
-    );
+    return <MarkdownSpace key={editableArticle.id} mode="editable" article={editableArticle} />;
 }

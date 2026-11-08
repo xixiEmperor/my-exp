@@ -1,0 +1,59 @@
+/* 右侧目录下方的文章信息，和目录共用一套小字号和弱化配色。 */
+.meta {
+    margin-top: 26px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+
+    /* 没有目录时它就是侧栏第一块，去掉多余的留白和分隔线 */
+    &:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+}
+
+.title {
+    margin: 0 0 12px;
+    color: var(--muted-2);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.list {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+}
+
+.item {
+    /* 标签和数值分两行，完整时间可以使用侧栏的全部宽度。 */
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: none;
+    color: var(--muted-2);
+
+    /* 图标固定跟着第一行文字，日期折行时也不会跑到中间 */
+    :global(svg) {
+        flex: none;
+    }
+}
+
+.value {
+    margin: 0;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    /* 数值与标签文字对齐，窄屏时只在日期和时间之间自然换行。 */
+    padding-left: 18px;
+    text-align: left;
+    overflow-wrap: normal;
+}

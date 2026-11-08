@@ -78,7 +78,7 @@
 }
 
 // 预览页的滚动容器是弹层本身，目录的吸顶位置要从页面顶栏改成容器顶部
-.modalBody :global(nav[aria-label='文章目录']) {
+.modalBody :global([data-article-toc]) {
     top: 0;
 }
 

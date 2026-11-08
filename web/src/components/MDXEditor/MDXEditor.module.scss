@@ -1,6 +1,33 @@
+// 编辑区和右侧信息栏。和前台详情页一样，目录与文章信息放在同一列。
+.workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 176px;
+    align-items: start;
+    gap: 40px;
+}
+
 .wrap {
     min-width: 0;
     padding-block: 20px 48px;
+}
+
+.side {
+    position: sticky;
+    top: calc(var(--header) + 32px);
+    min-width: 0;
+    padding-block: 20px 0;
+}
+
+// 工作区变窄后右侧信息栏会挤占源码编辑空间，这时优先保证编辑可用
+@media (max-width: 1100px) {
+    .workspace {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .side {
+        display: none;
+    }
 }
 
 // MDXEditor 自带一套中性灰加蓝色的主题变量，这里逐个换成项目的令牌。

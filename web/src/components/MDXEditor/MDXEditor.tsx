@@ -5,7 +5,9 @@ import { normalizeArticleSeparator } from './ArticleSeparator';
 import MarkdownSourceEditor, { type MarkdownSourceMethods } from './MarkdownSourceEditor';
 import InsertArticleSeparator, { articleSeparatorExtensions } from './InsertArticleSeparator';
 import ConfirmDialog from '../ConfirmDialog/ConfirmDialog';
+import ArticleMeta from '../ArticleMeta/ArticleMeta';
 import { toast } from '@/utils/toast';
+import type { Article } from '@/types/articles';
 import MDXPreview from './MDXPreview';
 import MDXToolbar from './MDXToolbar';
 import { useDraft } from './useDraft';
@@ -17,13 +19,13 @@ import style from './MDXEditor.module.scss';
 type SaveStatus = 'draft' | 'published';
 
 interface Props {
-    // 当前编辑的文章 id，本地草稿按它分开存放
-    articleId: string;
-    // 初始渲染内容由父组件传递，父组件取值时会优先使用本地草稿
-    content: string;
+    // 文章实体，正文、id 和右侧展示的详情信息都从这一份数据里取
+    article: Article;
 }
 
-export default function MDWriteComponent({ articleId, content }: Props) {
+export default function MDWriteComponent({ article }: Props) {
+    const articleId = article.id;
+    const content = article.content ?? '';
     const mdRef = useRef<MarkdownSourceMethods>(null);
 
     // 每个编辑器各自保存源码实例，扩展只初始化一次。
@@ -74,47 +76,62 @@ export default function MDWriteComponent({ articleId, content }: Props) {
 
     // 编辑器固定源码模式，只编辑 markdown 原文，渲染效果交给预览页
     return (
-        <div className={style.wrap}>
-            {/* 状态栏只管展示，具体动作回调给下面的保存流程 */}
-            <MDXToolbar
-                separatorButton={
-                    <InsertArticleSeparator
-                        viewRef={sourceViewRef}
-                        disabled={updateArticleRequest.loading}
-                    />
-                }
-                onPreview={() => setPreviewOpen(true)}
-                onSaveDraft={() => setPendingSave('draft')}
-                onPublish={() => setPendingSave('published')}
-            />
+        <div className={style.workspace}>
+            <div className={style.wrap}>
+                {/* 状态栏只管展示，具体动作回调给下面的保存流程 */}
+                <MDXToolbar
+                    separatorButton={
+                        <InsertArticleSeparator
+                            viewRef={sourceViewRef}
+                            disabled={updateArticleRequest.loading}
+                        />
+                    }
+                    onPreview={() => setPreviewOpen(true)}
+                    onSaveDraft={() => setPendingSave('draft')}
+                    onPublish={() => setPendingSave('published')}
+                />
 
-            {/* 源码模式下组件仍会把内容解析一遍，缺插件会直接报解析错误，所以插件保留但不挂工具栏 */}
-            <MarkdownSourceEditor
-                ref={mdRef}
-                viewRef={sourceViewRef}
-                className={style.editor}
-                markdown={normalizedContent}
-                extensions={sourceExtensions}
-                onChange={handleChange}
-                readOnly={updateArticleRequest.loading} // 调用接口更新数据库时，保证文章只读
-            />
+                {/* 源码模式下组件仍会把内容解析一遍，缺插件会直接报解析错误，所以插件保留但不挂工具栏 */}
+                <MarkdownSourceEditor
+                    ref={mdRef}
+                    viewRef={sourceViewRef}
+                    className={style.editor}
+                    markdown={normalizedContent}
+                    extensions={sourceExtensions}
+                    onChange={handleChange}
+                    readOnly={updateArticleRequest.loading} // 调用接口更新数据库时，保证文章只读
+                />
 
-            {/* 预览页自己管打开状态下的滚动锁定、Esc 关闭和目录跳转 */}
-            <MDXPreview open={previewOpen} content={previewContent} onClose={handleClosePreview} />
+                {/* 预览页自己管打开状态下的滚动锁定、Esc 关闭和目录跳转 */}
+                <MDXPreview
+                    open={previewOpen}
+                    content={previewContent}
+                    onClose={handleClosePreview}
+                />
 
-            {/* 草稿和发布共用一个确认框，标题和说明按待保存的类型切换 */}
-            <ConfirmDialog
-                open={pendingSave !== null}
-                title={pendingSave === 'published' ? '发布为正文' : '保存为草稿'}
-                description={
-                    pendingSave === 'published'
-                        ? '发布之后这篇文章会在知识库里对所有人可见，确定现在发布吗？'
-                        : '内容会保存成草稿，只有登录后的你自己能看到，确定保存吗？'
-                }
-                confirmText={pendingSave === 'published' ? '确认发布' : '保存草稿'}
-                onConfirm={handleConfirmSave}
-                onClose={() => setPendingSave(null)}
-            />
+                {/* 草稿和发布共用一个确认框，标题和说明按待保存的类型切换 */}
+                <ConfirmDialog
+                    open={pendingSave !== null}
+                    title={pendingSave === 'published' ? '发布为正文' : '保存为草稿'}
+                    description={
+                        pendingSave === 'published'
+                            ? '发布之后这篇文章会在知识库里对所有人可见，确定现在发布吗？'
+                            : '内容会保存成草稿，只有登录后的你自己能看到，确定保存吗？'
+                    }
+                    confirmText={pendingSave === 'published' ? '确认发布' : '保存草稿'}
+                    onConfirm={handleConfirmSave}
+                    onClose={() => setPendingSave(null)}
+                />
+            </div>
+
+            {/* 编辑页不需要目录，只把文章信息固定在右侧 */}
+            <aside className={style.side}>
+                <ArticleMeta
+                    createdAt={article.created_at}
+                    lastModifiedAt={article.last_modified_at}
+                    views={article.views}
+                />
+            </aside>
         </div>
     );
 }

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MarkdownSpace from '@/components/MarkdownSpace/MarkdownSpace';
 import MarkdownToc from '@/components/MarkdownToc/MarkdownToc';
+import ArticleMeta from '@/components/ArticleMeta/ArticleMeta';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
@@ -48,12 +49,21 @@ export default function KnowledgeArticle() {
                 <article className="reader-article">
                     <div className="reader-prose">
                         {/* 用文章 id 做 key，切换文章时强制重新挂载，内容不会串到上一篇 */}
-                        <MarkdownSpace key={id} mode="readonly" content={content} />
+                        <MarkdownSpace key={id} mode="readonly" article={article} />
                     </div>
                 </article>
 
-                {/* 目录固定在正文右侧，标题不够两级的文章会自动不渲染 */}
-                <MarkdownToc content={content} />
+                {/* 目录固定在正文右侧，下方补上文章的时间信息和浏览量 */}
+                <MarkdownToc
+                    content={content}
+                    footer={
+                        <ArticleMeta
+                            createdAt={article.created_at}
+                            lastModifiedAt={article.last_modified_at}
+                            views={article.views}
+                        />
+                    }
+                />
             </div>
         </div>
     );
