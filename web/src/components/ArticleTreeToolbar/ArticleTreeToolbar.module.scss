@@ -1,0 +1,35 @@
+// 工具栏沿用目录操作的颜色和尺寸，在窄侧栏里允许按钮换行。
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+}
+
+.action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: var(--ink);
+    font-size: 13px;
+    white-space: nowrap;
+
+    &:hover:not(:disabled) {
+        background: var(--accent-soft);
+    }
+
+    // 键盘操作时保留清晰的焦点提示。
+    &:focus-visible {
+        outline: 2px solid var(--accent-deep);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

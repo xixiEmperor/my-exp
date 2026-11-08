@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import AuthGuard from '@/components/AuthGuard/AuthGuard';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ArticleTree from '@/components/ArticleTree/ArticleTree';
+import ArticleTreeToolbar from '@/components/ArticleTreeToolbar/ArticleTreeToolbar';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticleTree } from '@/hooks/useArticleTree';
 import { useArticlesStore } from '@/stores/articles';
@@ -58,6 +59,8 @@ export default function AdminIndex() {
                 }
                 bottom={
                     <>
+                        {/* 根目录操作与文章树并列，工具栏不参与树节点渲染。 */}
+                        <ArticleTreeToolbar />
                         {/* 根目录失败时允许手动重试，保留已有节点。 */}
                         {root.status === 'error' && (
                             <button
