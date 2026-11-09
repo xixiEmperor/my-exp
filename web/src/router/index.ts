@@ -6,7 +6,7 @@ import KnowledgeEmpty from '../views/knowledge/KnowledgeEmpty';
 import KnowledgeArticle from '../views/knowledge/KnowledgeArticle';
 import NotFoundView from '../views/not-found/NotFoundView';
 
-// import Prac from '@/views/Prac';
+import Prac from '@/views/Prac';
 import { lazy } from 'react';
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
@@ -34,10 +34,10 @@ export const router = createBrowserRouter([
             },
             { path: '*', Component: NotFoundView },
 
-            // {
-            //     path: '/prac',
-            //     Component: Prac,
-            // },
+            {
+                path: '/prac',
+                Component: Prac,
+            },
             {
                 path: '/admin',
                 Component: AdminIndex,
