@@ -26,7 +26,7 @@ export function useDraft({ articleId, content, mdRef }: Options) {
     const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 节流定时器，同一时间只挂一个，重复输入共用同一次写盘
     const isDirtyRef = useRef(false); // 有没有还没写进本地缓存的改动。没改过就不必在销毁时凭空造一条草稿
 
-    // MDXEditor 只在初始化时读一次 markdown，外部内容后到时必须手动同步进去
+    // 编辑器只在初始化时读一次 markdown，外部内容后到时必须手动同步进去
     useEffect(() => {
         // 先把基准内容记下来，setMarkdown 触发的回调就不会被误判成用户输入
         latestContentRef.current = content;

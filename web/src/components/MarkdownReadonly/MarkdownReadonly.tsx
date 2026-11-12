@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { SPLIT_FLAG } from '@/constants/articles';
 import { useUIStore } from '@/stores/ui';
-import Markdown from 'react-markdown';
+import Markdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
@@ -9,6 +9,7 @@ import 'highlight.js/styles/github-dark.css';
 import styles from './MarkdownReadonly.module.scss';
 
 interface Props {
+    isPreview?: boolean;
     content: string;
 }
 
@@ -24,6 +25,14 @@ interface MarkdownNode {
         hName?: string;
         hProperties?: Record<string, string>;
     };
+}
+
+function urlTransform(url: string) {
+    if (url.startsWith('blob:')) {
+        return url;
+    }
+
+    return defaultUrlTransform(url);
 }
 
 // 在 Markdown 解析后替换独立的分隔标记，保留正文的正常解析流程。
@@ -82,12 +91,13 @@ const markdownComponents: MarkdownProps['components'] = {
     },
 };
 
-export default function MarkdownReadonly({ content }: Props) {
+export default function MarkdownReadonly({ content, isPreview = false }: Props) {
     return (
         <Markdown
             remarkPlugins={remarkPlugins}
             rehypePlugins={rehypePlugins}
             components={markdownComponents}
+            urlTransform={isPreview ? urlTransform : null}
         >
             {content}
         </Markdown>

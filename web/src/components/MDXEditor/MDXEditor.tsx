@@ -1,5 +1,5 @@
 import '@mdxeditor/editor/style.css';
-import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { EditorView } from '@codemirror/view';
 import { normalizeArticleSeparator } from './ArticleSeparator';
 import MarkdownSourceEditor, { type MarkdownSourceMethods } from './MarkdownSourceEditor';
@@ -13,7 +13,10 @@ import MDXToolbar from './MDXToolbar';
 import { useDraft } from './useDraft';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
+import { initDB } from '@/utils/idb';
 import style from './MDXEditor.module.scss';
+import { subUrls } from '@/utils/articles';
+import { getByImageId } from '@/utils/idb';
 
 /** 保存动作的类型：草稿只有自己可见，正文对所有人可见 */
 type SaveStatus = 'draft' | 'published';
@@ -40,10 +43,18 @@ export default function MDWriteComponent({ article }: Props) {
         mdRef,
     });
     const { updateArticleRequest } = useArticles();
-    const previewContent = useDeferredValue(draft); // 预览解析 markdown 比较费时，用延迟值让输入先渲染出来，长文章下打字不会卡
 
+    // 现在改为点击预览时处理正文并保存结果，输入时不会更新预览正文
+    const [previewContent, setPreviewContent] = useState('');
     const [previewOpen, setPreviewOpen] = useState(false); // 预览页的开关
     const [pendingSave, setPendingSave] = useState<SaveStatus | null>(null); // 待确认的保存类型。有值就代表确认框打开，两种保存共用同一个框
+
+    // 组件初次加载时初始化 IndexedDB
+    useEffect(() => {
+        initDB().then(() => {
+            console.log('IndexedDB 加载成功');
+        });
+    }, []);
 
     // 关闭预览。传给预览组件后保持引用稳定，避免每次渲染都重新挂 Esc 监听
     const handleClosePreview = useCallback(() => {
@@ -74,6 +85,44 @@ export default function MDWriteComponent({ article }: Props) {
         );
     };
 
+    const handlePreview = async () => {
+        // 这里先把输入框打开，打开之后再去做内容替换逻辑
+        setPreviewOpen(true);
+
+        // 点击预览时以当前草稿为准，包含最新输入
+        let resolvedContent = draft;
+        const urls = subUrls(resolvedContent);
+        for (let url of urls) {
+            // 通过 await Promise的resolve 来实现对降级加载的等待
+            await new Promise((resolve) => {
+                // 创建一个 Image 实例加载 cdn url，加载成功则直接从 cdn 获取图片，否则降级到本地 blob
+                const image = new Image();
+                image.onload = () => resolve(null);
+                image.onerror = async () => {
+                    try {
+                        // 从 url 中解析出图片id，通过 indexedDB 索引查找到图片blob，并创建预览 url
+                        const res = new URL(url);
+                        const imageId = res.pathname.split('/')[2].split('.')[0];
+                        const tar = await getByImageId(imageId);
+
+                        if (tar) {
+                            const previewUrl = URL.createObjectURL(tar.imageData);
+                            // 注意：replace 返回新字符串，要重新赋值
+                            resolvedContent = resolvedContent.replaceAll(url, previewUrl);
+                        }
+                    } catch (e) {
+                        console.error('处理图片失败:', url, e);
+                    } finally {
+                        resolve(null); // 无论成功失败都必须 resolve
+                    }
+                };
+                image.src = url;
+            });
+        }
+        // 将替换结果传给预览组件，再打开预览
+        setPreviewContent(resolvedContent);
+    };
+
     // 编辑器固定源码模式，只编辑 markdown 原文，渲染效果交给预览页
     return (
         <div className={style.workspace}>
@@ -86,12 +135,12 @@ export default function MDWriteComponent({ article }: Props) {
                             disabled={updateArticleRequest.loading}
                         />
                     }
-                    onPreview={() => setPreviewOpen(true)}
+                    onPreview={handlePreview}
                     onSaveDraft={() => setPendingSave('draft')}
                     onPublish={() => setPendingSave('published')}
                 />
 
-                {/* 源码模式下组件仍会把内容解析一遍，缺插件会直接报解析错误，所以插件保留但不挂工具栏 */}
+                {/* 编辑区只负责改 markdown 原文，排版效果交给预览页 */}
                 <MarkdownSourceEditor
                     ref={mdRef}
                     viewRef={sourceViewRef}

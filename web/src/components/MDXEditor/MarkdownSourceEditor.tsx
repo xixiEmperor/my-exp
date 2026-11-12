@@ -4,6 +4,7 @@ import { EditorView } from '@codemirror/view';
 import { basicSetup } from 'codemirror';
 import { markdownSourceTheme, markdownSourceCodeBlocks } from './markdownSourceTheme';
 import { markdownCodeLanguage } from './markdownCodeLanguage';
+import { useClipboard } from '@/hooks/useClipboard';
 import { useEffect, useImperativeHandle, useRef, type RefObject } from 'react';
 
 // 草稿只需要读取和替换原文，不再经过 MDXEditor 的解析和序列化。
@@ -35,6 +36,8 @@ export default function MarkdownSourceEditor({
     const initialContentRef = useRef(content);
     const changeRef = useRef(onChange);
     const readOnlyCompartment = useRef(new Compartment());
+
+    const { handldPaste } = useClipboard({ viewRef });
 
     // 回调更新不销毁编辑器，避免每次输入都丢失光标和撤销记录。
     useEffect(() => {
@@ -97,5 +100,5 @@ export default function MarkdownSourceEditor({
     );
 
     // 沿用现有源码编辑器样式，内容始终以原文形式显示。
-    return <div ref={hostRef} className={`${className} mdxeditor`} />;
+    return <div ref={hostRef} className={`${className} mdxeditor`} onPaste={handldPaste} />;
 }

@@ -30,64 +30,14 @@
     }
 }
 
-// MDXEditor 自带一套中性灰加蓝色的主题变量，这里逐个换成项目的令牌。
-// .mdxeditor 是组件根节点上的稳定类名，再叠一个模块类把优先级抬高，
-// 这样不管样式注入的先后顺序，覆盖都能生效。
+// .mdxeditor 是编辑器根节点上的稳定类名，再叠一个模块类把优先级抬高。
+// 这里只留 CodeMirror 用得到的字体变量，其余 MDXEditor 主题变量随组件一起不再需要。
 .editor:global(.mdxeditor) {
-    // 表面色。编辑器主体用卡片底色，弹出层用更深一档的内嵌色。
-    --basePageBg: var(--paper);
-    --baseBase: var(--bg);
-    --baseBgSubtle: var(--paper-2);
-    --baseBg: var(--paper-2);
-    --baseBgHover: var(--paper-3);
-    --baseBgActive: var(--paper-3);
-
-    // 线条与文字三档，全部跟随主题。
-    --baseLine: var(--line);
-    --baseBorder: var(--line);
-    --baseBorderHover: var(--muted-2);
-    --baseSolid: var(--muted-2);
-    --baseSolidHover: var(--muted);
-    --baseText: var(--muted);
-    --baseTextContrast: var(--ink);
-
-    // 强调色系由 --accent 派生，明暗主题下会自动换成靛蓝或青绿。
-    // 原组件的这一组值是阶梯式的蓝色色带，这里用 color-mix 现调，保持同样的明暗层次。
-    --accentBase: color-mix(in srgb, var(--accent) 6%, var(--paper));
-    --accentBgSubtle: var(--accent-soft);
-    --accentBg: color-mix(in srgb, var(--accent) 12%, var(--paper));
-    --accentBgHover: color-mix(in srgb, var(--accent) 20%, var(--paper));
-    --accentBgActive: color-mix(in srgb, var(--accent) 28%, var(--paper));
-    --accentLine: color-mix(in srgb, var(--accent) 42%, var(--line));
-    --accentBorder: color-mix(in srgb, var(--accent) 58%, var(--line));
-    --accentBorderHover: var(--accent);
-    --accentSolid: var(--accent);
-    --accentSolidHover: var(--accent-deep);
-    --accentText: var(--accent-deep);
-    --accentTextContrast: var(--accent-deep);
-
-    // 提示块用语义色，和站内其他提示条保持同一套观感。
-    --admonitionTipBg: color-mix(in srgb, var(--mint) 26%, var(--paper));
-    --admonitionTipBorder: color-mix(in srgb, var(--mint) 70%, var(--line));
-    --admonitionInfoBg: color-mix(in srgb, var(--accent) 10%, var(--paper));
-    --admonitionInfoBorder: color-mix(in srgb, var(--accent) 45%, var(--line));
-    --admonitionCautionBg: color-mix(in srgb, var(--warn) 12%, var(--paper));
-    --admonitionCautionBorder: color-mix(in srgb, var(--warn) 50%, var(--line));
-    --admonitionDangerBg: color-mix(in srgb, var(--danger) 10%, var(--paper));
-    --admonitionDangerBorder: color-mix(in srgb, var(--danger) 45%, var(--line));
-    --admonitionNoteBg: var(--paper-2);
-    --admonitionNoteBorder: var(--line);
-
-    --error-color: var(--danger);
-
-    // 字体跟随站点正文字体，等宽字体单独指定。
-    --font-body: 'Alibaba PuHuiTi', 'PingFang SC', 'Microsoft YaHei', sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-// 组件会把根类原样复制到挂在 body 上的弹层容器，所以外观只写在编辑器的根节点上，
-// 用 :not 把弹层容器排除掉，否则页面底部会多出一个带边框的空盒子。
-.editor:global(.mdxeditor):not(:global(.mdxeditor-popup-container)) {
+// 编辑区根节点。MDXEditor 组件已经不再渲染，弹层容器也不存在，所以不再需要排除选择器。
+.editor:global(.mdxeditor) {
     // 根节点本身做成一张卡片，和后台其他面板的边框、圆角对齐。
     min-width: 0;
     min-height: 560px;
@@ -105,7 +55,7 @@
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
     }
 
-    // 源码编辑器。组件内置的白底主题和偏小的字号都在这里换成主题色。
+    // 源码编辑器。CodeMirror 默认的白底主题和偏小的字号都在这里换成主题色。
     :global(.cm-editor) {
         min-height: 558px;
         padding: 18px 20px;
