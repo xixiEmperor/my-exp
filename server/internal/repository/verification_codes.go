@@ -53,7 +53,11 @@ return 1
 `)
 
 // SaveIfAbsent 只在 loginId 还没有有效验证码时写入，返回是否写入成功。
-func (r *VerificationCodes) SaveIfAbsent(ctx context.Context, loginId, openid, code string, ttl time.Duration) (bool, error) {
+func (r *VerificationCodes) SaveIfAbsent(
+	ctx context.Context,
+	loginId, openid, code string,
+	ttl time.Duration,
+) (bool, error) {
 	// 用毫秒让有效期保持原样，避免取整时被截短。
 	millis := ttl.Milliseconds()
 

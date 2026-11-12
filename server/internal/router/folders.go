@@ -8,7 +8,11 @@ import (
 )
 
 // registerFolderRouter 只注册文件夹资源的查询和创建接口。
-func registerFolderRouter(parent *gin.RouterGroup, handler *handler.FoldersHandler, userService middlewares.UserInfoReader) {
+func registerFolderRouter(
+	parent *gin.RouterGroup,
+	handler *handler.FoldersHandler,
+	userService middlewares.UserInfoReader,
+) {
 	publicFolders := parent.Group("/folder", middlewares.OptionalAuth(userService))
 	publicFolders.GET("/children", handler.GetFolderChildren)
 

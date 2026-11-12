@@ -16,22 +16,22 @@ type Articles struct {
 }
 
 type ArticlesBrief struct {
-	ID       string  `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"` // NanoID 主键
-	Title    string  `gorm:"column:title" json:"title"`                          // 标题
-	FolderID *string `gorm:"column:folder_id" json:"folder_id"`                  // 所属文件夹 id，nil 表示根目录
+	ID       string  `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"`        // NanoID 主键
+	Title    string  `gorm:"column:title"                             json:"title"`     // 标题
+	FolderID *string `gorm:"column:folder_id"                         json:"folder_id"` // 所属文件夹 id，nil 表示根目录
 }
 
 type ArticlesBasis struct {
-	ID             string         `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"`             // 文章真正的ID（nanoid）
-	Title          string         `gorm:"column:title" json:"title"`                                      // 标题
-	Status         string         `gorm:"column:status" json:"status"`                                    // 文章状态：draft 为草稿，published 为已发布
-	FolderID       *string        `gorm:"column:folder_id" json:"folder_id"`                              // 所属文件夹 id，nil 表示根目录
-	Views          uint64         `gorm:"column:views" json:"views"`                                      // 文章浏览量
-	Slug           *string        `gorm:"column:slug" json:"slug"`                                        // 友好 URL，nil 表示未设置
-	CreatedAt      time.Time      `gorm:"column:created_at" json:"created_at"`                            // 创建时间
-	PublishedAt    *time.Time     `gorm:"column:published_at" json:"published_at"`                        // 发布时间，nil 表示尚未发布
-	LastModifiedAt time.Time      `gorm:"column:last_modified_at;autoUpdateTime" json:"last_modified_at"` // 最后修改时间，GORM 更新时自动维护
-	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`                            // 软删除标记，NULL 表示未删除，GORM 默认查询排除已删除文章
+	ID             string         `gorm:"column:id;primaryKey;autoIncrement:false" json:"id"`               // 文章真正的ID（nanoid）
+	Title          string         `gorm:"column:title"                             json:"title"`            // 标题
+	Status         string         `gorm:"column:status"                            json:"status"`           // 文章状态：draft 为草稿，published 为已发布
+	FolderID       *string        `gorm:"column:folder_id"                         json:"folder_id"`        // 所属文件夹 id，nil 表示根目录
+	Views          uint64         `gorm:"column:views"                             json:"views"`            // 文章浏览量
+	Slug           *string        `gorm:"column:slug"                              json:"slug"`             // 友好 URL，nil 表示未设置
+	CreatedAt      time.Time      `gorm:"column:created_at"                        json:"created_at"`       // 创建时间
+	PublishedAt    *time.Time     `gorm:"column:published_at"                      json:"published_at"`     // 发布时间，nil 表示尚未发布
+	LastModifiedAt time.Time      `gorm:"column:last_modified_at;autoUpdateTime"   json:"last_modified_at"` // 最后修改时间，GORM 更新时自动维护
+	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at"                        json:"deleted_at"`       // 软删除标记，NULL 表示未删除，GORM 默认查询排除已删除文章
 }
 
 type ArticlesDetail struct {

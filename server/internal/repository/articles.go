@@ -32,7 +32,11 @@ func NewArticlesRepo(db *gorm.DB) *ArticlesRepo {
 }
 
 // 基于文件夹id查找附属文章列表
-func (repo *ArticlesRepo) FindArticlesByFolderID(c context.Context, id *string, without_draft bool) ([]model.ArticlesBrief, error) {
+func (repo *ArticlesRepo) FindArticlesByFolderID(
+	c context.Context,
+	id *string,
+	without_draft bool,
+) ([]model.ArticlesBrief, error) {
 	// 空列表保留数组类型，调用方不需要处理 null。
 	articles := make([]model.ArticlesBrief, 0)
 
@@ -113,7 +117,12 @@ func (repo *ArticlesRepo) FindArticleBriefByID(c context.Context, id string) (mo
 func (repo *ArticlesRepo) FindArticlesByName(c context.Context, name string) ([]string, error) {
 	var names []string
 
-	err := repo.db.WithContext(c).Model(model.Articles{}).Select("title").Where("title LIKE %?%", name).Find(&names).Error
+	err := repo.db.WithContext(c).
+		Model(model.Articles{}).
+		Select("title").
+		Where("title LIKE %?%", name).
+		Find(&names).
+		Error
 	if err != nil {
 		return nil, err
 	}

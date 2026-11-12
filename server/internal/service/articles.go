@@ -128,7 +128,10 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 }
 
 // 更新文章内容，并返回更新后的文章详情
-func (s *ArticlesService) UpdateArticle(c context.Context, article_id, content, status string) (model.ArticlesDetail, error) {
+func (s *ArticlesService) UpdateArticle(
+	c context.Context,
+	article_id, content, status string,
+) (model.ArticlesDetail, error) {
 	// 重复分隔符只保留最后一个，和编辑器保持一致。
 	if last := strings.LastIndex(content, cons.SplitFlag); last >= 0 {
 		content = strings.ReplaceAll(content[:last], cons.SplitFlag, "") + content[last:]
