@@ -16,7 +16,8 @@ import { useArticlesStore } from '@/stores/articles';
 import { initDB } from '@/utils/idb';
 import style from './MDXEditor.module.scss';
 import { subUrls } from '@/utils/articles';
-import { getByImageId } from '@/utils/idb';
+import { getByImageId, getByArticleId } from '@/utils/idb';
+import { CDN_BASE_URL } from '@/constants/articles';
 
 /** 保存动作的类型：草稿只有自己可见，正文对所有人可见 */
 type SaveStatus = 'draft' | 'published';
@@ -70,12 +71,25 @@ export default function MDWriteComponent({ article }: Props) {
         // 1. 保存动作跳过节流，点击之后立即落进本地缓存
         saveNow();
 
-        // 2. 调用接口更新数据库中的文章内容
-        await updateArticleRequest.run({
-            id: articleId,
-            content: draft,
-            status: pendingSave,
-        });
+        // 2. 构造请求的 FormData
+        // 2.1 基础信息
+        const formData = new FormData();
+        formData.append('id', articleId);
+        formData.append('content', draft);
+        formData.append('status', pendingSave);
+
+        // 2.2 图片数据
+        const items = (await getByArticleId(articleId)) ?? [];
+        for (let item of items) {
+            formData.append(item.cdnURL, item.imageData); // 这里用 cdnURL 做键名是因为所有信息都可以从 url 反解出来
+        }
+
+        // for (let [k, v] of formData.entries()) {
+        //     console.log(k, v);
+        // }
+
+        // 3. 调用接口更新数据库中的文章内容
+        await updateArticleRequest.run(formData);
 
         toast.success('保存成功');
 
@@ -97,12 +111,15 @@ export default function MDWriteComponent({ article }: Props) {
             await new Promise((resolve) => {
                 // 创建一个 Image 实例加载 cdn url，加载成功则直接从 cdn 获取图片，否则降级到本地 blob
                 const image = new Image();
-                image.onload = () => resolve(null);
+                image.onload = () => {
+                    console.log('cdn URL 加载成功');
+                    resolve(null);
+                };
                 image.onerror = async () => {
                     try {
                         // 从 url 中解析出图片id，通过 indexedDB 索引查找到图片blob，并创建预览 url
                         const res = new URL(url);
-                        const imageId = res.pathname.split('/')[2].split('.')[0];
+                        const imageId = res.pathname.split('/')[3].split('.')[0];
                         const tar = await getByImageId(imageId);
 
                         if (tar) {
@@ -116,7 +133,9 @@ export default function MDWriteComponent({ article }: Props) {
                         resolve(null); // 无论成功失败都必须 resolve
                     }
                 };
-                image.src = url;
+                // 探测 CDN 时使用独立查询参数作为缓存键，避免图片尚未上传时的 404 污染真实 URL 的 CDN 缓存
+                const probeURL = url.startsWith(`${CDN_BASE_URL}/`) ? `${url}?preview=1` : url;
+                image.src = probeURL;
             });
         }
         // 将替换结果传给预览组件，再打开预览

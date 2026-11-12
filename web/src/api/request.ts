@@ -32,13 +32,20 @@ export const request = async <T>(options: Options): Promise<T> => {
 
     const query = search.toString();
 
+    const isForm = options.body instanceof FormData;
+
     // 发起请求，有 JSON 请求体时才补上 Content-Type
     const r = await fetch(`${testBaseUrl}${options.path}${query ? `?${query}` : ''}`, {
         method: options.method ?? 'GET',
-        headers: options.body
-            ? { 'Content-Type': 'application/json', ...options.headers }
-            : options.headers,
-        body: options.body ? JSON.stringify(options.body) : undefined,
+        headers:
+            options.body && !isForm
+                ? { 'Content-Type': 'application/json', ...options.headers }
+                : options.headers,
+        body: isForm
+            ? (options.body as FormData)
+            : options.body
+              ? JSON.stringify(options.body)
+              : undefined,
         credentials: options.credentials,
         signal: options.signal,
     });
