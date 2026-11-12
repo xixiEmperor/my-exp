@@ -26,6 +26,7 @@
         "@lezer/highlight": "^1.2.5",
         "@mdxeditor/editor": "^4.3.3",
         "antd": "^6.6.6",
+        "browser-image-compression": "^2.0.2",
         "codemirror": "6.0.2",
         "github-slugger": "^2.0.0",
         "highlight.js": "^11.12.0",

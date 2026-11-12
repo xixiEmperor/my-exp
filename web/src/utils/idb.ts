@@ -83,3 +83,16 @@ export const getByHash = (hash: string) => {
     }
     return db.getFromIndex('images', 'by-hash', hash);
 };
+
+/** 通过 articleId 进行查找 */
+export const getByArticleId = async (articleId: string) => {
+    if (!db) {
+        console.warn('IndexedDB 没有初始化，不做处理');
+        return; // 这里返回 true ，外界不处理
+    }
+
+    // 先查询所有结果，再过滤出所有以传入文章id开头的value
+    return (await db.getAll('images')).filter((item) => {
+        return item.id.startsWith(articleId);
+    });
+};

@@ -9,6 +9,7 @@ import {
 import { CDN_BASE_URL } from '@/constants/articles';
 import { EditorView } from '@codemirror/view';
 import { addCache, getByHash, type DBValue } from '@/utils/idb';
+import { toWebp } from '@/utils/articles';
 import { useParams } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 
@@ -63,56 +64,63 @@ export function useClipboard({ viewRef }: Props) {
 
     /** 创建 md 格式的图片预览 url，如果是本地，则传blob url，否则为 CDN URL */
     const normalizedImageUrl = (url: string, preview?: boolean) => {
-        return preview ? `![图片](${url})` : `![图片](${CDN_BASE_URL}/${url}.webp)`;
+        return preview ? `${url}` : `${CDN_BASE_URL}/my-exp/${url}.webp`;
     };
 
     const handldPaste: ClipboardEventHandler = async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // 从剪贴板中拿到读取数据及其类型
-        const data = (await navigator.clipboard.read())[0];
-        const type = data.types[0];
+        try {
+            // 从剪贴板中拿到读取数据及其类型
+            const data = (await navigator.clipboard.read())[0];
+            const type = data.types[0];
 
-        // 如果不是图片，不做其他特殊处理
-        if (!type.startsWith('image')) {
-            console.warn('粘贴的不是图片，走正常流程，不额外处理');
-            return;
+            // 如果不是图片，不做其他特殊处理
+            if (!type.startsWith('image')) {
+                console.warn('粘贴的不是图片，走正常流程，不额外处理');
+                return;
+            }
+
+            // 拿到图片 blob 后先转成 File 实例并计算 hash，再把 File 转成 webp 类型
+            const imageId = nanoid();
+            let cdnURL = normalizedImageUrl(`${id}/${imageId}`);
+
+            // File 不会自动继承 Blob 的类型，需要显式传入图片类型。
+            const file = new File([await data.getType(type)], cdnURL, { type });
+            const webpFile = await toWebp(file);
+            const hash = await hashBlob(file);
+            const tar = await getByHash(hash);
+
+            // 如果 DB 中没有 hash，缓存到 DB
+            if (!tar) {
+                const value: DBValue = {
+                    id: `${id}:${imageId}`,
+                    imageId,
+                    imageData: webpFile,
+                    hash,
+                    cdnURL,
+                };
+                addCache(value);
+            } else {
+                cdnURL = tar.cdnURL;
+            }
+
+            const view = viewRef.current;
+            if (!view || view.state.readOnly) return;
+
+            const pos = view.state.selection.main.head;
+
+            view.dispatch({
+                changes: { from: pos, insert: `![图片](${cdnURL})` },
+                selection: { anchor: pos + cdnURL.length }, // 光标落到插入内容之后
+                scrollIntoView: true,
+            });
+            view.focus();
+        } catch (error) {
+            // 捕获读取或压缩图片时的异常，避免出现未处理的 Promise 拒绝。
+            console.error('粘贴图片失败', error);
         }
-
-        // 拿到图片 blob 并计算 hash
-        const blob = await data.getType(type);
-        const hash = await hashBlob(blob);
-        const imageId = nanoid();
-        let cdnURL = normalizedImageUrl(`${id}/${imageId}`);
-
-        const tar = await getByHash(hash);
-
-        // 如果 DB 中没有 hash，缓存到 DB
-        if (!tar) {
-            const value: DBValue = {
-                id: `${id}:${imageId}`,
-                imageId,
-                imageData: blob,
-                hash,
-                cdnURL,
-            };
-            addCache(value);
-        } else {
-            cdnURL = tar.cdnURL;
-        }
-
-        const view = viewRef.current;
-        if (!view || view.state.readOnly) return;
-
-        const pos = view.state.selection.main.head;
-
-        view.dispatch({
-            changes: { from: pos, insert: cdnURL },
-            selection: { anchor: pos + cdnURL.length }, // 光标落到插入内容之后
-            scrollIntoView: true,
-        });
-        view.focus();
     };
 
     return { copied, copy, handldPaste };
