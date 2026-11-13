@@ -50,7 +50,7 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 	user_info, ok := c.Value(cons.CtxUserInfo).(*model.Users)
 
 	// 如果 context 中没有 user_info，说明没登录，则需要返回 preview 部分
-	if !ok {
+	if !ok || user_info == nil {
 		preview, err := s.artiRepo.FindArticlePreviewByID(c, article_id)
 		if err != nil {
 			return model.ArticlesPreview{}, err
@@ -62,7 +62,9 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 		// 游客只有预览内容，这里统一塞进 content 字段，前端不用区分两种返回结构
 		content := ""
 		if preview.Preview != nil {
-			content = *preview.Preview + cons.SplitFlag
+			// 兼容旧预览字段未正确切割的情况，避免重复标记或暴露完整正文。
+			visible, _, _ := strings.Cut(*preview.Preview, cons.SplitFlag)
+			content = visible + "\n" + cons.SplitFlag + "\n"
 		}
 
 		return model.ArticlesDetail{

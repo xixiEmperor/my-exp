@@ -103,7 +103,16 @@ func OptionalAuth(s UserInfoReader) gin.HandlerFunc {
 		}
 
 		// 能到这里说明已经能拿到用户 id，直接去查找用户信息
-		user, _ := s.FindUserByID(c, info.UserID)
+		// 已验证令牌的请求不能因为用户查询失败而降级成游客预览。
+		user, err := s.FindUserByID(c.Request.Context(), info.UserID)
+		if err != nil {
+			abortWithAuthError(c, err)
+			return
+		}
+		if user == nil {
+			abortWithAuthError(c, apperr.ErrTokenInvalid)
+			return
+		}
 
 		ctx := context.WithValue(
 			c.Request.Context(),

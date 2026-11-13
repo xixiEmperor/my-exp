@@ -8,7 +8,8 @@ const (
 	// 文章相关常量
 	ArticlePub   = "published"
 	ArticleDraft = "draft"
-	SplitFlag    = "\n<ArticleSeparator />\n" // 作为分割 preview 的标志
+	// 换行只负责排版，不参与匹配，兼容表单提交后的 CRLF。
+	SplitFlag = "<ArticleSeparator />" // 作为分割 preview 的标志
 
 	// CDN基地址
 	CDN_BASE_URL = "https://static.swifthire.top"

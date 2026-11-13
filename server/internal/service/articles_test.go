@@ -12,8 +12,68 @@ import (
 	"testing"
 
 	cons "zhiye/server/internal/constant"
+	"zhiye/server/internal/model"
+	"zhiye/server/internal/repository"
 	"zhiye/server/internal/utils"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
+
+// 验证不同换行下的登录正文，以及旧预览字段不会产生重复分隔符。
+func TestFindArticleContentSeparator(t *testing.T) {
+	for _, newline := range []string{"\n", "\r\n"} {
+		for _, role := range []string{"guest", "user", "admin"} {
+			t.Run(role+fmtNewlineName(newline), func(t *testing.T) {
+				sqlDB, mock, err := sqlmock.New()
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() { _ = sqlDB.Close() })
+				db, err := gorm.Open(mysql.New(mysql.Config{Conn: sqlDB, SkipInitializeWithVersion: true}), &gorm.Config{DisableAutomaticPing: true})
+				if err != nil {
+					t.Fatal(err)
+				}
+				svc := NewArticlesService(repository.NewArticlesRepo(db), nil)
+				content := "预览" + newline + cons.SplitFlag + newline + "正文"
+				// 用旧的错误预览数据验证游客返回仍会在标记处截断。
+				mock.ExpectQuery("SELECT .* FROM .articles. WHERE").WithArgs("article", 1).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "status", "content", "preview"}).AddRow("article", "published", content, content))
+				ctx := context.Background()
+				if role != "guest" {
+					ctx = context.WithValue(ctx, cons.CtxUserInfo, &model.Users{Role: role})
+				}
+				article, err := svc.FindArticleContent(ctx, "article")
+				if err != nil {
+					t.Fatal(err)
+				}
+				got := article.(model.ArticlesDetail).Content
+				want := content
+				if role == "user" {
+					want = "预览" + newline + newline + "正文"
+				}
+				if role == "guest" {
+					want = "预览" + newline + "\n" + cons.SplitFlag + "\n"
+				}
+				if got != want {
+					t.Fatalf("正文 = %q, want %q", got, want)
+				}
+				if err := mock.ExpectationsWereMet(); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
+	}
+}
+
+// 给不同换行的测试提供便于识别的名称。
+func fmtNewlineName(newline string) string {
+	if newline == "\r\n" {
+		return "CRLF"
+	}
+	return "LF"
+}
 
 // TestExtractURL 验证图片地址抽取与 web 端 subUrls 的规则一致。
 func TestExtractURL(t *testing.T) {
