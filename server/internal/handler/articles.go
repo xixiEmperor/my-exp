@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"mime/multipart"
 	"net/http"
 
 	cons "zhiye/server/internal/constant"
@@ -101,13 +102,28 @@ func (h *ArticlesHandler) RenameArticle(c *gin.Context) {
 func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 	var req dto.UpdateArticleReq
 
-	err := c.ShouldBindJSON(&req)
+	// 这里先绑基础数据
+	err := c.ShouldBind(&req)
 	if err != nil {
 		c.JSON(400, dto.Fail(-1, "绑定失败"))
 		return
 	}
 
-	res, err := h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status)
+	// 手动绑图片数据
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(400, dto.Fail(-1, "无法处理图片数据"))
+		return
+	}
+	req.Images = make(map[string]*multipart.FileHeader, len(form.File))
+	for url, headers := range form.File {
+		if len(headers) == 0 {
+			continue
+		}
+		req.Images[url] = headers[0]
+	}
+
+	res, err := h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status, req.Images)
 	if err != nil {
 		c.JSON(400, dto.Fail(-1, "更新失败"))
 		return

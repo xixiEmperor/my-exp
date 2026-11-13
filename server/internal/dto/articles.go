@@ -1,6 +1,10 @@
 package dto
 
-import "zhiye/server/internal/model"
+import (
+	"mime/multipart"
+
+	"zhiye/server/internal/model"
+)
 
 // CreateArticleReq 只接收文章所属目录，不接收节点类型。
 type CreateArticleReq struct {
@@ -11,11 +15,13 @@ type CreateArticleReq struct {
 // 保存文章请求体
 type UpdateArticleReq struct {
 	// 文章标题
-	ID string `json:"id"`
+	ID string `form:"id"`
 	// 文章内容
-	Content string `json:"content"`
+	Content string `form:"content"`
 	// 文章状态
-	Status string `json:"status"`
+	Status string `form:"status"`
+	// 不参与自动绑定，手动填充
+	Images map[string]*multipart.FileHeader `form:"-"`
 }
 
 type RenameArticleReq struct {

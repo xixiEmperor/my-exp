@@ -9,4 +9,7 @@ const (
 	ArticlePub   = "published"
 	ArticleDraft = "draft"
 	SplitFlag    = "\n<ArticleSeparator />\n" // 作为分割 preview 的标志
+
+	// CDN基地址
+	CDN_BASE_URL = "https://static.swifthire.top"
 )

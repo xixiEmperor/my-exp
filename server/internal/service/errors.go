@@ -7,6 +7,7 @@ var (
 	ErrInvalidResourceID  = errors.New("资源标识不能为空")
 	ErrInvalidName        = errors.New("名称不能为空或过长")
 	ErrNotPublished       = errors.New("本文仍未发布")
+	ErrCDNPostFailed      = errors.New("上传图片到 CDN 失败")
 
 	// 重命名时资源可能已经被删除，单独给出可用于映射 404 的业务错误。
 	ErrArticleNotFound = errors.New("文章不存在")

@@ -16,6 +16,10 @@ type Config struct {
 	RedisAddr           string
 	RedisPassword       string
 	WechatCallbackToken string
+	// R2 图片存储为可选项，三项都未配置时不启用图片上传。
+	R2AccountID  string
+	R2APIToken   string
+	R2BucketName string
 }
 
 // Load 在启动时读取一次配置，系统环境变量优先于本地 .env。
@@ -30,6 +34,9 @@ func Load() (Config, error) {
 		RedisAddr:           os.Getenv("REDIS_ADDR"),
 		RedisPassword:       os.Getenv("REDIS_PASSWORD"),
 		WechatCallbackToken: os.Getenv("WECHAT_CALLBACK_TOKEN"),
+		R2AccountID:         os.Getenv("R2_ACCOUNT_ID"),
+		R2APIToken:          os.Getenv("R2_API_TOKEN"),
+		R2BucketName:        os.Getenv("R2_BUCKET_NAME"),
 	}
 	// 地址和端口可以有开发默认值，数据库密码与微信令牌必须显式提供。
 	if cfg.Port == "" {

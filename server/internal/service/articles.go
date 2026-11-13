@@ -4,7 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"mime/multipart"
+	"slices"
 	"strings"
+	"sync"
 
 	"zhiye/server/internal/apperr"
 	cons "zhiye/server/internal/constant"
@@ -18,11 +21,13 @@ import (
 
 type ArticlesService struct {
 	artiRepo *repository.ArticlesRepo
+	imageSvc *ImageService
 }
 
-func NewArticlesService(artiRepo *repository.ArticlesRepo) *ArticlesService {
+func NewArticlesService(artiRepo *repository.ArticlesRepo, imageSvc *ImageService) *ArticlesService {
 	return &ArticlesService{
 		artiRepo: artiRepo,
+		imageSvc: imageSvc,
 	}
 }
 
@@ -131,6 +136,7 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 func (s *ArticlesService) UpdateArticle(
 	c context.Context,
 	article_id, content, status string,
+	imageData map[string]*multipart.FileHeader,
 ) (model.ArticlesDetail, error) {
 	// 重复分隔符只保留最后一个，和编辑器保持一致。
 	if last := strings.LastIndex(content, cons.SplitFlag); last >= 0 {
@@ -139,6 +145,12 @@ func (s *ArticlesService) UpdateArticle(
 	// 先根据 preview 分割符分割出两部分
 	res := strings.Split(content, cons.SplitFlag)
 
+	// 先处理图片上传到 CDN 的逻辑，如果这里上传失败，就不更新文章内容了
+	err := s.executeImage(c, article_id, content, imageData)
+	if err != nil {
+		return model.ArticlesDetail{}, ErrCDNPostFailed
+	}
+
 	// 构造要更新的内容的结构体
 	options := repository.ArticleUpdate{
 		Status:  &status,
@@ -146,7 +158,7 @@ func (s *ArticlesService) UpdateArticle(
 		Content: &content, // 这里直接存带有分隔符的内容，返回的时候再根据角色决定是否切割
 	}
 
-	err := s.artiRepo.UpdateArticle(c, article_id, options)
+	err = s.artiRepo.UpdateArticle(c, article_id, options)
 	if err != nil {
 		return model.ArticlesDetail{}, err
 	}
@@ -218,4 +230,103 @@ func (s *ArticlesService) DeleteArticle(c context.Context, id string) error {
 		return ErrArticleNotFound
 	}
 	return err
+}
+
+// 图片操作
+func (s *ArticlesService) executeImage(
+	c context.Context,
+	articleId, newContent string,
+	imageData map[string]*multipart.FileHeader,
+) error {
+	// 1. 获取旧文章
+	old, err := s.artiRepo.FindArticleContentByID(c, articleId)
+	if err != nil {
+		return err
+	}
+
+	// 2. 解析新旧文章中包含的CDN URL
+	oldURL := utils.ExtractURL(old.Content)
+	newURL := utils.ExtractURL(newContent)
+	up := make([]string, 0, len(imageData))
+
+	// 2.1 过滤出正文中不含的url，因为前端不方便根据内容修改去实时删除 indexedDB 中的数据，可能会带上旧的冗余数据
+	for key := range imageData {
+		if !slices.Contains(newURL, key) || slices.Contains(up, key) {
+			continue
+		}
+		up = append(up, key)
+	}
+
+	// 3. diff算法找出 新增图片 和 旧的需要删除的图片，用两个切片记录key
+	addURL, delURL := utils.Diff(oldURL, up)
+
+	// 4. 启动go协程并发上传新增图片，单个失败不影响其他图片，最后统一返回错误
+	if len(addURL) > 0 && s.imageSvc == nil {
+		return fmt.Errorf("%w: 图片服务未配置", ErrCDNPostFailed)
+	}
+	// 每个协程只写自己下标对应的位置，写入区域互不重叠，wg.Wait 之后再统一读取
+	errs := make([]error, len(addURL))
+	var wg sync.WaitGroup
+
+	// 遍历所有待添加的url
+	for i, url := range addURL {
+		// 增加一个要等待的协程的数量，并紧接着启动一个协程
+		wg.Add(1)
+		go func() {
+			// 延迟完成，等待下面的 if 中的逻辑执行完了之后才认为这个协程执行完毕
+			defer wg.Done()
+			if err := s.uploadImage(c, url, imageData[url]); err != nil {
+				// 下标唯一，不需要加锁
+				errs[i] = err
+			}
+		}()
+	}
+	// 阻塞进程，等待所有协程执行完毕，Wait 返回后所有写入对当前协程可见
+	wg.Wait()
+
+	// 5. 删除逻辑后续补充，delURL 先保留待删除的旧图片
+	_ = delURL
+
+	// errors.Join 会自动忽略 nil，成功上传的位置不会影响最终结果
+	return errors.Join(errs...)
+}
+
+// uploadImage 把前端随表单带回来的图片按 CDN URL 反解出对象路径后上传到 R2。
+func (s *ArticlesService) uploadImage(c context.Context, cdnURL string, header *multipart.FileHeader) error {
+	// 1. 表单里可能出现只有 URL 没有文件的情况，先拦住，避免后面 Open 触发空指针。
+	if header == nil {
+		return fmt.Errorf("%w: %s 缺少文件数据", ErrCDNPostFailed, cdnURL)
+	}
+	// 2. URL 本身已经带了完整对象路径，截掉 CDN 基地址即可，不再手动拼 articleId。
+	key, err := imageObjectKey(cdnURL)
+	if err != nil {
+		return err
+	}
+
+	// 3. 打开 multipart 暂存的文件句柄；大文件会落到临时目录，defer 保证上传后及时关闭。
+	file, err := header.Open()
+	if err != nil {
+		return fmt.Errorf("%w: 打开 %s: %w", ErrCDNPostFailed, cdnURL, err)
+	}
+	defer file.Close()
+
+	// 4. 尽量沿用浏览器带来的 MIME，拿不到时给通用二进制类型，避免 R2 元信息为空。
+	contentType := header.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	// 5. 按对象路径上传，重复路径会覆盖；错误统一包装成 ErrCDNPostFailed 供上层判断。
+	if _, err := s.imageSvc.UploadFile(c, key, file, contentType); err != nil {
+		return fmt.Errorf("%w: 上传 %s: %w", ErrCDNPostFailed, cdnURL, err)
+	}
+	return nil
+}
+
+// imageObjectKey 从 CDN URL 中截掉基地址，得到 R2 存储桶内的完整对象路径。
+func imageObjectKey(cdnURL string) (string, error) {
+	key := strings.TrimPrefix(cdnURL, cons.CDN_BASE_URL+"/")
+	if key == cdnURL || key == "" {
+		return "", fmt.Errorf("%w: URL 不属于 CDN: %s", ErrCDNPostFailed, cdnURL)
+	}
+	return key, nil
 }

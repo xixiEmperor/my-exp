@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"zhiye/server/internal/config"
@@ -13,6 +14,7 @@ import (
 	"zhiye/server/internal/router"
 	"zhiye/server/internal/service"
 
+	"github.com/cloudflare/cloudflare-go/v7/option"
 	"github.com/gin-contrib/cors"
 )
 
@@ -58,9 +60,21 @@ func run() error {
 	foldersRepo := repository.NewFoldersRepo(sqlDB)
 
 	// 2. 创建各部分 service
+	// 图片服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
+	var imageService *service.ImageService
+	if cfg.R2AccountID != "" || cfg.R2APIToken != "" || cfg.R2BucketName != "" {
+		imageService, err = service.NewImageService(service.ImageConfig{
+			AccountID:  cfg.R2AccountID,
+			APIToken:   cfg.R2APIToken,
+			BucketName: cfg.R2BucketName,
+		}, option.WithHTTPClient(&http.Client{Timeout: 30 * time.Second}))
+		if err != nil {
+			return err
+		}
+	}
 	userService := service.NewUsersService(userRepo)
 	authService := service.NewAuthService(codeRepo, userService)
-	articleService := service.NewArticlesService(articlesRepo)
+	articleService := service.NewArticlesService(articlesRepo, imageService)
 	folderService := service.NewFoldersService(foldersRepo)
 
 	// 3. 创建各部分 handler
