@@ -1,12 +1,10 @@
 import { useCallback } from 'react';
-import {
-    ExperienceHero,
-    ExperienceJourney,
-    ExperienceProjects,
-    ExperienceKnowledge,
-    ExperienceWishlist,
-    ExperienceContact,
-} from '../../components/HomeExperience/HomeContent';
+import HomeHero from '../../components/HomeHero/HomeHero';
+import HomeJourney from '../../components/HomeJourney/HomeJourney';
+import HomeProjects from '../../components/HomeProjects/HomeProjects';
+import HomeKnowledge from '../../components/HomeKnowledge/HomeKnowledge';
+import HomeWishlist from '../../components/HomeWishlist/HomeWishlist';
+import HomeContact from '../../components/HomeContact/HomeContact';
 import { HomeWeatherHanger, HomeBuddyHanger } from '../../components/HomeExperience/HomeHangers';
 import { useHomeDocumentHidden } from '../../hooks/useHomeExperience';
 import HomeFeedback from '../../components/HomeExperience/HomeFeedback';
@@ -34,12 +32,12 @@ export default function HomeView() {
             <HomeWeatherHanger />
             <HomeBuddyHanger />
             <HomeFeedback />
-            <ExperienceHero onAccent={onAccent} />
-            <ExperienceJourney />
-            <ExperienceProjects />
-            <ExperienceKnowledge />
-            <ExperienceWishlist />
-            <ExperienceContact />
+            <HomeHero onAccent={onAccent} />
+            <HomeJourney />
+            <HomeProjects />
+            <HomeKnowledge />
+            <HomeWishlist />
+            <HomeContact />
         </main>
     );
 }

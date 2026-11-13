@@ -10,7 +10,7 @@ interface Props {
 export default function PageNotice({ title, description }: Props) {
     return (
         <main id="main" className={styles.notice}>
-            <span>xixiEmperor · 持续生长</span>
+            <span>当前页面暂未实现哦</span>
             <h1>{title}</h1>
             <p>{description}</p>
             <Link to="/">回到首页 →</Link>

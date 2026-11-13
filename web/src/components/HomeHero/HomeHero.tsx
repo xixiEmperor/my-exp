@@ -1,69 +1,129 @@
 import { Link } from 'react-router-dom';
-import SiteIcon from '../SiteIcon/SiteIcon';
-import type { ReactNode } from 'react';
-import type { HeroContent } from '../../types/home';
-import styles from './HomeHero.module.scss';
+import { homeNow } from '../../constants/home';
+import { useHomeVisibility } from '../../hooks/useHomeExperience';
+import { useHomeInteraction } from '../../stores/homeInteraction';
+import { HomeMagneticLink } from '../HomeExperience/HomeMagnetic';
+import HomeSculpture from '../HomeExperience/HomeSculpture';
+import type { SculptureAccent } from '../../utils/homeSculpture';
 
-interface Props {
-    content: HeroContent;
+interface HeroProps {
+    onAccent: (accent: SculptureAccent) => void;
 }
 
-// 深色横幅。首页内的锚点用普通链接，站内页面用路由链接。
-export default function HomeHero({ content }: Props) {
-    const actionNodes: ReactNode[] = [];
-    const tagNodes: ReactNode[] = [];
+const titleLabel = '从一行代码，到更多可能。';
 
-    [content.primaryAction, content.secondaryAction].forEach((action, index) => {
-        const isAnchor = action.href.startsWith('#');
-        const className = [styles.button, index === 0 ? styles.main : styles.ghost].join(' ');
-        const label = (
-            <>
-                {action.label}
-                <SiteIcon name={isAnchor ? 'down' : 'arrow-up'} />
-            </>
-        );
+// 字形只是视觉层，完整标题仍然只向读屏提供一次。
+function titleLetters(text: string, offset: number) {
+    return Array.from(text).map((letter, index) => (
+        <span
+            key={`${offset}-${index}`}
+            className="hero-letter"
+            aria-hidden="true"
+            style={{ '--delay': `${(offset + index) * 32}ms` } as React.CSSProperties}
+        >
+            {letter}
+        </span>
+    ));
+}
 
-        actionNodes.push(
-            isAnchor ? (
-                <a key={action.href} className={className} href={action.href}>
-                    {label}
-                </a>
-            ) : (
-                <Link key={action.href} className={className} to={action.href}>
-                    {label}
-                </Link>
-            ),
-        );
-    });
+export default function HomeHero({ onAccent }: HeroProps) {
+    const visibility = useHomeVisibility<HTMLElement>('home');
 
     return (
-        <section className={styles.banner} id="home" aria-labelledby="hero-title">
-            <div className={styles.copy}>
-                <h1 className={styles.title} id="hero-title">
-                    {content.title.lead}
-                    <br />
-                    <span className={styles.highlight}>{content.title.highlight}</span>{' '}
-                    {content.title.tail}
-                </h1>
-                <p className={styles.intro}>{content.intro}</p>
-                <div className={styles.actions}>{actionNodes}</div>
-                <div className={styles.tags}>{tagNodes}</div>
-            </div>
-            {/* 右侧是纯装饰图形，不传达信息，整块对辅助技术隐藏。 */}
-            <div className={styles.art} aria-hidden="true">
-                <div className={styles.orbit}></div>
-                <div className={[styles.orbit, styles['orbit-b']].join(' ')}></div>
-                <div className={styles.glyph}>
-                    <svg viewBox="0 0 80 80">
-                        <path d="m27 24-15 16 15 16M53 24l15 16-15 16M46 15 34 65"></path>
-                        <circle cx="40" cy="40" r="34" strokeDasharray="2 7"></circle>
-                    </svg>
+        <>
+            <section
+                className="hero shell"
+                ref={visibility.ref}
+                onPointerEnter={() => useHomeInteraction.getState().react('main', 1)}
+                id="home"
+                data-home-section="home"
+                data-region="main"
+                onFocusCapture={() => useHomeInteraction.getState().react('main', 1)}
+                aria-labelledby="hero-title"
+            >
+                <div className="hero-grid">
+                    <div className="hero-copy is-entering">
+                        <p className="hero-greeting">
+                            你好，我是 xixiEmperor <span aria-hidden="true">↘</span>
+                        </p>
+                        <h1 id="hero-title" aria-label={titleLabel}>
+                            {titleLetters('欢迎来到，', 0)}
+                            <br />
+                            {/* {titleLetters('到', 6)} */}
+                            <span className="blue" aria-hidden="true">
+                                {titleLetters('xixiEmperor 的主页。', 7)}
+                                <svg
+                                    className="hero-underline"
+                                    viewBox="0 0 330 28"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        d="M4 17 Q84 3 167 15 T326 13 M28 24 Q175 12 294 22"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                            </span>
+                        </h1>
+                        {/* <p className="hero-script">
+                            学新东西去咯！<span aria-hidden="true">✳</span>
+                        </p>
+                        <p className="hero-description">
+                            写代码，踩坑，偶尔也会觉得前面白学了。
+                            <br />
+                            这里放着我的经历，也放着那些终于想明白的事。
+                        </p> */}
+                        <div className="hero-actions">
+                            <HomeMagneticLink
+                                className="button primary"
+                                data-magnet
+                                data-cursor="点我"
+                                href="#journey"
+                            >
+                                沿着时间轴认识我 <span aria-hidden="true">↗</span>
+                            </HomeMagneticLink>
+                            <Link className="text-link" to="/knowledge">
+                                去知识库看看 <span aria-hidden="true">→</span>
+                            </Link>
+                        </div>
+                    </div>
+                    <HomeSculpture onAccent={onAccent} />
                 </div>
-                <span className={[styles['art-label'], styles.one].join(' ')}>curiosity.exe</span>
-                <span className={[styles['art-label'], styles.two].join(' ')}>
-                    build · learn · repeat
-                </span>
+                <div className="hero-bottom">
+                    {homeNow.reading ? (
+                        <div className="currently">
+                            <i aria-hidden="true" />
+                            <span>在读</span>
+                            <span>{homeNow.reading}</span>
+                        </div>
+                    ) : null}
+                    {homeNow.writing ? (
+                        <div className="currently">
+                            <i aria-hidden="true" />
+                            <span>在写</span>
+                            <span>{homeNow.writing}</span>
+                        </div>
+                    ) : null}
+                    <a className="scroll-link" href="#journey">
+                        往下看看 <span aria-hidden="true">↓</span>
+                    </a>
+                </div>
+            </section>
+            <div className="stack-strip" aria-label="技术方向">
+                <div className="shell stack-inner">
+                    <span>React</span>
+                    <i aria-hidden="true">✳</i>
+                    <span>TypeScript</span>
+                    <i aria-hidden="true">✳</i>
+                    <span>Vue</span>
+                    <i aria-hidden="true">✳</i>
+                    <span>Go</span>
+                    <i aria-hidden="true">✳</i>
+                    <span>Agent</span>
+                </div>
             </div>
-        </section>
+        </>
     );
 }

@@ -17,9 +17,9 @@ export const heroContent: HeroContent = {
         highlight: 'xixiEmperor',
         tail: '的个人博客 & 知识库',
     },
-    intro: '这里记录我的学习与工作经历，也收纳值得反复琢磨的技术知识。你可以沿着时间轴认识我，也可以在知识库看看有没有对你有价值的东西。',
+    intro: '这里记录我的学习与工作经历，也沉淀我的一些技术知识。你可以沿着时间轴认识我，也可以在知识库看看有没有对你有价值的东西。',
     primaryAction: { label: '认识我的经历', href: '#journey' },
-    secondaryAction: { label: '去知识库坐坐', href: '/knowledge' },
+    secondaryAction: { label: '去知识库看看', href: '/knowledge' },
 };
 
 // 每个区块的标题区文案。四个区块共用 HomeSection 的结构，只换这里的文字。
@@ -197,7 +197,7 @@ export const wishItems: readonly WishItem[] = [
         tone: 'mint',
         icon: 'book',
         title: ['把分散的笔记', '串成学习路线'],
-        content: '围绕一个问题，从基础原理走到完整实践。让每一篇文章，都能找到下一步。',
+        content: '围绕一个问题，从基础原理走到完整实践，形成自己的知识体系。',
         status: '慢慢整理',
         caption: 'CONNECT THE DOTS',
     },
@@ -206,7 +206,7 @@ export const wishItems: readonly WishItem[] = [
         tone: 'purple',
         icon: 'link',
         title: ['分享更多', '做项目的真实过程'],
-        content: '讲方案，也讲踩过的坑。把权衡和复盘写下来，让经验不只停留在结果里。',
+        content: '分享一些方案或者踩过的坑。把权衡和复盘写下来，让经验不只停留在结果里。',
         status: '持续记录',
         caption: 'SHARE THE PROCESS',
     },

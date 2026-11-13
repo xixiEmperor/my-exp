@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import SiteMark from '../SiteMark/SiteMark';
 import styles from './HomeHeader.module.scss';
 import { useHomeInteraction } from '../../stores/homeInteraction';
 
@@ -36,9 +37,8 @@ export default function HomeHeader({ actions, activePath }: Props) {
 
     const brand = (
         <>
-            <span className="brand-mark" aria-hidden="true">
-                ✳
-            </span>
+            {/* 各页面共用导航时，也共用本站的透明标识。 */}
+            <SiteMark size={36} />
             <span>xixiEmperor的个人小站</span>
         </>
     );

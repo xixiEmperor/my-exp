@@ -1,0 +1,7 @@
+// 保留图片透明背景和原始比例，与旁边的站点名称垂直对齐。
+.mark {
+    display: inline-block;
+    flex-shrink: 0;
+    object-fit: contain;
+    vertical-align: middle;
+}

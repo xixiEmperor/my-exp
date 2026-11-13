@@ -1,4 +1,5 @@
 import SiteIcon from '../SiteIcon/SiteIcon';
+import SiteMark from '../SiteMark/SiteMark';
 import styles from './SiteFooter.module.scss';
 
 // 只负责页面结构与样式，交互通过参数交给 hooks。
@@ -13,7 +14,10 @@ export default function SiteFooter() {
                             <SiteIcon name="arrow-up" />
                         </span>
                     </a>
-                    <span className={styles.copy}>© 2026 xixiEmperor</span>
+                    {/* 页脚署名使用本站图标。 */}
+                    <span className={styles.copy}>
+                        <SiteMark size={24} /> © 2026 xixiEmperor
+                    </span>
                 </div>
             </div>
         </footer>

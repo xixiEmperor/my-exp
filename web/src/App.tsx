@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
 import SiteHeader from './components/SiteHeader/SiteHeader';
 import SiteFooter from './components/SiteFooter/SiteFooter';
-import HomeFooter from './components/HomeExperience/HomeFooter';
 import LoginPanel from './components/LoginPanel/LoginPanel';
 import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
 import Toast from './components/Toast/Toast';
@@ -75,7 +74,7 @@ export default function App() {
                 onLogout={() => setLogoutOpen(true)}
             />
             <Outlet />
-            {shell.activePath === '/' ? <HomeFooter /> : <SiteFooter />}
+            {<SiteFooter />}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />
             {/* 退出确认挂在壳层，任何页面点退出登录都能弹出。 */}
             <ConfirmDialog

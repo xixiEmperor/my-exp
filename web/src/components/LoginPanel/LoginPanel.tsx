@@ -1,5 +1,6 @@
 import { type RefObject, useRef } from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
+import SiteMark from '../SiteMark/SiteMark';
 import styles from './LoginPanel.module.scss';
 import gzh from '@/assets/gzh.jpg';
 
@@ -27,7 +28,10 @@ export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
             onClose={onClose}
         >
             <div className={styles.header}>
-                <span>xixiEmperor.</span>
+                {/* 登录面板沿用导航中的站点标识。 */}
+                <span>
+                    <SiteMark /> xixiEmperor.
+                </span>
                 <button type="button" onClick={onClose} aria-label="关闭登录">
                     <SiteIcon name="close" />
                 </button>

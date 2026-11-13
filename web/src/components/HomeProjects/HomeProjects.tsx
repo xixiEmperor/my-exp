@@ -1,64 +1,113 @@
-import SiteIcon from '../SiteIcon/SiteIcon';
 import { projectPhases } from '../../constants/home';
-import { describeEdges, useScrollEdges } from '../../hooks/useScrollEdges';
-import type { KeyboardEvent, ReactNode, RefObject } from 'react';
-import styles from './HomeProjects.module.scss';
+import { useHomeInteraction } from '../../stores/homeInteraction';
+import { useProjectTimeline } from './useProjectTimeline';
+import ProjectTimelineNode from './ProjectTimelineNode';
+import ProjectPhasePanel from './ProjectPhasePanel';
+import './ProjectUpdates.scss';
 
-interface Props {
-    activeStep: number;
-    trackRef: RefObject<HTMLDivElement | null>;
-    onToggle: (index: number) => void;
-    onKeyDown: (event: KeyboardEvent<HTMLButtonElement>, index: number) => void;
-}
-
-// 横向项目时间轴。轨道用 flex 加横向滚动，卡片按百分比定宽定高。
-export default function HomeProjects({ activeStep, trackRef, onToggle, onKeyDown }: Props) {
-    const edges = useScrollEdges(trackRef);
-    const cardNodes: ReactNode[] = [];
-
-    projectPhases.forEach((item, index) => {
-        const tagNodes: ReactNode[] = [];
-        const isExpanded = activeStep === index;
-
-        cardNodes.push(
-            <button
-                key={item.id}
-                className={[styles.card, isExpanded ? styles.expanded : ''].join(' ')}
-                type="button"
-                data-step={index}
-                aria-expanded={isExpanded}
-                onClick={() => onToggle(index)}
-                onKeyDown={(event) => onKeyDown(event, index)}
-            >
-                <span className={styles.dot}></span>
-                <span className={styles.step}>{item.step}</span>
-                <span className={styles.status}>{item.status}</span>
-                <span className={styles.title}>{item.title}</span>
-                <span className={styles.summary}>{item.summary}</span>
-                {/* 收起时高度为零，鼠标划过、键盘聚焦或点击固定后展开。 */}
-                <span className={styles.more}>
-                    <span className={styles.detail}>{item.detail}</span>
-                    <span className={styles.tags}>{tagNodes}</span>
-                </span>
-            </button>,
-        );
-    });
+export default function HomeProjects() {
+    const { active, currentIndex, phaseRefs, select, keyboard } = useProjectTimeline();
 
     return (
-        <div className={styles.shell} data-edge={describeEdges(edges)}>
-            <div
-                className={styles.track}
-                ref={trackRef}
-                role="region"
-                aria-label="项目开发历程时间轴"
-                tabIndex={0}
-            >
-                {cardNodes}
+        <section
+            className="section shell project-section project-updates"
+            id="projects"
+            data-region="projects"
+            onPointerEnter={() => useHomeInteraction.getState().react('projects', 1)}
+            onFocusCapture={() => useHomeInteraction.getState().react('projects', 1)}
+            aria-labelledby="project-heading"
+        >
+            <div className="updates-heading">
+                <div>
+                    <p className="updates-eyebrow">
+                        <span aria-hidden="true">↗</span> 小站开发日志
+                    </p>
+                    <h2 id="project-heading">
+                        这个小站，
+                        <br />
+                        又往前走了一点<span className="blue">。</span>
+                    </h2>
+                </div>
+                <div className="updates-intro">
+                    <span className="updates-live">
+                        <i aria-hidden="true" />
+                        持续更新中
+                    </span>
+                    <p>
+                        做到了哪一步，接下来准备做什么。
+                        <br />
+                        沿着时间轴，看看小站的每一次变化。
+                    </p>
+                </div>
             </div>
-            <p className={styles.hint}>
-                <SiteIcon name="info" />
-                卡片可以点击固定展开，再次点击收起；横向可以拖动或滚动浏览。
-            </p>
-        </div>
+            <div className="updates-board">
+                <div className="updates-toolbar">
+                    <span>
+                        项目进度{' '}
+                        <span className="updates-count">
+                            / {String(projectPhases.length).padStart(2, '0')} 个阶段
+                        </span>
+                    </span>
+                    <span>
+                        点击节点查看详情 <span aria-hidden="true">↘</span>
+                    </span>
+                </div>
+                {/* 节点与详情通过标签页语义关联，当前进度不随浏览历史阶段改变。 */}
+                <div
+                    className="updates-track"
+                    role="tablist"
+                    aria-label="项目开发阶段"
+                    aria-orientation="horizontal"
+                >
+                    {projectPhases.map((phase, index) => (
+                        <ProjectTimelineNode
+                            key={phase.id}
+                            phase={phase}
+                            index={index}
+                            selected={active === index}
+                            nodeRef={(element) => {
+                                phaseRefs.current[index] = element;
+                            }}
+                            onSelect={() => select(index)}
+                            onKeyDown={(event) => keyboard(event, index)}
+                        />
+                    ))}
+                </div>
+                {/* 每个节点保留对应面板，未选中内容隐藏，读屏仍可正确找到关联目标。 */}
+                {projectPhases.map((phase, index) => (
+                    <ProjectPhasePanel
+                        key={phase.id}
+                        phase={phase}
+                        index={index}
+                        selected={active === index}
+                    />
+                ))}
+                <div className="updates-footer">
+                    <span>当前进度：{projectPhases[Math.max(0, currentIndex)].title}</span>
+                    <div className="updates-controls">
+                        <span>
+                            {String(active + 1).padStart(2, '0')} /{' '}
+                            {String(projectPhases.length).padStart(2, '0')}
+                        </span>
+                        <button
+                            type="button"
+                            disabled={active === 0}
+                            aria-label="上一个开发阶段"
+                            onClick={() => select(active - 1)}
+                        >
+                            ←
+                        </button>
+                        <button
+                            type="button"
+                            disabled={active === projectPhases.length - 1}
+                            aria-label="下一个开发阶段"
+                            onClick={() => select(active + 1)}
+                        >
+                            →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     );
 }

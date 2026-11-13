@@ -1,53 +1,74 @@
 import { journeyItems } from '../../constants/home';
-import type { ReactNode, RefObject } from 'react';
-import styles from './HomeJourney.module.scss';
+import { useHomeVisibility, useHomeTimeline } from '../../hooks/useHomeExperience';
+import { useHomeInteraction } from '../../stores/homeInteraction';
+import JourneyEntry from './JourneyEntry';
+import { useJourneyExpansion } from './useJourneyExpansion';
 
-interface Props {
-    timelineRef: RefObject<HTMLDivElement | null>;
-    progressRef: RefObject<HTMLElement | null>;
-}
-
-// 纵向成长时间轴。滚动进度和进出场动画分别由 hooks 驱动，这里只负责结构。
-export default function HomeJourney({ timelineRef, progressRef }: Props) {
-    const itemNodes: ReactNode[] = [];
-
-    journeyItems.forEach((item, index) => {
-        const tagNodes: ReactNode[] = [];
-        const position = String(index + 1).padStart(2, '0');
-
-        itemNodes.push(
-            <article
-                key={item.id}
-                className={[styles.item, item.isCurrent ? styles.current : ''].join(' ')}
-                data-reveal=""
-                data-reveal-direction={index % 2 === 0 ? 'left' : 'right'}
-            >
-                <div className={styles.card}>
-                    <div className={styles.meta}>
-                        <span>{item.year}</span>
-                        <span>{item.stage}</span>
-                    </div>
-                    <h3>{item.title}</h3>
-                    <p>{item.content}</p>
-                    <div className={styles.tags}>{tagNodes}</div>
-                </div>
-                <span className={styles.node} aria-hidden="true">
-                    {position}
-                </span>
-            </article>,
-        );
-    });
+export default function HomeJourney() {
+    const visibility = useHomeVisibility<HTMLElement>('journey');
+    const timeline = useHomeTimeline();
+    const { expanded, busy, toggle } = useJourneyExpansion();
 
     return (
-        <div className={styles.timeline} ref={timelineRef}>
-            {/* 装饰线分两层：底层是整条轨道，上面一层由滚动进度驱动。 */}
-            <div className={styles.spine} aria-hidden="true">
-                <i ref={progressRef}></i>
+        <section
+            className="section shell journey-section"
+            ref={visibility.ref}
+            onPointerEnter={() => useHomeInteraction.getState().react('journey', 1)}
+            id="journey"
+            data-region="journey"
+            onFocusCapture={() => useHomeInteraction.getState().react('journey', 1)}
+            data-home-section="journey"
+            aria-labelledby="journey-heading"
+        >
+            <div className="section-intro">
+                <h2 id="journey-heading">
+                    前端开发，
+                    <br />
+                    到不再分栈<span className="blue">。</span>
+                </h2>
+                <p>
+                    从学长推荐前端，到实习接触跨端开发，再到学习
+                    Agent。就这样一步一步被推着往前走，学起来倒也挺有意思。
+                </p>
+                <div className="journey-stamp" aria-hidden="true">
+                    <span>2024</span>
+                    <span className="stamp-arrow">↗</span>
+                    <span>2026</span>
+                </div>
             </div>
-            <div className={styles.list}>{itemNodes}</div>
-            <div className={styles.tail}>
-                <span></span>未完待续。
+            <div className="journey-list" ref={timeline.ref} data-journey-list>
+                <div className="journey-spine" aria-hidden="true">
+                    <i
+                        data-journey-progress
+                        style={{ transform: `scaleY(${timeline.progress})` }}
+                    />
+                </div>
+                {journeyItems.map((item, index) => (
+                    <JourneyEntry
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        hidden={!expanded && index >= 3}
+                    />
+                ))}
+                {expanded ? (
+                    <div className="journey-tail">
+                        <span aria-hidden="true">✳</span> 后面的故事，边走边写。
+                    </div>
+                ) : null}
             </div>
-        </div>
+            <div className="journey-divider">
+                <button
+                    id="journey-toggle"
+                    disabled={busy}
+                    aria-expanded={expanded}
+                    aria-controls="journey"
+                    onClick={toggle}
+                >
+                    {expanded ? '收起完整历程' : '查看完整历程'}
+                    <span aria-hidden="true">{expanded ? '↑' : '↓'}</span>
+                </button>
+            </div>
+        </section>
     );
 }

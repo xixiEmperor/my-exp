@@ -1,0 +1,328 @@
+/* 参考 https://www.awwwards.com/sites/squarespace-timeline 的圆点轨道与独立事件内容区。 */
+/* 进度公告独占整行，使用首页主题变量适配明暗主题。 */
+.home-page .project-section.project-updates {
+    display: block;
+    min-width: 0;
+
+    .updates-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 40px;
+        margin-bottom: 44px;
+    }
+
+    .updates-eyebrow {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin: 0 0 22px;
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.12em;
+
+        > span {
+            color: var(--accent-text);
+            font-size: 22px;
+        }
+    }
+
+    .updates-heading h2 {
+        margin: 0;
+    }
+    .updates-intro {
+        padding-bottom: 6px;
+    }
+    .updates-intro p {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.9;
+    }
+    .updates-live {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 12px;
+    }
+    .updates-live i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent-text);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-text) 10%, transparent);
+    }
+    .updates-board {
+        border-block: 1px solid var(--line);
+    }
+    .updates-toolbar {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 22px 0;
+        font-size: 12px;
+    }
+    .updates-toolbar > span:last-child,
+    .updates-count {
+        color: var(--muted);
+    }
+    .updates-count {
+        margin-left: 8px;
+    }
+
+    /* 四个节点铺满桌面宽度，小屏保留横向排列并允许触摸滑动。 */
+    .updates-track {
+        position: relative;
+        display: flex;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+        scrollbar-color: var(--line) transparent;
+        padding: 14px 0 30px;
+        scroll-snap-type: x proximity;
+    }
+
+    .updates-node {
+        flex: 1 0 25%;
+        min-width: 0;
+        padding: 8px 0 12px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+        scroll-snap-align: center;
+    }
+
+    .updates-node-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        padding-right: 24px;
+        font-size: 11px;
+    }
+    .updates-node-meta > span:first-child {
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+    }
+    .is-current .updates-node-meta > span:last-child {
+        color: var(--accent-text);
+    }
+    .updates-node-line {
+        position: relative;
+        display: block;
+        height: 1px;
+        background: var(--line);
+        margin: 28px 0;
+    }
+    .updates-node-line i {
+        position: absolute;
+        left: 0;
+        top: -5px;
+        width: 11px;
+        height: 11px;
+        border: 2px solid var(--muted);
+        border-radius: 50%;
+        background: var(--bg);
+        transition:
+            background 200ms,
+            box-shadow 200ms,
+            border-color 200ms;
+    }
+    .updates-node:last-child .updates-node-line {
+        background: linear-gradient(to right, var(--line), transparent);
+    }
+    .updates-node-title {
+        display: block;
+        padding-right: 20px;
+        color: var(--ink);
+        font-size: clamp(14px, 1.5vw, 18px);
+        transition: color 200ms;
+    }
+    .updates-node-summary {
+        display: block;
+        padding-right: 20px;
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+    .updates-node:is(:hover, .is-selected) .updates-node-title {
+        color: var(--accent-text);
+    }
+    .updates-node.is-selected .updates-node-line i {
+        background: var(--accent-text);
+        border-color: var(--accent-text);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-text) 12%, transparent);
+    }
+    .updates-node.is-current:not(.is-selected) .updates-node-line i {
+        border-color: var(--accent-text);
+    }
+
+    /* 大编号和正文形成编辑式排版，正文切换只做轻量入场。 */
+    .updates-detail {
+        position: relative;
+        display: grid;
+        grid-template-columns: 140px minmax(0, 1fr) 60px;
+        gap: 32px;
+        min-height: 250px;
+        padding: 36px;
+        background: var(--soft);
+        border-top: 2px solid var(--accent-text);
+        animation: update-detail-enter 280ms ease-out;
+    }
+    .updates-detail[hidden] {
+        display: none;
+    }
+    .updates-detail-index {
+        color: color-mix(in srgb, var(--ink) 20%, var(--soft));
+        font-family: 'Courier New', monospace;
+        font-size: 86px;
+        line-height: 1;
+        letter-spacing: -0.08em;
+    }
+    .updates-detail-index > span {
+        display: block;
+        margin-top: 20px;
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 11px;
+        letter-spacing: 0.15em;
+    }
+    .updates-detail-status {
+        color: var(--accent-text);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+    }
+    .updates-detail-copy h3 {
+        margin: 16px 0;
+        color: var(--ink);
+        font-size: clamp(22px, 2.5vw, 30px);
+        font-weight: 500;
+        letter-spacing: -0.03em;
+    }
+    .updates-detail-copy p {
+        max-width: 680px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 2;
+    }
+    .updates-detail-symbol {
+        color: var(--accent-text);
+        font-size: 48px;
+        line-height: 1;
+        text-align: right;
+    }
+    .updates-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 0;
+        color: var(--muted);
+        font-size: 11px;
+    }
+    .updates-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .updates-controls > span {
+        margin-right: 14px;
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+    }
+    .updates-controls button {
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        font-size: 17px;
+        cursor: pointer;
+        transition:
+            color 200ms,
+            background 200ms;
+    }
+    .updates-controls button:hover:enabled {
+        background: var(--ink);
+        color: var(--bg);
+    }
+    .updates-controls button:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+    :is(.updates-node, .updates-controls button, .updates-detail):focus-visible {
+        outline: 2px solid var(--accent-text);
+        outline-offset: -2px;
+    }
+}
+
+@keyframes update-detail-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 小屏详情保持完整阅读宽度，节点最小宽度避免标题挤在一起。 */
+@media (max-width: 760px) {
+    .home-page .project-section.project-updates {
+        .updates-heading {
+            display: block;
+            margin-bottom: 30px;
+        }
+        .updates-intro {
+            margin-top: 24px;
+        }
+        .updates-node {
+            flex-basis: 220px;
+        }
+        .updates-detail {
+            grid-template-columns: 48px minmax(0, 1fr);
+            gap: 20px;
+            min-height: 290px;
+            padding: 26px 20px;
+        }
+        .updates-detail-index {
+            font-size: 42px;
+        }
+        .updates-detail-index > span {
+            font-size: 9px;
+            letter-spacing: 0;
+            line-height: 1.6;
+        }
+        .updates-detail-symbol {
+            display: none;
+        }
+        .updates-detail-copy p {
+            font-size: 13px;
+        }
+        .updates-footer {
+            flex-wrap: wrap;
+        }
+        .updates-toolbar {
+            font-size: 11px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .project-section.project-updates {
+        .updates-detail {
+            animation: none;
+        }
+        .updates-node-title,
+        .updates-node-line i,
+        .updates-controls button {
+            transition: none;
+        }
+    }
+}

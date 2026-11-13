@@ -1,44 +1,59 @@
-import { Link } from 'react-router-dom';
-import SiteIcon from '../SiteIcon/SiteIcon';
-import styles from './HomeContact.module.scss';
+import { contactEmail } from '../../constants/home';
+import { useHomeInteraction } from '../../stores/homeInteraction';
+import { useContactEmail } from './useContactEmail';
 
-interface Props {
-    email: string;
-    copied: boolean;
-    onCopyEmail: () => void;
-}
-
-// 深色联系面板。邮箱还没配置时复制按钮保持不可用，避免点了没有任何反馈。
-export default function HomeContact({ email, copied, onCopyEmail }: Props) {
-    const hasEmail = email.length > 0;
-    const copyLabel = copied ? '已复制 ✓' : '复制联系邮箱';
+export default function HomeContact() {
+    const { copyHint, fallback, celebration, buttonRef, magnet, copyEmail } = useContactEmail();
 
     return (
-        <section className={styles.panel} id="contact">
-            <div className={styles.copy}>
-                <span className={styles.eyebrow}>SAY HELLO</span>
-                <h2>有想法，欢迎来聊聊。</h2>
-                <p>技术交流、项目合作，或者分享一个有意思的问题，都欢迎联系我。</p>
-                {!hasEmail && (
-                    <p className={styles.note}>
-                        邮箱还没有填写。填入之后，这里的复制按钮会自动可用。
-                    </p>
-                )}
-            </div>
-            <div className={styles.actions}>
-                <Link className={[styles.button, styles.primary].join(' ')} to="/knowledge">
-                    先去知识库逛逛
-                    <SiteIcon name="arrow" />
-                </Link>
-                <button
-                    className={styles.button}
-                    type="button"
-                    disabled={!hasEmail}
-                    onClick={onCopyEmail}
-                >
-                    <SiteIcon name="copy" />
-                    {copyLabel}
-                </button>
+        <section
+            className="contact-section"
+            id="contact"
+            data-region="contact"
+            onPointerEnter={() => useHomeInteraction.getState().react('contact', 1)}
+            onFocusCapture={() => useHomeInteraction.getState().react('contact', 1)}
+        >
+            {celebration
+                ? Array.from({ length: 10 }, (_, index) => (
+                      <span
+                          key={index}
+                          className="home-confetti"
+                          aria-hidden="true"
+                          style={
+                              {
+                                  left: celebration.x,
+                                  top: celebration.y,
+                                  '--dx': `${Math.cos(index * 0.63) * 90}px`,
+                                  '--dy': `${Math.sin(index * 0.63) * 70 - 30}px`,
+                              } as React.CSSProperties
+                          }
+                      >
+                          ✳
+                      </span>
+                  ))
+                : null}
+            <div className="shell contact-main">
+                <h2>
+                    有想法，
+                    <br />
+                    欢迎来聊聊<span className="blue">。</span>
+                </h2>
+                <div className="contact-details">
+                    <p>技术交流、项目合作，或对于知识库中的某处内容有不同的看法，欢迎联系我。</p>
+                    <button
+                        className="email-button"
+                        {...magnet}
+                        ref={buttonRef}
+                        id="copy-email"
+                        data-magnet
+                        onClick={copyEmail}
+                    >
+                        {contactEmail}
+                        <span aria-hidden="true">↗</span>
+                    </button>
+                    <p className="copy-hint">{copyHint}</p>
+                    {fallback ? <a href={`mailto:${contactEmail}`}>打开邮件应用 →</a> : null}
+                </div>
             </div>
         </section>
     );
