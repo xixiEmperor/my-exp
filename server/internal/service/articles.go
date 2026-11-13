@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"mime/multipart"
 	"slices"
 	"strings"
@@ -145,8 +146,8 @@ func (s *ArticlesService) UpdateArticle(
 	// 先根据 preview 分割符分割出两部分
 	res := strings.Split(content, cons.SplitFlag)
 
-	// 先处理图片上传到 CDN 的逻辑，如果这里上传失败，就不更新文章内容了
-	err := s.executeImage(c, article_id, content, imageData)
+	// 先上传新增图片并算出写库后需要清理的旧图片；上传失败就不更新文章内容了
+	deleteURL, err := s.executeImage(c, article_id, content, imageData)
 	if err != nil {
 		return model.ArticlesDetail{}, ErrCDNPostFailed
 	}
@@ -163,11 +164,14 @@ func (s *ArticlesService) UpdateArticle(
 		return model.ArticlesDetail{}, err
 	}
 
-	// 这里需要返回带有 ---<cutting>--- 的全文
+	// 先取回最新内容再清理旧图片：清理会发起网络请求，不能让它影响本次查询和响应
 	article, err := s.artiRepo.FindArticleContentByID(c, article_id)
 	if err != nil {
 		return model.ArticlesDetail{}, err
 	}
+
+	// 正文保存成功后才能删除旧图片；删除失败只记日志，不回滚已经保存的内容
+	s.cleanupImages(c, article_id, deleteURL)
 
 	return article, nil
 }
@@ -233,20 +237,22 @@ func (s *ArticlesService) DeleteArticle(c context.Context, id string) error {
 }
 
 // 图片操作
+// executeImage 上传新增图片，并返回写库成功后需要清理的旧图片 URL。
+// 上传集合依赖前端是否带了文件，删除集合只比较新旧正文，两者不能混用。
 func (s *ArticlesService) executeImage(
 	c context.Context,
 	articleId, newContent string,
 	imageData map[string]*multipart.FileHeader,
-) error {
+) ([]string, error) {
 	// 1. 获取旧文章
 	old, err := s.artiRepo.FindArticleContentByID(c, articleId)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// 2. 解析新旧文章中包含的CDN URL
-	oldURL := utils.ExtractURL(old.Content)
-	newURL := utils.ExtractURL(newContent)
+	// 2. 解析新旧文章中包含的CDN URL，并去重，避免同一张图重复上传或重复删除
+	oldURL := utils.UniqueURL(utils.ExtractURL(old.Content))
+	newURL := utils.UniqueURL(utils.ExtractURL(newContent))
 	up := make([]string, 0, len(imageData))
 
 	// 2.1 过滤出正文中不含的url，因为前端不方便根据内容修改去实时删除 indexedDB 中的数据，可能会带上旧的冗余数据
@@ -257,12 +263,13 @@ func (s *ArticlesService) executeImage(
 		up = append(up, key)
 	}
 
-	// 3. diff算法找出 新增图片 和 旧的需要删除的图片，用两个切片记录key
-	addURL, delURL := utils.Diff(oldURL, up)
+	// 3. 上传集合看前端是否带了文件；删除集合只看正文，不能拿 up 做删除判断
+	addURL, _ := utils.Diff(oldURL, up)
+	_, delURL := utils.Diff(oldURL, newURL)
 
 	// 4. 启动go协程并发上传新增图片，单个失败不影响其他图片，最后统一返回错误
 	if len(addURL) > 0 && s.imageSvc == nil {
-		return fmt.Errorf("%w: 图片服务未配置", ErrCDNPostFailed)
+		return nil, fmt.Errorf("%w: 图片服务未配置", ErrCDNPostFailed)
 	}
 	// 每个协程只写自己下标对应的位置，写入区域互不重叠，wg.Wait 之后再统一读取
 	errs := make([]error, len(addURL))
@@ -284,11 +291,50 @@ func (s *ArticlesService) executeImage(
 	// 阻塞进程，等待所有协程执行完毕，Wait 返回后所有写入对当前协程可见
 	wg.Wait()
 
-	// 5. 删除逻辑后续补充，delURL 先保留待删除的旧图片
-	_ = delURL
-
 	// errors.Join 会自动忽略 nil，成功上传的位置不会影响最终结果
-	return errors.Join(errs...)
+	if err := errors.Join(errs...); err != nil {
+		return nil, err
+	}
+
+	// 5. 旧图片交给写库成功后的 cleanupImages 处理，这里只返回差集
+	return delURL, nil
+}
+
+// cleanupImages 在正文保存成功后清理不再引用的旧图片。
+// 删除属于附带操作，失败只记录日志，不影响已经保存成功的正文。
+func (s *ArticlesService) cleanupImages(c context.Context, articleID string, cdnURLs []string) {
+	if s.imageSvc == nil || len(cdnURLs) == 0 {
+		return
+	}
+
+	var wg sync.WaitGroup
+	for _, cdnURL := range utils.UniqueURL(cdnURLs) {
+		// 这里只需要拿到要删除的图片id，articleId不能删，因为该article下可能还有其他图片
+		key := deletableImageKey(articleID, cdnURL)
+		if key == "" {
+			continue
+		}
+
+		// 前端按文件 hash 跨文章复用图片，如果有其他文件使用了这个图片，则不应被删除
+		referenced, err := s.artiRepo.ExistsOtherArticleReference(c, articleID, cdnURL)
+		if err != nil {
+			log.Printf("检查图片引用失败，跳过删除 %s: %v", key, err)
+			continue
+		}
+		if referenced {
+			continue
+		}
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			// 对象已经不存在时按删除成功处理，保证重试幂等
+			if err := s.imageSvc.DeleteFile(c, key); err != nil && !errors.Is(err, ErrImageNotFound) {
+				log.Printf("删除旧图片失败 %s: %v", key, err)
+			}
+		}()
+	}
+	wg.Wait()
 }
 
 // uploadImage 把前端随表单带回来的图片按 CDN URL 反解出对象路径后上传到 R2。
@@ -320,6 +366,19 @@ func (s *ArticlesService) uploadImage(c context.Context, cdnURL string, header *
 		return fmt.Errorf("%w: 上传 %s: %w", ErrCDNPostFailed, cdnURL, err)
 	}
 	return nil
+}
+
+// deletableImageKey 校验 URL 属于当前文章的图片目录，返回可以删除的 R2 key。
+// 返回空字符串表示不是本服务管理的图片（外链、其他文章的图片），调用方跳过即可。
+func deletableImageKey(articleID, cdnURL string) string {
+	key, err := imageObjectKey(cdnURL)
+	if err != nil {
+		return ""
+	}
+	if !strings.HasPrefix(key, "my-exp/"+articleID+"/") {
+		return ""
+	}
+	return key
 }
 
 // imageObjectKey 从 CDN URL 中截掉基地址，得到 R2 存储桶内的完整对象路径。

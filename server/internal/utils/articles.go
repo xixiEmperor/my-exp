@@ -19,6 +19,21 @@ func ExtractURL(content string) []string {
 	return urls
 }
 
+// UniqueURL 按首次出现顺序去重，避免同一张图片被重复上传或删除。
+func UniqueURL(urls []string) []string {
+	seen := make(map[string]struct{}, len(urls))
+	result := make([]string, 0, len(urls))
+	for _, url := range urls {
+		if _, ok := seen[url]; ok {
+			continue
+		}
+		seen[url] = struct{}{}
+		result = append(result, url)
+	}
+	return result
+}
+
+// URL diff算法
 func Diff(old, new []string) ([]string, []string) {
 	// 初始化两个切片
 	add := make([]string, 0)

@@ -78,6 +78,50 @@ func TestImageObjectKey(t *testing.T) {
 	}
 }
 
+// TestDeletableImageKey 验证只有当前文章目录下的 CDN 图片可以进入删除流程。
+func TestDeletableImageKey(t *testing.T) {
+	const articleID = "articleA"
+	tests := []struct {
+		name   string
+		cdnURL string
+		want   string
+	}{
+		{
+			name:   "当前文章目录",
+			cdnURL: cons.CDN_BASE_URL + "/my-exp/articleA/image.webp",
+			want:   "my-exp/articleA/image.webp",
+		},
+		{
+			name:   "其他文章目录",
+			cdnURL: cons.CDN_BASE_URL + "/my-exp/articleB/image.webp",
+			want:   "",
+		},
+		{
+			name:   "前缀相同的其他文章",
+			cdnURL: cons.CDN_BASE_URL + "/my-exp/articleAB/image.webp",
+			want:   "",
+		},
+		{
+			name:   "外链图片",
+			cdnURL: "https://example.com/image.webp",
+			want:   "",
+		},
+		{
+			name:   "CDN 根路径",
+			cdnURL: cons.CDN_BASE_URL + "/",
+			want:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := deletableImageKey(articleID, tt.cdnURL); got != tt.want {
+				t.Fatalf("deletableImageKey() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 // TestUploadImage 用本地 R2 服务验证对象路径、文件类型和文件内容。
 func TestUploadImage(t *testing.T) {
 	var gotPath, gotType, gotBody string

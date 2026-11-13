@@ -92,6 +92,33 @@ func (repo *ArticlesRepo) FindArticlePreviewByID(c context.Context, id string) (
 	return aricle, nil
 }
 
+// ExistsOtherArticleReference 判断除当前文章外是否还有文章引用指定图片 URL。
+// 前端按文件 hash 全局去重，同一张图片可能被多篇文章共用，删除前必须确认没有其他引用。
+// 使用 LOCATE 而不是 LIKE，避免 URL 中的下划线被当成通配符；软删除文章也计入引用。
+func (repo *ArticlesRepo) ExistsOtherArticleReference(
+	c context.Context,
+	articleID, imageURL string,
+) (bool, error) {
+	// 空参数没有判断意义，直接按“没有其他引用”处理，避免无条件全表匹配。
+	if articleID == "" || imageURL == "" {
+		return false, nil
+	}
+
+	var count int64
+	err := repo.db.WithContext(c).
+		Unscoped().
+		Model(&model.Articles{}).
+		Where("id <> ?", articleID).
+		Where("LOCATE(?, content) > 0", imageURL).
+		Count(&count).
+		Error
+	if err != nil {
+		return false, fmt.Errorf("检查图片引用: %w", err)
+	}
+
+	return count > 0, nil
+}
+
 // 根据 id 查找文章简要信息，只取重命名需要的字段，不读取正文
 func (repo *ArticlesRepo) FindArticleBriefByID(c context.Context, id string) (model.ArticlesBrief, error) {
 	var article model.ArticlesBrief
