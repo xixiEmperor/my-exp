@@ -11,6 +11,7 @@ const iconNames: Record<ToastType, IconName> = {
     error: 'error',
     warning: 'alert',
     info: 'info',
+    loading: 'loading',
 };
 
 // 单条提示自己管自己的倒计时。到点先标记退场让动画播完，动画结束再从状态里删掉。
@@ -19,6 +20,11 @@ function ToastCard({ item }: { item: ToastItem }) {
     const [closing, setClosing] = useState(false);
 
     useEffect(() => {
+        // loading 提示没有固定时长，等调用方拿到 id 后主动移除
+        if (item.type === 'loading') {
+            return;
+        }
+
         const timer = window.setTimeout(() => {
             setClosing(true);
         }, item.duration);
@@ -26,7 +32,7 @@ function ToastCard({ item }: { item: ToastItem }) {
         return () => {
             window.clearTimeout(timer);
         };
-    }, [item.duration]);
+    }, [item.duration, item.type]);
 
     useEffect(() => {
         if (!closing) {

@@ -14,14 +14,15 @@ import { useParams } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 
 interface Props {
-    viewRef: RefObject<EditorView | null>;
+    // 只有需要把粘贴内容插入编辑器时才传，首页复制邮箱等场景不依赖编辑器实例。
+    viewRef?: RefObject<EditorView | null>;
 }
 
 // 复制成功后的提示保留时长。
 const resetDelay = 2000;
 
 // 复制状态只用于按钮上的短暂反馈，过期后自动复位。
-export function useClipboard({ viewRef }: Props) {
+export function useClipboard({ viewRef }: Props = {}) {
     const { id } = useParams<{ id: string }>();
     const [copied, setCopied] = useState(false);
     const timerRef = useRef(0);
@@ -68,6 +69,11 @@ export function useClipboard({ viewRef }: Props) {
     };
 
     const handldPaste: ClipboardEventHandler = async (e) => {
+        // 没有编辑器实例时不接管粘贴，交给浏览器默认行为。
+        if (!viewRef) {
+            return;
+        }
+
         e.preventDefault();
         e.stopPropagation();
 

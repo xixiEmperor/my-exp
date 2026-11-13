@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import Loading from '../Loading/Loading';
 import MarkdownReadonly from '../MarkdownReadonly/MarkdownReadonly';
 import MarkdownToc from '../MarkdownToc/MarkdownToc';
 import SiteIcon from '../SiteIcon/SiteIcon';
@@ -9,12 +10,14 @@ interface Props {
     open: boolean;
     // 要渲染的 markdown 文本。父组件传的是延迟值，输入时预览可以慢半拍
     content: string;
+    // 预览内容是否还在准备中。为 true 时正文区域只展示加载态
+    loading?: boolean;
     // 关闭预览，遮罩点击、关闭按钮和 Esc 都走这里
     onClose: () => void;
 }
 
 /** 编辑器里的文章预览页。遮罩弹层、目录跳转和滚动锁定都收在组件内部 */
-export default function MDXPreview({ open, content, onClose }: Props) {
+export default function MDXPreview({ open, content, loading = false, onClose }: Props) {
     const bodyRef = useRef<HTMLDivElement>(null); // 预览正文的滚动容器，点目录时需要把对应标题滚到可视区
 
     // 预览打开时锁住页面滚动，同时支持 Esc 关闭
@@ -78,16 +81,25 @@ export default function MDXPreview({ open, content, onClose }: Props) {
                     </button>
                 </header>
 
-                <div className={style.modalBody} ref={bodyRef}>
-                    <article className={style.article}>
-                        {/* 和前台文章详情页共用同一套阅读排版 */}
-                        <div className="reader-prose">
-                            {/* 阅读预览用横线呈现分界，保存的原文仍保留 JSX 标志。 */}
-                            <MarkdownReadonly content={content} isPreview={true} />
+                <div className={style.modalBody} ref={bodyRef} aria-busy={loading}>
+                    {/* 整个正文区域都交给加载态，避免旧内容先闪一下再被替换 */}
+                    {loading ? (
+                        <div className={style.loadingBody}>
+                            <Loading />
                         </div>
-                    </article>
+                    ) : (
+                        <>
+                            <article className={style.article}>
+                                {/* 和前台文章详情页共用同一套阅读排版 */}
+                                <div className="reader-prose">
+                                    {/* 阅读预览用横线呈现分界，保存的原文仍保留 JSX 标志。 */}
+                                    <MarkdownReadonly content={content} isPreview={true} />
+                                </div>
+                            </article>
 
-                    <MarkdownToc content={content} onJump={handleJump} />
+                            <MarkdownToc content={content} onJump={handleJump} />
+                        </>
+                    )}
                 </div>
             </div>
         </div>

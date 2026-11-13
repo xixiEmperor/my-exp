@@ -1,5 +1,5 @@
 import '@mdxeditor/editor/style.css';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EditorView } from '@codemirror/view';
 import { normalizeArticleSeparator } from './ArticleSeparator';
 import MarkdownSourceEditor, { type MarkdownSourceMethods } from './MarkdownSourceEditor';
@@ -11,13 +11,11 @@ import type { Article } from '@/types/articles';
 import MDXPreview from './MDXPreview';
 import MDXToolbar from './MDXToolbar';
 import { useDraft } from './useDraft';
+import { useArticlePreview } from '@/hooks/useArticlePreview';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
-import { initDB } from '@/utils/idb';
+import { initDB, getByArticleId } from '@/utils/idb';
 import style from './MDXEditor.module.scss';
-import { subUrls } from '@/utils/articles';
-import { getByImageId, getByArticleId } from '@/utils/idb';
-import { CDN_BASE_URL } from '@/constants/articles';
 
 /** 保存动作的类型：草稿只有自己可见，正文对所有人可见 */
 type SaveStatus = 'draft' | 'published';
@@ -44,10 +42,9 @@ export default function MDWriteComponent({ article }: Props) {
         mdRef,
     });
     const { updateArticleRequest } = useArticles();
+    const { previewOpen, previewLoading, previewContent, openPreview, closePreview } =
+        useArticlePreview();
 
-    // 现在改为点击预览时处理正文并保存结果，输入时不会更新预览正文
-    const [previewContent, setPreviewContent] = useState('');
-    const [previewOpen, setPreviewOpen] = useState(false); // 预览页的开关
     const [pendingSave, setPendingSave] = useState<SaveStatus | null>(null); // 待确认的保存类型。有值就代表确认框打开，两种保存共用同一个框
 
     // 组件初次加载时初始化 IndexedDB
@@ -57,89 +54,55 @@ export default function MDWriteComponent({ article }: Props) {
         });
     }, []);
 
-    // 关闭预览。传给预览组件后保持引用稳定，避免每次渲染都重新挂 Esc 监听
-    const handleClosePreview = useCallback(() => {
-        setPreviewOpen(false);
-    }, []);
-
     // 确认框点确认时执行。此时 pendingSave 还在，对话框会在回调结束后才关掉
     const handleConfirmSave = async () => {
         if (!pendingSave) {
             return;
         }
 
-        // 1. 保存动作跳过节流，点击之后立即落进本地缓存
-        saveNow();
-
-        // 2. 构造请求的 FormData
-        // 2.1 基础信息
-        const formData = new FormData();
-        formData.append('id', articleId);
-        formData.append('content', draft);
-        formData.append('status', pendingSave);
-
-        // 2.2 图片数据
-        const items = (await getByArticleId(articleId)) ?? [];
-        for (let item of items) {
-            formData.append(item.cdnURL, item.imageData); // 这里用 cdnURL 做键名是因为所有信息都可以从 url 反解出来
-        }
-
-        // for (let [k, v] of formData.entries()) {
-        //     console.log(k, v);
-        // }
-
-        // 3. 调用接口更新数据库中的文章内容
-        await updateArticleRequest.run(formData);
-
-        toast.success('保存成功');
-
-        // 接口回填时同样保证全文只有一个分隔符。
-        mdRef.current?.setMarkdown(
-            normalizeArticleSeparator(useArticlesStore.getState().articles[articleId].content),
+        // 更新接口可能还要把正文里的图片上传到 R2，先挂一条不会自动消失的 loading 提示，
+        // 等请求真正结束（无论成功失败）再统一移除。
+        const loadingToastId = toast.loading(
+            pendingSave === 'published'
+                ? '正在发布文章，图片上传可能需要一点时间…'
+                : '正在保存草稿，图片上传可能需要一点时间…',
         );
-    };
 
-    const handlePreview = async () => {
-        // 这里先把输入框打开，打开之后再去做内容替换逻辑
-        setPreviewOpen(true);
+        try {
+            // 1. 保存动作跳过节流，点击之后立即落进本地缓存
+            saveNow();
 
-        // 点击预览时以当前草稿为准，包含最新输入
-        let resolvedContent = draft;
-        const urls = subUrls(resolvedContent);
-        for (let url of urls) {
-            // 通过 await Promise的resolve 来实现对降级加载的等待
-            await new Promise((resolve) => {
-                // 创建一个 Image 实例加载 cdn url，加载成功则直接从 cdn 获取图片，否则降级到本地 blob
-                const image = new Image();
-                image.onload = () => {
-                    console.log('cdn URL 加载成功');
-                    resolve(null);
-                };
-                image.onerror = async () => {
-                    try {
-                        // 从 url 中解析出图片id，通过 indexedDB 索引查找到图片blob，并创建预览 url
-                        const res = new URL(url);
-                        const imageId = res.pathname.split('/')[3].split('.')[0];
-                        const tar = await getByImageId(imageId);
+            // 2. 构造请求的 FormData
+            // 2.1 基础信息
+            const formData = new FormData();
+            formData.append('id', articleId);
+            formData.append('content', draft);
+            formData.append('status', pendingSave);
 
-                        if (tar) {
-                            const previewUrl = URL.createObjectURL(tar.imageData);
-                            // 注意：replace 返回新字符串，要重新赋值
-                            resolvedContent = resolvedContent.replaceAll(url, previewUrl);
-                        }
-                    } catch (e) {
-                        console.error('处理图片失败:', url, e);
-                    } finally {
-                        resolve(null); // 无论成功失败都必须 resolve
-                    }
-                };
-                // 探测 CDN 时使用独立查询参数作为缓存键，避免图片尚未上传时的 404 污染真实 URL 的 CDN 缓存
-                const probeURL = url.startsWith(`${CDN_BASE_URL}/`) ? `${url}?preview=1` : url;
-                image.src = probeURL;
-            });
+            // 2.2 图片数据
+            const items = (await getByArticleId(articleId)) ?? [];
+            for (let item of items) {
+                formData.append(item.cdnURL, item.imageData); // 这里用 cdnURL 做键名是因为所有信息都可以从 url 反解出来
+            }
+
+            // 3. 调用接口更新数据库中的文章内容
+            const savedArticle = await updateArticleRequest.run(formData);
+
+            // 请求失败时 useRequest 已经弹过错误提示，这里不再覆盖成功提示
+            if (!savedArticle) {
+                return;
+            }
+
+            toast.success('保存成功');
+
+            // 接口回填时同样保证全文只有一个分隔符。
+            mdRef.current?.setMarkdown(
+                normalizeArticleSeparator(useArticlesStore.getState().articles[articleId].content),
+            );
+        } finally {
+            // 成功、失败和提前返回都走这里，避免 loading 提示一直挂在页面上
+            toast.dismiss(loadingToastId);
         }
-        // 将替换结果传给预览组件，再打开预览
-        setPreviewContent(resolvedContent);
     };
 
     // 编辑器固定源码模式，只编辑 markdown 原文，渲染效果交给预览页
@@ -154,7 +117,7 @@ export default function MDWriteComponent({ article }: Props) {
                             disabled={updateArticleRequest.loading}
                         />
                     }
-                    onPreview={handlePreview}
+                    onPreview={() => void openPreview(draft)}
                     onSaveDraft={() => setPendingSave('draft')}
                     onPublish={() => setPendingSave('published')}
                 />
@@ -174,7 +137,8 @@ export default function MDWriteComponent({ article }: Props) {
                 <MDXPreview
                     open={previewOpen}
                     content={previewContent}
-                    onClose={handleClosePreview}
+                    loading={previewLoading}
+                    onClose={closePreview}
                 />
 
                 {/* 草稿和发布共用一个确认框，标题和说明按待保存的类型切换 */}

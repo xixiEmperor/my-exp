@@ -46,7 +46,7 @@
     }
 }
 
-/* 四种类型共用同一张卡片底，只有图标带语义色，提示条不会抢走页面注意力。 */
+/* 各类型共用同一张卡片底，只有图标带语义色，提示条不会抢走页面注意力。 */
 .success svg {
     color: var(--ok);
 }
@@ -61,6 +61,12 @@
 
 .info svg {
     color: var(--accent);
+}
+
+/* loading 是唯一持续转动的类型，表示请求还没有结束 */
+.loading svg {
+    color: var(--accent);
+    animation: toast-spin 0.9s linear infinite;
 }
 
 /* 进场从上方落下，退场沿同一条路径退回。 */
@@ -78,6 +84,12 @@
     }
 }
 
+@keyframes toast-spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
 .closing {
     animation: toast-out 0.18s ease forwards;
 }
@@ -85,6 +97,10 @@
 @media (prefers-reduced-motion: reduce) {
     .card,
     .closing {
+        animation: none;
+    }
+
+    .loading svg {
         animation: none;
     }
 }

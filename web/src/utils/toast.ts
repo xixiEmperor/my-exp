@@ -9,6 +9,9 @@ const show = (type: ToastType, content: string, duration: number = DEFAULT_DURAT
     useToastStore.getState().pushToast(type, content, duration);
 
 export const toast = {
+    // loading 没有固定时长，拿到 id 后由调用方在异步流程结束时手动关闭
+    loading: (content: string) => show('loading', content, 0),
+    dismiss: (id: number) => useToastStore.getState().removeToast(id),
     success: (content: string, duration?: number) => show('success', content, duration),
     error: (content: string, duration?: number) => show('error', content, duration),
     warning: (content: string, duration?: number) => show('warning', content, duration),

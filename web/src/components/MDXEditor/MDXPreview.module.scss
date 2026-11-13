@@ -77,6 +77,15 @@
     min-width: 0;
 }
 
+// 加载态横跨正文和目录两列，并撑出接近一屏的高度，
+// 这样等待期间弹层不会先缩成一条，内容准备好后再突然长高。
+.loadingBody {
+    display: grid;
+    grid-column: 1 / -1;
+    place-items: center;
+    min-height: min(62vh, 540px);
+}
+
 // 预览页的滚动容器是弹层本身，目录的吸顶位置要从页面顶栏改成容器顶部
 .modalBody :global([data-article-toc]) {
     top: 0;

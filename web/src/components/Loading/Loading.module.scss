@@ -1,0 +1,46 @@
+/* 通用加载态：一个跟随主题的转圈和一行提示。 */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.spinner {
+    width: 38px;
+    aspect-ratio: 1;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    border-right-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 8%, transparent);
+    animation: loading-spin 0.9s linear infinite;
+}
+
+.label {
+    margin: 0;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.6;
+}
+
+@keyframes loading-spin {
+    to {
+        transform: rotate(1turn);
+    }
+}
+
+/* 系统开启减少动效时保留静态圆环，只停掉旋转 */
+@media (prefers-reduced-motion: reduce) {
+    .spinner {
+        border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+        border-top-color: var(--accent);
+        animation: none;
+    }
+}
