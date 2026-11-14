@@ -233,6 +233,25 @@
     }
 }
 
+// 桌面不占位，手机把目录入口放在导航第二行的左边，页面链接继续居中。
+.sidebarToggleSlot {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .dock .inner :global(.desktop-nav):has(.sidebarToggleSlot) {
+        position: relative;
+        padding-inline: 52px;
+    }
+
+    .sidebarToggleSlot {
+        position: absolute;
+        left: 0;
+        display: flex;
+        align-items: center;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .dock :global(.theme-button) {
         transform: none;

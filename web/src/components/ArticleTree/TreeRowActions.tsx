@@ -210,7 +210,8 @@ export default function TreeRowActions({
                         )}
                     </div>,
                     // 托盘挂到 body 下，避开目录树各级容器的 overflow hidden 裁剪
-                    document.body,
+                    // 位于移动端抽屉时挂到 dialog 内，避免被模态窗口遮住或禁用。
+                    rootRef.current?.closest('dialog') ?? document.body,
                 )}
 
             <ConfirmDialog

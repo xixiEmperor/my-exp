@@ -56,6 +56,10 @@ export default function HomeHeader({ actions, activePath }: Props) {
                     </Link>
                 )}
                 <nav className="desktop-nav" aria-label="主导航">
+                    {/* 侧栏组件把移动端展开按钮挂到这里，首页保持原有导航。 */}
+                    {!isHome ? (
+                        <span id="sidebar-toggle-slot" className={styles.sidebarToggleSlot} />
+                    ) : null}
                     {isHome ? (
                         <a
                             href="#main"
