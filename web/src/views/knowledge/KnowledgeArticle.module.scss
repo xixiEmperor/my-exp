@@ -1,7 +1,8 @@
 /* 前台阅读页容器。左侧目录由 Sidebar 负责，这里只给右侧正文留上下空白 */
 .page {
     min-width: 0;
-    padding: 32px 0 64px;
+    // 底部留白交给正文列里的页脚，目录所在的网格也能一直延伸到底。
+    padding: 32px 0 0;
 }
 
 /* 正文在左，目录在右。目录列宽度固定，正文吃掉剩下的空间 */
@@ -11,18 +12,69 @@
     justify-content: space-between;
     align-items: start;
     gap: 40px;
+
+    // 文章页沿用侧栏的 900px 移动断点，较窄的 PC 屏幕也把信息留在右侧目录下。
+    > :global([data-article-toc]) {
+        position: sticky;
+        max-height: calc(100vh - var(--header) - 64px);
+        overflow: hidden;
+
+        > nav {
+            display: block;
+        }
+    }
+}
+
+// 正文、文章信息和页脚共用这一列，页脚的分隔线不会横跨左右目录。
+.articleColumn {
+    min-width: 0;
+}
+
+// 标签和值放在同一行，每项信息各占一行，日期过长时只在值这一列换行。
+.articleMeta {
+    // 正文底部这份只在移动端显示，PC 使用目录下方的默认排版。
+    display: none;
+
+    dl {
+        gap: 12px;
+    }
+
+    dl > div {
+        grid-template-columns: 90px minmax(0, 1fr);
+        align-items: start;
+        column-gap: 12px;
+        font-size: 13px;
+    }
+
+    dd {
+        padding-left: 0;
+    }
+}
+
+.articleFooter {
+    margin-top: 32px;
+    padding-bottom: 32px;
 }
 
 /* 窄屏放不下右侧目录，目录组件自己会隐藏，这里同时把两列收成一列 */
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
+    .articleMeta {
+        display: block;
+    }
+
     .reading {
         grid-template-columns: minmax(0, 1fr);
+
+        // 移动端的信息已经放在正文后，隐藏右侧栏，避免重复显示和空的网格行。
+        > :global([data-article-toc]) {
+            display: none;
+        }
     }
 }
 
 /* 窄屏下侧边栏会收到内容上方，正文的顶部留白跟着收一档 */
 @media (max-width: 900px) {
     .page {
-        padding: 8px 0 40px;
+        padding: 8px 0 0;
     }
 }

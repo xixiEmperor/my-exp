@@ -8,6 +8,8 @@ interface Props {
     lastModifiedAt: Date | string;
     /** 文章浏览量 */
     views: number;
+    // 正文底部可以补充排版类名，编辑页的窄侧栏继续使用默认样式。
+    className?: string;
 }
 
 // 固定使用中文日期格式，避免不同浏览器拿到不同顺序的日期
@@ -41,7 +43,7 @@ function formatDate(value: Date | string | null | undefined): string {
 }
 
 // 文章详情页右侧的元信息，展示创建时间、最后修改时间和浏览量。
-export default function ArticleMeta({ createdAt, lastModifiedAt, views }: Props) {
+export default function ArticleMeta({ createdAt, lastModifiedAt, views, className }: Props) {
     // 结构相同的三行数据交给数组驱动，后续增加字段只需要补一条记录
     const items: Array<{ label: string; icon: IconName; value: string }> = [
         { label: '创建时间', icon: 'clock', value: formatDate(createdAt) },
@@ -54,7 +56,10 @@ export default function ArticleMeta({ createdAt, lastModifiedAt, views }: Props)
     ];
 
     return (
-        <section className={styles.meta} aria-label="文章信息">
+        <section
+            className={[styles.meta, className].filter(Boolean).join(' ')}
+            aria-label="文章信息"
+        >
             <p className={styles.title}>文章信息</p>
             <dl className={styles.list}>
                 {items.map((item) => (

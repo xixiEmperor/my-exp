@@ -20,6 +20,8 @@ export default function App() {
     const shell = useSiteShell();
     const isReading =
         shell.activePath === '/knowledge' || shell.activePath.startsWith('/knowledge/');
+    // 文章详情的页脚由正文列承载，侧栏的吸顶范围也能覆盖页面底部。
+    const hasArticleFooter = shell.activePath.startsWith('/knowledge');
     const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin/');
     const isPaperPage = isReading || isAdmin;
     const theme = useTheme(isPaperPage ? 'reading' : 'default');
@@ -74,7 +76,7 @@ export default function App() {
                 onLogout={() => setLogoutOpen(true)}
             />
             <Outlet />
-            {<SiteFooter />}
+            {!hasArticleFooter ? <SiteFooter /> : null}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />
             {/* 退出确认挂在壳层，任何页面点退出登录都能弹出。 */}
             <ConfirmDialog

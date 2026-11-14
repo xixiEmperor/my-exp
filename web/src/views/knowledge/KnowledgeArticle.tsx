@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import MarkdownSpace from '@/components/MarkdownSpace/MarkdownSpace';
 import MarkdownToc from '@/components/MarkdownToc/MarkdownToc';
 import ArticleMeta from '@/components/ArticleMeta/ArticleMeta';
+import SiteFooter from '@/components/SiteFooter/SiteFooter';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
@@ -35,6 +36,10 @@ export default function KnowledgeArticle() {
                     title="文章正在加载"
                     description="内容拉取完成后会自动显示，如果一直没出现可以回到目录重新点一次。"
                 />
+                {/* 加载期间也保留正文列的页脚，避免页面底部突然空掉。 */}
+                <div className={styles.articleFooter}>
+                    <SiteFooter />
+                </div>
             </div>
         );
     }
@@ -46,14 +51,28 @@ export default function KnowledgeArticle() {
     return (
         <div className={styles.page}>
             <div className={styles.reading}>
-                <article className="reader-article">
-                    <div className="reader-prose">
-                        {/* 用文章 id 做 key，切换文章时强制重新挂载，内容不会串到上一篇 */}
-                        <MarkdownSpace key={id} mode="readonly" article={article} />
-                    </div>
-                </article>
+                <div className={styles.articleColumn}>
+                    <article className="reader-article">
+                        <div className="reader-prose">
+                            {/* 用文章 id 做 key，切换文章时强制重新挂载，内容不会串到上一篇 */}
+                            <MarkdownSpace key={id} mode="readonly" article={article} />
+                        </div>
+                        {/* 移动端把文章信息放在正文后面，每项单独一行。 */}
+                        <ArticleMeta
+                            className={styles.articleMeta}
+                            createdAt={article.created_at}
+                            lastModifiedAt={article.last_modified_at}
+                            views={article.views}
+                        />
+                    </article>
+                    {/* 页脚和末尾留白都放在正文列内，两侧目录的吸顶边界延伸到底。 */}
+                    {/* <div className={styles.articleFooter}>
+                        <SiteFooter />
+                    </div> */}
+                </div>
 
                 {/* 目录固定在正文右侧，下方补上文章的时间信息和浏览量 */}
+                {/* PC 端恢复目录下方的文章信息，移动端隐藏整块右侧栏。 */}
                 <MarkdownToc
                     content={content}
                     footer={
