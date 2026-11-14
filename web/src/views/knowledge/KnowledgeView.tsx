@@ -49,7 +49,7 @@ export default function KnowledgeView() {
                 <>
                     {/* 目录标识沿用阅读 demo，让真实文章入口更容易辨认。 */}
                     <Link to="/" className={styles.backLink}>
-                        <span aria-hidden="true">←</span> 回到小站
+                        <span aria-hidden="true">←</span> 回到首页
                     </Link>
                     <div className={styles.heading}>
                         <span className={styles.mark} aria-hidden="true">
@@ -57,7 +57,6 @@ export default function KnowledgeView() {
                         </span>
                         <div>
                             <h2>我的知识库</h2>
-                            <p>学一点，做一点，再记下来。</p>
                         </div>
                     </div>
                 </>

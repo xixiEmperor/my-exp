@@ -1,0 +1,207 @@
+/* 通知延续首页配色，只保留日期、标题和本次更新内容。 */
+.home-page .project-section.project-updates {
+    display: block;
+    min-width: 0;
+
+    .updates-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 36px;
+    }
+    .updates-heading h2 {
+        margin: 0;
+    }
+    .updates-controls {
+        display: flex;
+        gap: 10px;
+    }
+    .updates-controls button {
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        font-size: 20px;
+        cursor: pointer;
+        transition:
+            background 200ms,
+            color 200ms;
+    }
+    .updates-controls button:hover:enabled {
+        background: var(--ink);
+        color: var(--bg);
+    }
+    .updates-controls button:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+    /* 所有尺寸都保留固定节点宽度，数量增加时自然产生横向溢出。 */
+    .updates-track {
+        position: relative;
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scrollbar-width: thin;
+        scrollbar-color: var(--muted) var(--soft);
+        scroll-snap-type: x proximity;
+        padding: 20px 6px 28px;
+        margin-bottom: 24px;
+        border-top: 1px solid var(--line);
+    }
+    .updates-node {
+        flex: 0 0 clamp(240px, 28vw, 320px);
+        min-width: 0;
+        padding: 8px 0 12px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        text-align: left;
+        font: inherit;
+        cursor: pointer;
+        scroll-snap-align: center;
+    }
+    .updates-node time {
+        display: block;
+        font-size: 15px;
+        font-variant-numeric: tabular-nums;
+    }
+    .updates-node-line {
+        position: relative;
+        display: block;
+        height: 1px;
+        margin: 24px 0;
+        background: var(--line);
+    }
+    .updates-node-line i {
+        position: absolute;
+        left: 0;
+        top: -5px;
+        width: 11px;
+        height: 11px;
+        border: 2px solid var(--muted);
+        border-radius: 50%;
+        background: var(--bg);
+        transition:
+            background 200ms,
+            box-shadow 200ms;
+    }
+    .updates-node:last-child .updates-node-line {
+        background: linear-gradient(to right, var(--line), transparent);
+    }
+    .updates-node-title {
+        display: block;
+        padding-right: 28px;
+        color: var(--ink);
+        font-size: 18px;
+        line-height: 1.6;
+    }
+    .updates-node:is(:hover, .is-selected) .updates-node-title {
+        color: var(--accent-text);
+    }
+    .updates-node.is-selected .updates-node-line i {
+        border-color: var(--accent-text);
+        background: var(--accent-text);
+        box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-text) 12%, transparent);
+    }
+
+    /* 详情以正文和功能列表为主，不再使用装饰编号和重复状态。 */
+    .updates-detail {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 36px;
+        padding: 36px;
+        background: var(--soft);
+        border-top: 2px solid var(--accent-text);
+        animation: release-notice-enter 280ms ease-out;
+    }
+    .updates-detail[hidden] {
+        display: none;
+    }
+    .updates-detail > time {
+        color: var(--accent-text);
+        font-size: 16px;
+        line-height: 2;
+        font-variant-numeric: tabular-nums;
+    }
+    .updates-detail-copy h3 {
+        margin: 0 0 18px;
+        color: var(--ink);
+        font-size: clamp(22px, 2.5vw, 30px);
+        font-weight: 500;
+    }
+    .updates-detail-copy p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+    .updates-detail-copy ul {
+        margin: 20px 0 0;
+        padding-left: 20px;
+        list-style: disc;
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.9;
+    }
+    .updates-detail-copy li {
+        padding-left: 4px;
+        list-style: disc;
+    }
+    .updates-detail-copy li + li {
+        margin-top: 8px;
+    }
+    :is(.updates-node, .updates-controls button, .updates-detail):focus-visible {
+        outline: 2px solid var(--accent-text);
+        outline-offset: -2px;
+    }
+}
+
+@keyframes release-notice-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* 手机节点依旧横向排列，通知正文使用整行宽度。 */
+@media (max-width: 760px) {
+    .home-page .project-section.project-updates {
+        .updates-heading {
+            margin-bottom: 26px;
+        }
+        .updates-controls button {
+            width: 36px;
+            height: 36px;
+        }
+        .updates-node {
+            flex-basis: 240px;
+        }
+        .updates-detail {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 16px;
+            padding: 24px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .project-section.project-updates {
+        .updates-detail {
+            animation: none;
+        }
+        .updates-node-line i,
+        .updates-controls button {
+            transition: none;
+        }
+    }
+}

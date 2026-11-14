@@ -24,7 +24,7 @@ export default function HomeJourney() {
                 <h2 id="journey-heading">
                     前端开发，
                     <br />
-                    到不再分栈<span className="blue">。</span>
+                    到不再分栈
                 </h2>
                 <p>
                     从学长推荐前端，到实习接触跨端开发，再到学习
@@ -51,11 +51,6 @@ export default function HomeJourney() {
                         hidden={!expanded && index >= 3}
                     />
                 ))}
-                {expanded ? (
-                    <div className="journey-tail">
-                        <span aria-hidden="true">✳</span> 后面的故事，边走边写。
-                    </div>
-                ) : null}
             </div>
             <div className="journey-divider">
                 <button

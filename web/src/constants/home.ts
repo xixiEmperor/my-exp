@@ -1,4 +1,4 @@
-import type { FutureItem, HeroContent, JourneyItem, ProjectPhase, WishItem } from '../types/home';
+import type { FutureItem, HeroContent, JourneyItem, WishItem } from '../types/home';
 
 // 首页所有展示内容集中在这一份配置里，组件只读取，不再各自维护副本。
 
@@ -138,46 +138,6 @@ export const journeyItems: readonly JourneyItem[] = [
         content:
             '把学习过程、开发经验和还没想通的问题，慢慢整理成自己的知识库。希望有朝一日，我也能成为一个牛逼的架构师',
         isCurrent: true,
-    },
-];
-
-// 横向项目时间轴。卡片收起时只显示标题和一句话，展开后补充细节。
-export const projectPhases: readonly ProjectPhase[] = [
-    {
-        id: 'idea',
-        step: 'STEP 01 · 想法',
-        status: '想法',
-        title: '先把问题写下来',
-        summary: '决定这个小站为什么存在',
-        detail: '这里既是个人博客，也是长期使用的知识库。首页负责让人认识我，知识库负责把内容讲清楚。先保证记录、查找和阅读这条主线足够顺畅，再慢慢扩展。',
-        isCurrent: false,
-    },
-    {
-        id: 'prototype',
-        step: 'STEP 02 · 原型',
-        status: '当前',
-        title: '给想法一个样子',
-        summary: '博客有个性，阅读有留白',
-        detail: '首页用三栏工作台、时间轴和手记展示个人经历；知识库减少装饰，把空间留给文章。两边共用字体、主题色和导航，让从认识我到阅读内容的过程连贯自然。',
-        isCurrent: true,
-    },
-    {
-        id: 'publishing',
-        step: 'STEP 03 · 内容',
-        status: '接下来',
-        title: '打通写作与阅读',
-        summary: '让一篇笔记完整走到读者面前',
-        detail: '计划用 MDXEditor 完成编辑，react-markdown 负责阅读展示。围绕草稿、发布和登录后的阅读范围，把内容从写下到被读到的流程接通。这部分目前还在设计阶段。',
-        isCurrent: false,
-    },
-    {
-        id: 'iteration',
-        step: 'STEP 04 · 迭代',
-        status: '持续迭代',
-        title: '在使用中慢慢打磨',
-        summary: '把细节交给真实的问题',
-        detail: '先把基础体验做好，再根据使用中的问题逐步增加能力。可能是一条更清楚的学习路线，也可能是一个可以亲手操作的功能演练场。新增什么，由真实需要来决定。',
-        isCurrent: false,
     },
 ];
 

@@ -2,15 +2,13 @@ import type { IconName } from '../components/SiteIcon/SiteIcon';
 
 // 首页各区域的数据契约，组件只展示内容，不维护额外副本。
 
-// 项目卡片一句话说明在收起状态显示，详细内容在展开后显示。
-export interface ProjectPhase {
+// 发版通知只维护发布日期和实际变化，不再使用开发阶段状态。
+export interface ReleaseNotice {
     id: string;
-    step: string;
-    status: string;
+    date: string;
     title: string;
-    summary: string;
-    detail: string;
-    isCurrent: boolean;
+    description: string;
+    changes: readonly string[];
 }
 
 export interface JourneyItem {

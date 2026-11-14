@@ -34,7 +34,7 @@ export default function HomeContact() {
                 : null}
             <div className="shell contact-main">
                 <h2>
-                    有想法，
+                    有想法？
                     <br />
                     欢迎来聊聊<span className="blue">。</span>
                 </h2>

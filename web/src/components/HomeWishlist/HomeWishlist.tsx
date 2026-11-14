@@ -17,14 +17,14 @@ export default function HomeWishlist() {
         >
             <div className="future-copy">
                 <h2 id="future-heading">
-                    持续沉淀，
+                    持续沉淀
                     <br />
-                    再加一点小巧思<span className="blue">。</span>
+                    再加一点小巧思
                 </h2>
                 <p>
-                    把学过的东西和经验用自己的话写成文档。
+                    把学过的东西和经验用自己的话写成文档
                     <br />
-                    顺带做一些可以亲手试的小东西，覆盖源码，实现效果和文档，放在站内分享。
+                    顺带做一些可以亲手试的小东西，覆盖源码，实现效果和文档，放在站内分享
                 </p>
                 <div className="wish-controls">
                     <span>{String(index + 1).padStart(2, '0')} / 03</span>

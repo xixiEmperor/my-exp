@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import HomeHero from '../../components/HomeHero/HomeHero';
 import HomeJourney from '../../components/HomeJourney/HomeJourney';
-import HomeProjects from '../../components/HomeProjects/HomeProjects';
+import HomeUpdates from '../../components/HomeUpdates/HomeUpdates';
 import HomeKnowledge from '../../components/HomeKnowledge/HomeKnowledge';
 import HomeWishlist from '../../components/HomeWishlist/HomeWishlist';
 import HomeContact from '../../components/HomeContact/HomeContact';
@@ -34,7 +34,7 @@ export default function HomeView() {
             <HomeFeedback />
             <HomeHero onAccent={onAccent} />
             <HomeJourney />
-            <HomeProjects />
+            <HomeUpdates />
             <HomeKnowledge />
             <HomeWishlist />
             <HomeContact />

@@ -1,0 +1,13 @@
+/* 同时进入视口的卡片错开出现，继续滚动时每条经历独立触发。 */
+.home-page .journey-section .journey-item.journey-ready.is-visible {
+    transition-delay: var(--journey-delay, 0ms);
+}
+
+/* 减少动效时无延迟展示，避免保留旧样式中的初始透明状态。 */
+@media (prefers-reduced-motion: reduce) {
+    .home-page .journey-section .journey-item.journey-ready {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

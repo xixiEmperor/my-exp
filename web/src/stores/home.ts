@@ -1,38 +1,30 @@
 import { create } from 'zustand';
-import { projectPhases, wishItems } from '../constants/home';
+import { wishItems } from '../constants/home';
+import { releaseNotices } from '../constants/releaseNotices';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
 
-// 项目卡片允许全部收起，用 -1 表示当前没有展开的卡片。
-export const collapsedProject = -1;
-
 // 只保存首页交互状态，实际滑动过程与当前页计算交给 Swiper。
 interface HomeState {
-    activeProject: number;
+    activeNotice: number;
     wishlistIndex: number;
-    setActiveProject: (index: number) => void;
+    setActiveNotice: (index: number) => void;
     setWishlistIndex: (index: number) => void;
 }
 
 export const homeStore = create<HomeState>()(
     devtools(
         immer((set) => ({
-            activeProject: 1,
+            activeNotice: 0,
             wishlistIndex: 0,
 
             // 在唯一修改入口检查索引，保证展开的卡片始终能找到对应数据。
-            setActiveProject: (index) => {
-                if (index === collapsedProject) {
-                    set({ activeProject: index });
-
+            setActiveNotice: (index) => {
+                if (!Number.isInteger(index) || index < 0 || index >= releaseNotices.length) {
                     return;
                 }
 
-                if (!Number.isInteger(index) || index < 0 || index >= projectPhases.length) {
-                    return;
-                }
-
-                set({ activeProject: index });
+                set({ activeNotice: index });
             },
 
             setWishlistIndex: (index) => {

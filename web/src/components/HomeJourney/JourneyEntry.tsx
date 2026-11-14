@@ -1,5 +1,7 @@
 import { journeyItems } from '../../constants/home';
 import { useHomeVisibility } from '../../hooks/useHomeExperience';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
+import './JourneyReveal.scss';
 
 // 每张便签独立观察进场，隐藏项不参与节点经过状态。
 export default function JourneyEntry({
@@ -12,11 +14,16 @@ export default function JourneyEntry({
     hidden: boolean;
 }) {
     const visibility = useHomeVisibility<HTMLElement>();
+    const reduced = useReducedMotion();
+
+    // 观察器可用时才隐藏待入场节点，减少动效时直接展示完整经历。
+    const animated = !reduced && typeof IntersectionObserver !== 'undefined';
 
     return (
         <article
             ref={visibility.ref}
-            className={`journey-item${visibility.entered ? ' is-visible passed is-node-pulsed' : ''}${visibility.visible ? ' is-in-view' : ''}${item.isCurrent ? ' current' : ''}`}
+            className={`journey-item${animated ? ' journey-ready' : ''}${visibility.entered ? ' is-visible passed is-node-pulsed' : ''}${visibility.visible ? ' is-in-view' : ''}${item.isCurrent ? ' current' : ''}`}
+            style={{ '--journey-delay': `${(index % 3) * 100}ms` } as React.CSSProperties}
             data-journey-row
             data-loop
             hidden={hidden}
