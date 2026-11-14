@@ -14,6 +14,7 @@ require (
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/redis/go-redis/v9 v9.22.0
 	github.com/ulule/limiter/v3 v3.11.2
+	golang.org/x/image v0.48.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.2
 )
@@ -58,7 +59,7 @@ require (
 	golang.org/x/arch v0.29.0 // indirect
 	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
+	golang.org/x/text v0.44.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )

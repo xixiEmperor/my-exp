@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"mime/multipart"
 	"net/http"
 
@@ -101,6 +102,15 @@ func (h *ArticlesHandler) RenameArticle(c *gin.Context) {
 // 更新文章内容
 func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 	var req dto.UpdateArticleReq
+	// 在表单解析前限制总请求大小，大图片暂存磁盘，退出时清理临时文件。
+	parseErr := c.Request.ParseMultipartForm(cons.MultipartMemoryBytes)
+	if c.Request.MultipartForm != nil {
+		defer c.Request.MultipartForm.RemoveAll()
+	}
+	if parseErr != nil {
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "无法处理上传表单"))
+		return
+	}
 
 	// 这里先绑基础数据
 	err := c.ShouldBind(&req)
@@ -116,7 +126,12 @@ func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 		return
 	}
 	req.Images = make(map[string]*multipart.FileHeader, len(form.File))
+	// 统计原始文件数量，重复字段也不能绕过数量限制或被静默丢弃。
 	for url, headers := range form.File {
+		if len(headers) > 1 {
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "同一字段不能重复上传"))
+			return
+		}
 		if len(headers) == 0 {
 			continue
 		}
@@ -125,7 +140,24 @@ func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 
 	res, err := h.s.UpdateArticle(c.Request.Context(), req.ID, req.Content, req.Status, req.Images)
 	if err != nil {
-		c.JSON(400, dto.Fail(-1, "更新失败"))
+		if errors.Is(err, service.ErrArticleValidation) {
+			// 只返回业务提示，图片解析等底层异常不直接暴露给客户端。
+			message := service.ErrArticleValidation.Error()
+			for _, validationError := range []error{
+				service.ErrArticleInvalidID, service.ErrArticleEmptyImage,
+				service.ErrArticleImageTooLarge, service.ErrArticleUnsupportedImage,
+				service.ErrArticleCorruptImage,
+			} {
+				if errors.Is(err, validationError) {
+					message = validationError.Error()
+					break
+				}
+			}
+			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, message))
+		} else {
+			log.Printf("保存文章失败: %v", err)
+			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "更新失败"))
+		}
 		return
 	}
 	c.JSON(http.StatusOK, dto.SuccessWithData(0, "success", res))

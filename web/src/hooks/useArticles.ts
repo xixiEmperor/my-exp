@@ -31,6 +31,8 @@ export function useArticles() {
 
         // 3. 覆盖掉旧的 article 实体映射
         setArticle(res.id, res);
+
+        return res;
     };
 
     const fetchArticleDetail = async (id: string) => {
@@ -59,7 +61,6 @@ export function useArticles() {
         } catch (error) {
             // 记录失败的文章，页面提示仍由 useRequest 统一处理。
             console.error('获取文章失败:', id, error);
-
 
             // 错误交给 useRequest 统一处理。
             throw error;

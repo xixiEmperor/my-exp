@@ -97,7 +97,7 @@ export default function MarkdownReadonly({ content, isPreview = false }: Props) 
             remarkPlugins={remarkPlugins}
             rehypePlugins={rehypePlugins}
             components={markdownComponents}
-            urlTransform={isPreview ? urlTransform : null}
+            urlTransform={isPreview ? urlTransform : defaultUrlTransform}
         >
             {content}
         </Markdown>

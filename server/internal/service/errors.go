@@ -1,8 +1,23 @@
 package service
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+
+	"zhiye/server/internal/utils"
+)
 
 var (
+	// 上传校验错误保留共同类别，同时允许按具体原因进行 errors.Is 判断。
+	ErrArticleValidation       = errors.New("文章参数不符合要求")
+	ErrArticleInvalidID        = fmt.Errorf("%w: 文章标识不能为空", ErrArticleValidation)
+	ErrArticleEmptyImage       = fmt.Errorf("%w: 图片不能为空", ErrArticleValidation)
+	ErrArticleImageTooLarge    = fmt.Errorf("%w: 单张图片不能超过 10MB", ErrArticleValidation)
+	ErrArticleUnsupportedImage = fmt.Errorf("%w: 只允许 JPEG、PNG、GIF、WebP 图片", ErrArticleValidation)
+	ErrArticleCorruptImage     = fmt.Errorf("%w: 图片内容无效", ErrArticleValidation)
+	ErrArticleImageOpenFailed  = errors.New("打开上传图片失败")
+	ErrArticleImageReadFailed  = errors.New("读取上传图片失败")
+
 	ErrInvalidDirectoryID = errors.New("目录标识不能为空")
 	ErrInvalidResourceID  = errors.New("资源标识不能为空")
 	ErrInvalidName        = errors.New("名称不能为空或过长")
@@ -18,3 +33,14 @@ var (
 	ErrWrongCode   = errors.New("验证码有误")
 	ErrRateLimit   = errors.New("验证过于频繁")
 )
+
+// 工具只返回校验结果，业务层在这里统一赋予错误类别和提示含义。
+var articleValidationErrors = map[utils.ArticleValidationIssue]error{
+	utils.ArticleInvalidID:        ErrArticleInvalidID,
+	utils.ArticleEmptyImage:       ErrArticleEmptyImage,
+	utils.ArticleImageTooLarge:    ErrArticleImageTooLarge,
+	utils.ArticleUnsupportedImage: ErrArticleUnsupportedImage,
+	utils.ArticleCorruptImage:     ErrArticleCorruptImage,
+	utils.ArticleImageOpenFailed:  ErrArticleImageOpenFailed,
+	utils.ArticleImageReadFailed:  ErrArticleImageReadFailed,
+}

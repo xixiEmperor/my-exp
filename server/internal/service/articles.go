@@ -141,6 +141,12 @@ func (s *ArticlesService) UpdateArticle(
 	article_id, content, status string,
 	imageData map[string]*multipart.FileHeader,
 ) (model.ArticlesDetail, error) {
+	// 整批输入先通过校验，再执行图片上传和数据库更新。
+	issue, validationErr := utils.ValidateArticleUpdate(article_id, imageData)
+	if issue != utils.ArticleValid {
+		// 业务层转换工具结果，底层异常仍保留在错误链中。
+		return model.ArticlesDetail{}, errors.Join(articleValidationErrors[issue], validationErr)
+	}
 	// 重复分隔符只保留最后一个，和编辑器保持一致。
 	if last := strings.LastIndex(content, cons.SplitFlag); last >= 0 {
 		content = strings.ReplaceAll(content[:last], cons.SplitFlag, "") + content[last:]
@@ -363,6 +369,13 @@ func (s *ArticlesService) uploadImage(c context.Context, cdnURL string, header *
 	if contentType == "" {
 		contentType = "application/octet-stream"
 	}
+
+	// 用文件实际类型覆盖客户端声明，防止对象被当成 HTML 等内容提供。
+	contentType, issue, validationErr := utils.ImageContentType(file)
+	if issue != utils.ArticleValid {
+		return errors.Join(articleValidationErrors[issue], validationErr)
+	}
+
 	// 5. 按对象路径上传，重复路径会覆盖；错误统一包装成 ErrCDNPostFailed 供上层判断。
 	if _, err := s.imageSvc.UploadFile(c, key, file, contentType); err != nil {
 		return fmt.Errorf("%w: 上传 %s: %w", ErrCDNPostFailed, cdnURL, err)

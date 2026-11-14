@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"image"
+	"image/png"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -196,11 +198,16 @@ func TestUploadImage(t *testing.T) {
 	// 构造一份 multipart 表单，得到和请求绑定后一致的 FileHeader。
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
+	// 使用真实 PNG，并保留客户端的 WebP 声明，验证上传使用实际文件类型。
+	var imageData bytes.Buffer
+	if err := png.Encode(&imageData, image.NewRGBA(image.Rect(0, 0, 1, 1))); err != nil {
+		t.Fatal(err)
+	}
 	part, err := writer.CreateFormFile("file", "image.webp")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := part.Write([]byte("webp-data")); err != nil {
+	if _, err := part.Write(imageData.Bytes()); err != nil {
 		t.Fatal(err)
 	}
 	if err := writer.Close(); err != nil {
@@ -223,10 +230,10 @@ func TestUploadImage(t *testing.T) {
 	if gotPath != "my-exp/article/image.webp" {
 		t.Errorf("对象路径错误: %s", gotPath)
 	}
-	if gotType != "image/webp" {
+	if gotType != "image/png" {
 		t.Errorf("文件类型错误: %s", gotType)
 	}
-	if gotBody != "webp-data" {
+	if gotBody != imageData.String() {
 		t.Errorf("文件内容错误: %s", gotBody)
 	}
 }
