@@ -2,6 +2,21 @@ package config
 
 import "testing"
 
+// 管理员配置只在启动时读取，允许留空并清除填写时的首尾空白。
+func TestAdminOpenIDConfig(t *testing.T) {
+	t.Chdir(t.TempDir())
+	t.Setenv("MYSQL_DSN", "test-dsn")
+	t.Setenv("WECHAT_CALLBACK_TOKEN", "test-token")
+	t.Setenv("JWT_SECRET", "test-secret")
+	for _, tt := range []struct{ value, want string }{{"", ""}, {"  Owner-openid  ", "Owner-openid"}} {
+		t.Setenv("ADMIN_OPENID", tt.value)
+		cfg, err := Load()
+		if err != nil || cfg.AdminOpenID != tt.want {
+			t.Fatalf("管理员配置不正确: %q, %v", cfg.AdminOpenID, err)
+		}
+	}
+}
+
 func TestLoadRequiresJWTSecret(t *testing.T) {
 	// 使用临时目录，避免测试读取真实 .env 后把缺失配置补齐。
 	t.Chdir(t.TempDir())

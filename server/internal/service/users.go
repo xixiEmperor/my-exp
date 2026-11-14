@@ -14,11 +14,12 @@ import (
 )
 
 type UsersService struct {
-	repo *repository.UsersRepo
+	repo        *repository.UsersRepo
+	adminOpenID string
 }
 
-func NewUsersService(repo *repository.UsersRepo) *UsersService {
-	return &UsersService{repo: repo}
+func NewUsersService(repo *repository.UsersRepo, adminOpenID string) *UsersService {
+	return &UsersService{repo: repo, adminOpenID: adminOpenID}
 }
 
 // 查找用户的入口，此处后续可以扩展为一个Switch查找
@@ -47,7 +48,12 @@ func (u *UsersService) FindOrCreateUser(ctx context.Context, openid string) (*mo
 	if _, err := rand.Read(bytes[:]); err != nil {
 		return nil, fmt.Errorf("生成初始昵称: %w", err)
 	}
-	return u.repo.CreateUser(ctx, openid, hex.EncodeToString(bytes[:]))
+	// 角色只由经过验证码验证的 OpenID 与启动配置决定，前端不能指定。
+	role := "user"
+	if u.adminOpenID != "" && openid == u.adminOpenID {
+		role = "admin"
+	}
+	return u.repo.CreateUser(ctx, openid, hex.EncodeToString(bytes[:]), role)
 }
 
 // 获取用户角色信息

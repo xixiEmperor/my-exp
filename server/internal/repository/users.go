@@ -49,14 +49,14 @@ func (u *UsersRepo) FindUserByID(ctx context.Context, id uint64) (*model.Users, 
 }
 
 // 创建一个新用户
-func (u *UsersRepo) CreateUser(ctx context.Context, openid, name string) (*model.Users, error) {
+func (u *UsersRepo) CreateUser(ctx context.Context, openid, name, role string) (*model.Users, error) {
 	now := time.Now()
 
 	user := model.Users{
 		OpenID: openid,
 		Name:   name,
 		// 显式设置角色，避免 GORM 写入空字符串覆盖数据库默认值。
-		Role:         "user",
+		Role:         role,
 		LastActiveAt: &now,
 	}
 

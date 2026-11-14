@@ -83,7 +83,7 @@ func run() error {
 			return err
 		}
 	}
-	userService := service.NewUsersService(userRepo)
+	userService := service.NewUsersService(userRepo, cfg.AdminOpenID)
 	authService := service.NewAuthService(codeRepo, userService)
 	articleService := service.NewArticlesService(articlesRepo, imageService)
 	folderService := service.NewFoldersService(foldersRepo)

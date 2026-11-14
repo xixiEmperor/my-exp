@@ -17,6 +17,8 @@ type Config struct {
 	RedisAddr           string
 	RedisPassword       string
 	WechatCallbackToken string
+	// 首次注册时匹配这个 OpenID 的微信用户创建为管理员，留空则不指定管理员。
+	AdminOpenID string
 	// 默认启用生产环境的安全 Cookie，本地 HTTP 开发可以显式关闭。
 	CookieSecure bool
 	// R2 图片存储为可选项，三项都未配置时不启用图片上传。
@@ -38,6 +40,7 @@ func Load() (Config, error) {
 		RedisAddr:           os.Getenv("REDIS_ADDR"),
 		RedisPassword:       os.Getenv("REDIS_PASSWORD"),
 		WechatCallbackToken: os.Getenv("WECHAT_CALLBACK_TOKEN"),
+		AdminOpenID:         strings.TrimSpace(os.Getenv("ADMIN_OPENID")),
 		R2AccountID:         os.Getenv("R2_ACCOUNT_ID"),
 		R2APIToken:          os.Getenv("R2_API_TOKEN"),
 		R2BucketName:        os.Getenv("R2_BUCKET_NAME"),

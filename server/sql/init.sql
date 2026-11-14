@@ -2,9 +2,9 @@ CREATE DATABASE IF NOT EXISTS my_exp CHARACTER SET 'utf8mb4';
 
 USE my_exp;
 
-CREATE TABLE users IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS users (
   id             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  openid         VARCHAR(64)     NOT NULL COMMENT '微信 openid，不返回给前端',
+  openid         VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '微信 openid，不返回给前端',
   name           VARCHAR(255)    NOT NULL COMMENT '昵称，初始为16位随机字符串',
   role           ENUM('admin', 'user') NOT NULL DEFAULT 'user' COMMENT '用户角色',
   created_at     DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -17,7 +17,7 @@ CREATE TABLE users IF NOT EXISTS (
   COMMENT = '用户表';
  
 -- 2. 文件夹表
-CREATE TABLE folders (
+CREATE TABLE IF NOT EXISTS folders (
   -- 主键由应用生成，使用区分大小写的 NanoID。
   id          CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '对外暴露的ID（NanoID）',
   name        VARCHAR(255)    NOT NULL COMMENT '文件夹名称',
@@ -36,12 +36,12 @@ CREATE TABLE folders (
   COMMENT = '文件夹表';
  
 -- 3. 文章表
-CREATE TABLE articles (
+CREATE TABLE IF NOT EXISTS articles (
   -- 主键由应用生成，使用区分大小写的 NanoID。
   id               CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '对外暴露的ID（NanoID）',
   title            VARCHAR(255)    NOT NULL COMMENT '标题',
   content          MEDIUMTEXT      NOT NULL COMMENT '正文',
-  preview          TEXT            NULL     COMMENT '游客可读的预览部分',
+  preview          MEDIUMTEXT      NULL     COMMENT '游客可读的预览部分',
   status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft' COMMENT '草稿/已发布',
   folder_id        CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '所属文件夹id，NULL表示根目录',
   views            BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文章浏览次数',
