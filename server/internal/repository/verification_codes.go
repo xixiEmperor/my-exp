@@ -17,6 +17,8 @@ const (
 	ConsumeMatched
 	// ConsumeMismatched 表示验证码不一致，失败次数已经累加。
 	ConsumeMismatched
+	// ConsumeLimited 表示验证码已达到失败上限，不能再继续验证。
+	ConsumeLimited
 )
 
 // ConsumeResult 是一次消费的存储层事实，不含限流阈值之类的业务规则。
@@ -47,8 +49,13 @@ var saveScript = redis.NewScript(`
 if redis.call('EXISTS', KEYS[1]) == 1 then
 	return 0
 end
+-- 同一个微信用户在有效期内只能持有一组登录凭据。
+if redis.call('EXISTS', KEYS[2]) == 1 then
+	return 0
+end
 redis.call('HSET', KEYS[1], 'code', ARGV[1], 'openid', ARGV[2], 'attempt', 0)
 redis.call('PEXPIRE', KEYS[1], ARGV[3])
+redis.call('SET', KEYS[2], ARGV[4], 'PX', ARGV[3])
 return 1
 `)
 
@@ -61,7 +68,8 @@ func (r *VerificationCodes) SaveIfAbsent(
 	// 用毫秒让有效期保持原样，避免取整时被截短。
 	millis := ttl.Milliseconds()
 
-	n, err := saveScript.Run(ctx, r.client, []string{loginKey(loginId)}, code, openid, millis).Int()
+	// 两个索引在同一脚本中写入，避免并发回调生成多组验证码。
+	n, err := saveScript.Run(ctx, r.client, []string{loginKey(loginId), "login-user:" + openid}, code, openid, millis, loginId).Int()
 	if err != nil {
 		return false, err
 	}
@@ -92,18 +100,27 @@ for i = 1, #data, 2 do
 	end
 end
 
+-- 先检查次数，再比较验证码，锁定后即使输入正确也不能登录。
+if attempt >= tonumber(ARGV[2]) then
+	return {3}
+end
 if code == ARGV[1] then
 	redis.call('DEL', KEYS[1])
+	redis.call('DEL', 'login-user:' .. openid)
 	return {1, openid, attempt}
 end
 
 local current = redis.call('HINCRBY', KEYS[1], 'attempt', 1)
+if current >= tonumber(ARGV[2]) then
+	return {3}
+end
 return {2, '', current}
 `)
 
 // Consume 校验并消费验证码，只返回存储层事实，怎么提示用户由 service 决定。
-func (r *VerificationCodes) Consume(ctx context.Context, loginId, code string) (ConsumeResult, error) {
-	values, err := consumeScript.Run(ctx, r.client, []string{loginKey(loginId)}, code).Slice()
+func (r *VerificationCodes) Consume(ctx context.Context, loginId, code string, maxAttempts int) (ConsumeResult, error) {
+	// 次数上限由业务层传入，锁定判断必须与验证码比较原子执行。
+	values, err := consumeScript.Run(ctx, r.client, []string{loginKey(loginId)}, code, maxAttempts).Slice()
 	if err != nil {
 		return ConsumeResult{}, err
 	}
@@ -116,6 +133,8 @@ func (r *VerificationCodes) Consume(ctx context.Context, loginId, code string) (
 	case 1:
 		openid, _ := values[1].(string)
 		return ConsumeResult{Status: ConsumeMatched, Openid: openid}, nil
+	case 3:
+		return ConsumeResult{Status: ConsumeLimited}, nil
 	default:
 		attempt, _ := values[2].(int64)
 		return ConsumeResult{Status: ConsumeMismatched, Attempt: int(attempt)}, nil

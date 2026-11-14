@@ -109,12 +109,15 @@ func (a *AuthService) GenerateVerificationCode(ctx context.Context, userID strin
 // 验证验证码
 func (a *AuthService) VerifyCode(ctx context.Context, loginId, code string) (*model.Users, error) {
 	// repository 只回答存储层发生了什么，通过与否、提示什么由这里判断。
-	result, err := a.codes.Consume(ctx, loginId, code)
+	result, err := a.codes.Consume(ctx, loginId, code, maxCodeAttempts)
 	if err != nil {
 		return nil, fmt.Errorf("消费验证码: %w", err)
 	}
 
 	switch result.Status {
+	case repository.ConsumeLimited:
+		// 达到次数上限后保持锁定，直到原来的有效期结束。
+		return nil, ErrRateLimit
 	case repository.ConsumeMissing:
 		// 键不存在，说明验证码已过期或从未生成。
 		return nil, ErrInvalidCode

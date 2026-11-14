@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/ulule/limiter/v3"
 )
 
 func NewRouterGroup(
@@ -16,6 +17,7 @@ func NewRouterGroup(
 	folderHandler *handler.FoldersHandler,
 	corsCfg cors.Config,
 	userService middlewares.UserInfoReader,
+	limitStore limiter.Store,
 ) *gin.Engine {
 	// 创建 gin 的路由引擎
 	r := gin.Default()
@@ -35,7 +37,7 @@ func NewRouterGroup(
 	api := r.Group("/api/v1")
 
 	// 装配各部分路由
-	registerAuthRouter(api, authHandler)
+	registerAuthRouter(api, authHandler, userService, limitStore)
 	registerArticleRouter(api, articleHandler, userService)
 	registerFolderRouter(api, folderHandler, userService)
 

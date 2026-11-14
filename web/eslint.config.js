@@ -108,14 +108,7 @@ export default defineConfig(
             'no-plusplus': 'error',
             'no-restricted-syntax': [
                 'error',
-                {
-                    selector: 'ForInStatement',
-                    message: 'for..in 会遍历原型链，请改用 Object.keys / Object.entries。',
-                },
-                {
-                    selector: 'ForOfStatement',
-                    message: 'for..of 在 Airbnb 中被禁用，请改用数组方法。',
-                },
+                // 允许 for...of 和 for...in，后者仍通过 guard-for-in 检查自有属性。
                 {
                     selector: 'LabeledStatement',
                     message: '不要使用 label。',
@@ -216,21 +209,10 @@ export default defineConfig(
                 },
             ],
             'lines-around-comment': 'off',
-            '@stylistic/lines-around-comment': [
-                'warn',
-                {
-                    beforeLineComment: true,
-                    beforeBlockComment: true,
-                    allowBlockStart: true,
-                    allowObjectStart: true,
-                    allowArrayStart: true,
-                    allowClassStart: true,
-                    allowInterfaceStart: true,
-                    allowTypeStart: true,
-                    allowEnumStart: true,
-                    allowModuleStart: true,
-                },
-            ],
+            // 注释不统一要求前置空行，逻辑单元的间隔由上面的语句规则控制。
+            '@stylistic/lines-around-comment': 'off',
+            // 只重新抛出原异常的 catch 没有实际作用，应让错误自然向上传递。
+            'no-useless-catch': 'error',
         },
     },
 );

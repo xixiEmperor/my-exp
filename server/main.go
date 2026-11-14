@@ -16,6 +16,8 @@ import (
 
 	"github.com/cloudflare/cloudflare-go/v7/option"
 	"github.com/gin-contrib/cors"
+	"github.com/ulule/limiter/v3"
+	limitredis "github.com/ulule/limiter/v3/drivers/store/redis"
 )
 
 func main() {
@@ -31,6 +33,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
 	// 1. 连接到 mysql 服务
 	sqlDB, err := database.NewMySQLClient(cfg.MySQLDSN)
 	if err != nil {
@@ -51,6 +54,14 @@ func run() error {
 	defer cancel()
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		return fmt.Errorf("连接 Redis: %w", err)
+	}
+
+	// 复用已有 Redis 连接，计数由库通过原子脚本维护并在多实例间共享。
+	limitStore, err := limitredis.NewStoreWithOptions(rdb, limiter.StoreOptions{
+		Prefix: "my-exp:rate-limit",
+	})
+	if err != nil {
+		return fmt.Errorf("初始化请求限流存储: %w", err)
 	}
 
 	// 1. 创建各部分 repo
@@ -78,7 +89,7 @@ func run() error {
 	folderService := service.NewFoldersService(foldersRepo)
 
 	// 3. 创建各部分 handler
-	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken)
+	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken, cfg.CookieSecure)
 	articleHandler := handler.NewArticlesHandler(articleService)
 	folderHandler := handler.NewFoldersHandler(folderService)
 
@@ -95,7 +106,12 @@ func run() error {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-	}, userService)
+	}, userService, limitStore)
+
+	// 直接连接 Go 的代理限定为本机，避免伪造转发 IP 绕过登录限流。
+	if err := engine.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
+		return err
+	}
 
 	// 本地默认使用 8080 端口，需要调整时通过 PORT 环境变量指定。
 	port := cfg.Port

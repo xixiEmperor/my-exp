@@ -14,6 +14,7 @@ import (
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 const (
@@ -22,7 +23,6 @@ const (
 )
 
 type UserInfoReader interface {
-	GetRole(ctx context.Context, id uint64) (string, error)
 	FindUserByID(ctx context.Context, id uint64) (*model.Users, error)
 }
 
@@ -48,7 +48,7 @@ func extractToken(c *gin.Context) (string, bool) {
 	return strings.TrimSpace(cookie), false
 }
 
-func MustLogin() gin.HandlerFunc {
+func MustLogin(s UserInfoReader) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, _ := extractToken(c)
 		if token == "" {
@@ -65,12 +65,10 @@ func MustLogin() gin.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(
-			c.Request.Context(),
-			cons.CtxUserID,
-			info.UserID,
-		)
-		c.Request = c.Request.WithContext(ctx)
+		// 必须登录与可选登录使用同一套用户查询和上下文写入逻辑。
+		if !attachUser(c, s, info.UserID) {
+			return
+		}
 
 		c.Next()
 	}
@@ -104,45 +102,34 @@ func OptionalAuth(s UserInfoReader) gin.HandlerFunc {
 
 		// 能到这里说明已经能拿到用户 id，直接去查找用户信息
 		// 已验证令牌的请求不能因为用户查询失败而降级成游客预览。
-		user, err := s.FindUserByID(c.Request.Context(), info.UserID)
-		if err != nil {
-			abortWithAuthError(c, err)
+		// 用户记录已删除时身份失效，不能把它当成数据库故障。
+		// 统一查询完整用户，处理已删除用户和数据库故障。
+		if !attachUser(c, s, info.UserID) {
 			return
 		}
-		if user == nil {
-			abortWithAuthError(c, apperr.ErrTokenInvalid)
-			return
-		}
-
-		ctx := context.WithValue(
-			c.Request.Context(),
-			cons.CtxUserInfo,
-			user,
-		)
-		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}
 }
 
 // 鉴权中间件
-func RequireAdmin(s UserInfoReader) gin.HandlerFunc {
+func RequireAdmin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 鉴权中间件只配合必须登录中间件一起使用，能走到这里，说明一定有userId
-		userId, _ := c.Request.Context().Value(cons.CtxUserID).(uint64)
+		// 登录中间件已写入完整用户，直接复用当前请求取得的角色。
+		user, ok := c.Request.Context().Value(cons.CtxUserInfo).(*model.Users)
 
 		// 拿到用户身份
-		role, err := s.GetRole(c, userId)
-		if err != nil {
+		if !ok || user == nil {
 			c.AbortWithStatusJSON(
-				http.StatusInternalServerError,
-				dto.Fail(cons.WithoutToken, "后台服务错误"),
+				http.StatusUnauthorized,
+				dto.Fail(cons.WithoutToken, "缺少身份信息"),
 			)
 			return
 		}
 
 		// 如果用户身份不是admin，直接拒绝请求
-		if role != "admin" {
+		if user.Role != "admin" {
 			c.AbortWithStatusJSON(
 				http.StatusForbidden,
 				dto.Fail(cons.WithoutToken, "无权限"),
@@ -152,6 +139,29 @@ func RequireAdmin(s UserInfoReader) gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// attachUser 为已验证的身份查询一次用户，并向后续处理传递完整资料。
+func attachUser(c *gin.Context, s UserInfoReader, id uint64) bool {
+	user, err := s.FindUserByID(c.Request.Context(), id)
+	if errors.Is(err, gorm.ErrRecordNotFound) || err == nil && user == nil {
+		abortWithAuthError(c, apperr.ErrTokenInvalid)
+		return false
+	}
+	if err != nil {
+		abortWithAuthError(c, err)
+		return false
+	}
+
+	// 构造上下文
+	ctx := context.WithValue(
+		c.Request.Context(),
+		cons.CtxUserInfo,
+		user,
+	)
+	// 写入上下文
+	c.Request = c.Request.WithContext(ctx)
+	return true
 }
 
 // abortWithAuthError 把 service 返回的错误映射成响应，

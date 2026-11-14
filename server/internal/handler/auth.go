@@ -5,12 +5,10 @@ import (
 	"crypto/sha1"
 	"crypto/subtle"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,6 +16,7 @@ import (
 
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/model"
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +26,7 @@ type AuthHandler struct {
 	// 依赖不对外暴露，避免请求处理过程中被外部随意替换。
 	authService   authService
 	callbackToken string
+	cookieSecure  bool
 }
 
 // 接口由使用方定义，只列出 handler 需要的方法，测试时可以模拟服务故障。
@@ -35,8 +35,8 @@ type authService interface {
 	Login(context.Context, string, string) (*service.LoginResult, error)
 }
 
-func NewAuthHandler(s authService, callbackToken string) *AuthHandler {
-	return &AuthHandler{authService: s, callbackToken: callbackToken}
+func NewAuthHandler(s authService, callbackToken string, cookieSecure bool) *AuthHandler {
+	return &AuthHandler{authService: s, callbackToken: callbackToken, cookieSecure: cookieSecure}
 }
 
 func (a *AuthHandler) GetWechatCallback(c *gin.Context) {
@@ -127,7 +127,12 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 	var body dto.VerifyBody
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, dto.Fail(cons.InternalError, "后台服务异常"))
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "登录id或验证码有误"))
+		return
+	}
+	// 临时登录标识只允许生成器使用的字符，避免任意 Redis 键输入。
+	if strings.Trim(body.LoginId, "23456789ABCDEFGHJKMNPQRSTUVWXYZ") != "" {
+		c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "登录id有误"))
 		return
 	}
 
@@ -151,20 +156,14 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 	}
 
 	// 先完成序列化，再写两个 Cookie，避免准备资料失败时只写入 token。
-	info, err := json.Marshal(dto.UserInfo{
+	info := dto.UserInfo{
 		ID:   strconv.FormatUint(result.User.ID, 10),
 		Name: result.User.Name,
 		Role: result.User.Role,
-	})
-	if err != nil {
-		log.Printf("序列化用户资料失败：%v", err)
-		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "服务暂时不可用"))
-		return
 	}
 	// URL 编码保证中文、空格和引号可以安全放进 Cookie，前端用 decodeURIComponent 还原。
-	userInfo := url.PathEscape(string(info))
 	maxAge := int(service.TokenTTL / time.Second)
-	secure := c.Request.TLS != nil
+	secure := a.cookieSecure || c.Request.TLS != nil
 	// Path=/ 允许页面读取 userinfo；不设置 Domain，限制为当前主机。
 	// SameSite=Lax 适用于当前同站点部署；userinfo 仅供展示，不能作为权限依据。
 	http.SetCookie(c.Writer, &http.Cookie{
@@ -176,20 +175,29 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 		Secure:   secure,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "userinfo",
-		Value:    userInfo,
-		Path:     "/",
-		MaxAge:   maxAge,
-		HttpOnly: false,
-		Secure:   secure,
-		SameSite: http.SameSiteLaxMode,
-	})
-	c.JSON(http.StatusOK, dto.Success(0))
+	// 用户资料通过响应体交给前端，Cookie 只保存不可读的身份令牌。
+	c.Header("Cache-Control", "no-store")
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "登录成功", info))
+}
+
+// CurrentUser 将鉴权中间件取得的用户转换成公开响应，不暴露内部身份字段。
+func (a *AuthHandler) CurrentUser(c *gin.Context) {
+	user, ok := c.Request.Context().Value(cons.CtxUserInfo).(*model.Users)
+	if !ok || user == nil {
+		c.JSON(http.StatusUnauthorized, dto.Fail(cons.WithoutToken, "缺少身份信息"))
+		return
+	}
+
+	c.Header("Cache-Control", "no-store")
+	c.JSON(http.StatusOK, dto.SuccessWithData(0, "查询成功", dto.UserInfo{
+		ID:   strconv.FormatUint(user.ID, 10),
+		Name: user.Name,
+		Role: user.Role,
+	}))
 }
 
 func (a *AuthHandler) Logout(c *gin.Context) {
-	secure := c.Request.TLS != nil
+	secure := a.cookieSecure || c.Request.TLS != nil
 
 	// 删除两个cookie
 	c.SetCookieData(&http.Cookie{

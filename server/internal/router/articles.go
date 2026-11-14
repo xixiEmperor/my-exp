@@ -13,11 +13,8 @@ func registerArticleRouter(
 	userService middlewares.UserInfoReader,
 ) {
 	// 需要鉴权的路由组，需要登录且身份为管理员才可调用
-	admin := parent.Group(
-		"/articles",
-		middlewares.MustLogin(),
-		middlewares.RequireAdmin(userService),
-	)
+	admin := parent.Group("/articles", middlewares.MustLogin(userService), middlewares.RequireAdmin())
+
 	admin.POST("/create", handler.CreateArticle)
 	admin.POST("/update", handler.UpdateArticle)
 	admin.POST("/rename", handler.RenameArticle)

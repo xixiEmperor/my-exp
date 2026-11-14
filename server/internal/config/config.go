@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -16,6 +17,8 @@ type Config struct {
 	RedisAddr           string
 	RedisPassword       string
 	WechatCallbackToken string
+	// 默认启用生产环境的安全 Cookie，本地 HTTP 开发可以显式关闭。
+	CookieSecure bool
 	// R2 图片存储为可选项，三项都未配置时不启用图片上传。
 	R2AccountID  string
 	R2APIToken   string
@@ -29,6 +32,7 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("读取 .env: %w", err)
 	}
 	cfg := Config{
+		CookieSecure:        true,
 		Port:                os.Getenv("PORT"),
 		MySQLDSN:            os.Getenv("MYSQL_DSN"),
 		RedisAddr:           os.Getenv("REDIS_ADDR"),
@@ -37,6 +41,14 @@ func Load() (Config, error) {
 		R2AccountID:         os.Getenv("R2_ACCOUNT_ID"),
 		R2APIToken:          os.Getenv("R2_API_TOKEN"),
 		R2BucketName:        os.Getenv("R2_BUCKET_NAME"),
+	}
+	// 只信任启动配置，不使用客户端可伪造的转发请求头判断 HTTPS。
+	if value := os.Getenv("COOKIE_SECURE"); value != "" {
+		secure, err := strconv.ParseBool(value)
+		if err != nil {
+			return Config{}, errors.New("COOKIE_SECURE 必须为 true 或 false")
+		}
+		cfg.CookieSecure = secure
 	}
 	// 地址和端口可以有开发默认值，数据库密码与微信令牌必须显式提供。
 	if cfg.Port == "" {
