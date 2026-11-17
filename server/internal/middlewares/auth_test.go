@@ -12,7 +12,6 @@ import (
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // 模拟用户查询，验证有效令牌不会因为查询失败而变成游客。
@@ -52,7 +51,7 @@ func TestMustLoginAndAdmin(t *testing.T) {
 		{"普通用户", token, &model.Users{ID: 1, Name: "测试用户", Role: "user"}, nil, false, http.StatusOK, 1},
 		{"管理员", token, &model.Users{ID: 1, Role: "admin"}, nil, true, http.StatusOK, 1},
 		{"普通用户无管理权限", token, &model.Users{ID: 1, Role: "user"}, nil, true, http.StatusForbidden, 1},
-		{"用户已删除", token, nil, gorm.ErrRecordNotFound, false, http.StatusUnauthorized, 1},
+		{"用户已删除", token, nil, service.ErrUserNotFound, false, http.StatusUnauthorized, 1},
 		{"空用户", token, nil, nil, false, http.StatusUnauthorized, 1},
 		{"数据库故障", token, nil, errors.New("数据库故障"), false, http.StatusInternalServerError, 1},
 		{"没有令牌", "", nil, nil, false, http.StatusUnauthorized, 0},

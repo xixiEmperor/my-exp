@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/ulule/limiter/v3"
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 )
 
 // RateLimitOptions 描述路由额度与识别方式，同一 Scope 共享同一组计数。
@@ -32,7 +32,7 @@ func RateLimit(store limiter.Store, options RateLimitOptions) gin.HandlerFunc {
 		result, err := instance.Get(c.Request.Context(), options.Scope+":"+key(c))
 		if err != nil {
 			// 存储故障不能静默取消限流，具体原因留在服务端日志中。
-			log.Printf("请求限流失败 %s: %v", options.Scope, err)
+			logger.FromContext(c.Request.Context()).Error("请求限流失败", "type", "business", "scope", options.Scope, "error", err)
 			c.AbortWithStatusJSON(http.StatusServiceUnavailable, dto.Fail(cons.InternalError, "服务暂时不可用"))
 			return
 		}

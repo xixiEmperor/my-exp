@@ -119,7 +119,9 @@ rem 启动服务，默认监听 127.0.0.1:8080。
 go run .
 ```
 
-config.Load 会优先保留系统环境变量，.env 用于补充本地配置。缺少 MYSQL_DSN、WECHAT_CALLBACK_TOKEN 或 JWT_SECRET 会直接报错。Redis 会在启动时做一次带超时的 Ping；MySQL 示例连接配置也带有连接超时。main 调用 run，在 run 正常返回或启动失败时执行 defer 关闭连接。强制终止进程不会保证执行 defer，当前也没有新增优雅停机机制。
+config.Load 会优先保留系统环境变量，.env 用于补充本地配置。缺少 MYSQL_DSN、WECHAT_CALLBACK_TOKEN 或 JWT_SECRET 会直接报错。Redis 会在启动时做一次带超时的 Ping；MySQL 示例连接配置也带有连接超时。main 调用 run，在 run 正常返回或启动失败时执行 defer 关闭连接。收到 Ctrl+C 或 SIGTERM 后，HTTP 服务最多等待十秒让现有请求完成，再关闭连接和日志文件。强制终止进程不会保证执行 defer。
+
+日志现在统一写入 logs/app.log，支持按大小和每天零点切割，并压缩、清理历史备份。服务器路径、保留时间和日志查询方式见 [日志说明](LOGGING.md)。
 
 健康检查 GET /health 只说明 HTTP 能响应，不会逐次检查数据库。应用启动本身仍然要求配置和依赖服务可用，所以它不能用来证明 MySQL、Redis 始终正常。
 

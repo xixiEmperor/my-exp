@@ -6,6 +6,7 @@ import (
 
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,7 @@ func (h *FoldersHandler) GetFolderChildren(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "目录标识不能为空"))
 			return
 		}
+		logger.FromContext(c.Request.Context()).Error("查询文件夹失败", "type", "business", "error", err)
 		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "文件夹查找失败"))
 		return
 	}
@@ -52,6 +54,7 @@ func (h *FoldersHandler) CreateFolder(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "父目录标识不能为空"))
 			return
 		}
+		logger.FromContext(c.Request.Context()).Error("创建文件夹失败", "type", "business", "error", err)
 		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "创建文件夹失败"))
 		return
 	}
@@ -75,6 +78,7 @@ func (h *FoldersHandler) RenameFolder(c *gin.Context) {
 		case errors.Is(err, service.ErrFolderNotFound):
 			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文件夹不存在"))
 		default:
+			logger.FromContext(c.Request.Context()).Error("重命名文件夹失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "重命名失败"))
 		}
 		return
@@ -93,6 +97,7 @@ func (h *FoldersHandler) Delete(c *gin.Context) {
 		case errors.Is(err, service.ErrFolderNotFound):
 			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文件夹不存在"))
 		default:
+			logger.FromContext(c.Request.Context()).Error("删除文件夹失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "删除失败"))
 		}
 		return

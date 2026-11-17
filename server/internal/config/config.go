@@ -7,11 +7,15 @@ import (
 	"strconv"
 	"strings"
 
+	"zhiye/server/internal/logger"
+
 	"github.com/joho/godotenv"
 )
 
 // Config 保存需要传给其他组件的配置；JWT_SECRET 只在启动时校验，不在各层传递。
 type Config struct {
+	// 日志配置随启动配置一起读取，业务代码不再单独读取环境变量。
+	Log                 logger.Config
 	Port                string
 	MySQLDSN            string
 	RedisAddr           string
@@ -69,6 +73,11 @@ func Load() (Config, error) {
 	// 在连接数据库和启动 HTTP 服务前检查密钥，避免收到登录请求才发现配置缺失。
 	if strings.TrimSpace(os.Getenv("JWT_SECRET")) == "" {
 		return Config{}, errors.New("缺少 JWT_SECRET 配置")
+	}
+	var err error
+	cfg.Log, err = loadLogConfig()
+	if err != nil {
+		return Config{}, err
 	}
 	return cfg, nil
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
-	"gorm.io/gorm"
 	"zhiye/server/internal/handler"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/service"
@@ -23,7 +22,7 @@ type currentUserStub struct{ missing bool }
 func (s currentUserStub) GetRole(context.Context, uint64) (string, error) { return "admin", nil }
 func (s currentUserStub) FindUserByID(context.Context, uint64) (*model.Users, error) {
 	if s.missing {
-		return nil, gorm.ErrRecordNotFound
+		return nil, service.ErrUserNotFound
 	}
 	return &model.Users{ID: 1, Name: "当前用户", Role: "admin", OpenID: "private-openid"}, nil
 }

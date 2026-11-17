@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -16,6 +15,7 @@ import (
 
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/service"
 
@@ -43,7 +43,7 @@ func (a *AuthHandler) GetWechatCallback(c *gin.Context) {
 	token := a.callbackToken
 	// 临时诊断：确认请求到达这个 Go 服务
 	c.Header("X-Debug-Origin", "wechat-demo")
-	log.Println("收到公众号 GET 回调")
+	logger.FromContext(c.Request.Context()).Debug("收到公众号 GET 回调", "type", "business")
 
 	if !validSignature(c, token) {
 		c.Status(http.StatusForbidden)
@@ -104,7 +104,7 @@ func (a *AuthHandler) PostWechatCallback(c *gin.Context) {
 		}
 
 		// 基础设施故障返回 500，具体原因只记录在服务端。
-		log.Printf("生成验证码失败：%v", err)
+		logger.FromContext(c.Request.Context()).Error("生成验证码失败", "type", "business", "error", err)
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -149,7 +149,7 @@ func (a *AuthHandler) Verify(c *gin.Context) {
 			c.JSON(http.StatusTooManyRequests, dto.Fail(cons.RateLimit, "尝试过于频繁，请稍后再试"))
 		default:
 			// 任何未预期的错误都必须结束请求，不能继续落入成功分支。
-			log.Printf("登录失败：%v", err)
+			logger.FromContext(c.Request.Context()).Error("登录失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "服务暂时不可用"))
 		}
 		return

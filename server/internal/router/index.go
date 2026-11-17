@@ -20,7 +20,9 @@ func NewRouterGroup(
 	limitStore limiter.Store,
 ) *gin.Engine {
 	// 创建 gin 的路由引擎
-	r := gin.Default()
+	r := gin.New()
+	// 请求日志必须包住异常恢复，才能取得恢复后的最终响应状态。
+	r.Use(middlewares.RequestLog(), middlewares.Recovery())
 
 	// 中间件必须在注册路由之前挂载，否则已注册的路由不会带上这些 handler。
 	r.Use(cors.New(corsCfg))

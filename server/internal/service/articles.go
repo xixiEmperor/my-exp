@@ -4,15 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"mime/multipart"
 	"slices"
 	"strings"
 	"sync"
 
-	"zhiye/server/internal/apperr"
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
 	"zhiye/server/internal/utils"
@@ -30,6 +29,14 @@ func NewArticlesService(artiRepo *repository.ArticlesRepo, imageSvc *ImageServic
 		artiRepo: artiRepo,
 		imageSvc: imageSvc,
 	}
+}
+
+// articleNotFound 把仓储层的资源不存在转换成业务错误，保留底层哨兵便于日志排查。
+func articleNotFound(err error) error {
+	if errors.Is(err, repository.ErrArticleNotFound) {
+		return fmt.Errorf("%w: %w", ErrArticleNotFound, err)
+	}
+	return err
 }
 
 // GetArticlesByFolderID 只查询文章，草稿权限由业务层决定。
@@ -53,7 +60,7 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 	if !ok || user_info == nil {
 		preview, err := s.artiRepo.FindArticlePreviewByID(c, article_id)
 		if err != nil {
-			return model.ArticlesPreview{}, err
+			return model.ArticlesPreview{}, articleNotFound(err)
 		}
 		if preview.Status == "draft" {
 			return model.ArticlesPreview{}, ErrNotPublished
@@ -76,7 +83,7 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 	// 这里查找到带有分隔符的基础内容
 	detail, err := s.artiRepo.FindArticleContentByID(c, article_id)
 	if err != nil {
-		return model.ArticlesDetail{}, err
+		return model.ArticlesDetail{}, articleNotFound(err)
 	}
 
 	// 如果是非管理员，这里需要把分隔符消除后再返回内容
@@ -130,7 +137,7 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 
 	err = s.artiRepo.CreateArticle(c, &newArticle)
 	if err != nil {
-		return model.Articles{}, apperr.MySQLError
+		return model.Articles{}, err
 	}
 	return newArticle, nil
 }
@@ -157,7 +164,12 @@ func (s *ArticlesService) UpdateArticle(
 	// 先上传新增图片并算出写库后需要清理的旧图片；上传失败就不更新文章内容了
 	deleteURL, err := s.executeImage(c, article_id, content, imageData)
 	if err != nil {
-		return model.ArticlesDetail{}, ErrCDNPostFailed
+		// 文章不存在不能被包装成图片上传失败，保持原错误让 handler 映射 404。
+		if errors.Is(err, ErrArticleNotFound) {
+			return model.ArticlesDetail{}, err
+		}
+		// 保留上传失败原因，响应仍使用原来的业务错误提示。
+		return model.ArticlesDetail{}, fmt.Errorf("%w: %w", ErrCDNPostFailed, err)
 	}
 
 	// 构造要更新的内容的结构体
@@ -169,13 +181,13 @@ func (s *ArticlesService) UpdateArticle(
 
 	err = s.artiRepo.UpdateArticle(c, article_id, options)
 	if err != nil {
-		return model.ArticlesDetail{}, err
+		return model.ArticlesDetail{}, articleNotFound(err)
 	}
 
 	// 先取回最新内容再清理旧图片：清理会发起网络请求，不能让它影响本次查询和响应
 	article, err := s.artiRepo.FindArticleContentByID(c, article_id)
 	if err != nil {
-		return model.ArticlesDetail{}, err
+		return model.ArticlesDetail{}, articleNotFound(err)
 	}
 
 	// 正文保存成功后才能删除旧图片；删除失败只记日志，不回滚已经保存的内容
@@ -255,7 +267,7 @@ func (s *ArticlesService) executeImage(
 	// 1. 获取旧文章
 	old, err := s.artiRepo.FindArticleContentByID(c, articleId)
 	if err != nil {
-		return nil, err
+		return nil, articleNotFound(err)
 	}
 
 	// 2. 解析新旧文章中包含的CDN URL，并去重，避免同一张图重复上传或重复删除
@@ -326,7 +338,7 @@ func (s *ArticlesService) cleanupImages(c context.Context, articleID string, cdn
 		// 前端按文件 hash 跨文章复用图片，如果有其他文件使用了这个图片，则不应被删除
 		referenced, err := s.artiRepo.ExistsOtherArticleReference(c, articleID, cdnURL)
 		if err != nil {
-			log.Printf("检查图片引用失败，跳过删除 %s: %v", key, err)
+			logger.FromContext(c).Warn("检查图片引用失败，跳过删除", "type", "business", "image_key", key, "error", err)
 			continue
 		}
 		if referenced {
@@ -338,7 +350,7 @@ func (s *ArticlesService) cleanupImages(c context.Context, articleID string, cdn
 			defer wg.Done()
 			// 对象已经不存在时按删除成功处理，保证重试幂等
 			if err := s.imageSvc.DeleteFile(c, key); err != nil && !errors.Is(err, ErrImageNotFound) {
-				log.Printf("删除旧图片失败 %s: %v", key, err)
+				logger.FromContext(c).Warn("删除旧图片失败", "type", "business", "image_key", key, "error", err)
 			}
 		}()
 	}

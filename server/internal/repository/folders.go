@@ -3,9 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
 
 	"gorm.io/gorm"
@@ -38,7 +36,7 @@ func (repo *FoldersRepo) FindFoldersByParentID(c context.Context, id *string) ([
 		query = query.Where("parent_id = ?", *id)
 	}
 	if err := query.Find(&folders).Error; err != nil {
-		return nil, apperr.MySQLError
+		return nil, wrapMySQLError("查询文件夹列表", err)
 	}
 	return folders, nil
 }
@@ -46,7 +44,10 @@ func (repo *FoldersRepo) FindFoldersByParentID(c context.Context, id *string) ([
 // 根据父文件夹 id 创建文件夹
 func (repo *FoldersRepo) CreateFolder(c context.Context, folder *model.Folders) error {
 	// 将请求上下文传给数据库，取消请求时可以终止写入。
-	return repo.db.WithContext(c).Create(folder).Error
+	if err := repo.db.WithContext(c).Create(folder).Error; err != nil {
+		return wrapMySQLError("创建文件夹", err)
+	}
+	return nil
 }
 
 // 根据 id 查找单个文件夹，重命名时需要它的父目录来判断同级重名
@@ -58,7 +59,7 @@ func (repo *FoldersRepo) FindFolderByID(c context.Context, id string) (model.Fol
 		return model.Folders{}, ErrFolderNotFound
 	}
 	if err != nil {
-		return model.Folders{}, fmt.Errorf("查询文件夹: %w", err)
+		return model.Folders{}, wrapMySQLError("查询文件夹", err)
 	}
 
 	return folder, nil
@@ -72,7 +73,7 @@ func (repo *FoldersRepo) RenameFolder(c context.Context, id string, name string)
 		Update("name", name)
 
 	if result.Error != nil {
-		return fmt.Errorf("重命名文件夹: %w", result.Error)
+		return wrapMySQLError("重命名文件夹", result.Error)
 	}
 	// 名称没有变化时 MySQL 返回 0 行，这里再确认文件夹是否仍然存在。
 	if result.RowsAffected == 0 {
@@ -81,7 +82,7 @@ func (repo *FoldersRepo) RenameFolder(c context.Context, id string, name string)
 			Model(&model.Folders{}).
 			Where("id = ?", id).
 			Count(&count).Error; err != nil {
-			return fmt.Errorf("确认文件夹是否存在: %w", err)
+			return wrapMySQLError("确认文件夹是否存在", err)
 		}
 		if count == 0 {
 			return ErrFolderNotFound
@@ -101,14 +102,14 @@ func (repo *FoldersRepo) DeleteCascade(c context.Context, id string) error {
 			return ErrFolderNotFound
 		}
 		if err != nil {
-			return fmt.Errorf("查询文件夹: %w", err)
+			return wrapMySQLError("查询文件夹", err)
 		}
 
 		// 一次性取出全部文件夹的 id 和 parent_id，在内存中收集子孙节点。
 		// 避免逐层查询，数据出现循环引用时也不会陷入无限递归。
 		var all []model.FolderBrief
 		if err := tx.Model(model.Folders{}).Select("id", "parent_id").Find(&all).Error; err != nil {
-			return fmt.Errorf("查询文件夹树: %w", err)
+			return wrapMySQLError("查询文件夹树", err)
 		}
 		children := make(map[string][]string, len(all))
 		for _, f := range all {
@@ -130,10 +131,10 @@ func (repo *FoldersRepo) DeleteCascade(c context.Context, id string) error {
 		// 行还留在表里会触发外键 fk_articles_folder 的 RESTRICT 限制导致 1451 报错，
 		// 所以这里用 Unscoped 物理删除，让后续删除文件夹能通过外键校验
 		if err := tx.Unscoped().Where("folder_id IN ?", ids).Delete(&model.Articles{}).Error; err != nil {
-			return fmt.Errorf("级联删除文章: %w", err)
+			return wrapMySQLError("级联删除文章", err)
 		}
 		if err := tx.Where("id IN ?", ids).Delete(&model.Folders{}).Error; err != nil {
-			return fmt.Errorf("级联删除文件夹: %w", err)
+			return wrapMySQLError("级联删除文件夹", err)
 		}
 		return nil
 	})

@@ -9,8 +9,6 @@ import (
 
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
-
-	"gorm.io/gorm"
 )
 
 type UsersService struct {
@@ -29,7 +27,11 @@ func (u *UsersService) FindUser(ctx context.Context, openid string) (*model.User
 
 // 根据 id 查找用户信息
 func (u *UsersService) FindUserByID(ctx context.Context, id uint64) (*model.Users, error) {
-	return u.repo.FindUserByID(ctx, id)
+	user, err := u.repo.FindUserByID(ctx, id)
+	if errors.Is(err, repository.ErrUserNotFound) {
+		return nil, ErrUserNotFound
+	}
+	return user, err
 }
 
 // FindOrCreateUser 把首次使用时自动创建用户的业务规则留在 service。
@@ -40,7 +42,7 @@ func (u *UsersService) FindOrCreateUser(ctx context.Context, openid string) (*mo
 		return user, nil
 	}
 	// 数据库断开等错误不能当成新用户，否则会掩盖真正的故障。
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	if !errors.Is(err, repository.ErrUserNotFound) {
 		return nil, err
 	}
 	// 8 个随机字节转换成 16 个十六进制字符，与现有表的昵称约定一致。

@@ -2,12 +2,12 @@ package handler
 
 import (
 	"errors"
-	"log"
 	"mime/multipart"
 	"net/http"
 
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +33,13 @@ func (h *ArticlesHandler) GetArticleContent(c *gin.Context) {
 			c.JSON(http.StatusForbidden, dto.Fail(cons.Forbidden, "无权获取该文章"))
 			return
 		}
-		c.JSON(http.StatusBadRequest, dto.Fail(cons.InternalError, "文件查找错误"))
+		// 文章不存在是正常的查询结果，不写错误日志。
+		if errors.Is(err, service.ErrArticleNotFound) {
+			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
+			return
+		}
+		logger.FromContext(c.Request.Context()).Error("查询文章内容失败", "type", "business", "error", err)
+		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "文章查找失败"))
 		return
 	}
 
@@ -49,6 +55,7 @@ func (h *ArticlesHandler) GetArticlesByFolderID(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "目录标识不能为空"))
 			return
 		}
+		logger.FromContext(c.Request.Context()).Error("查询文章列表失败", "type", "business", "error", err)
 		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "文章列表查找失败"))
 		return
 	}
@@ -69,6 +76,7 @@ func (h *ArticlesHandler) CreateArticle(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, "目录标识不能为空"))
 			return
 		}
+		logger.FromContext(c.Request.Context()).Error("创建文章失败", "type", "business", "error", err)
 		c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "创建文章失败"))
 		return
 	}
@@ -92,6 +100,7 @@ func (h *ArticlesHandler) RenameArticle(c *gin.Context) {
 		case errors.Is(err, service.ErrArticleNotFound):
 			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
 		default:
+			logger.FromContext(c.Request.Context()).Error("重命名文章失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "重命名失败"))
 		}
 		return
@@ -154,8 +163,10 @@ func (h *ArticlesHandler) UpdateArticle(c *gin.Context) {
 				}
 			}
 			c.JSON(http.StatusBadRequest, dto.Fail(cons.BindError, message))
+		} else if errors.Is(err, service.ErrArticleNotFound) {
+			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
 		} else {
-			log.Printf("保存文章失败: %v", err)
+			logger.FromContext(c.Request.Context()).Error("保存文章失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "更新失败"))
 		}
 		return
@@ -174,6 +185,7 @@ func (h *ArticlesHandler) Delete(c *gin.Context) {
 		case errors.Is(err, service.ErrArticleNotFound):
 			c.JSON(http.StatusNotFound, dto.Fail(cons.NotFound, "文章不存在"))
 		default:
+			logger.FromContext(c.Request.Context()).Error("删除文章失败", "type", "business", "error", err)
 			c.JSON(http.StatusInternalServerError, dto.Fail(cons.InternalError, "删除失败"))
 		}
 		return

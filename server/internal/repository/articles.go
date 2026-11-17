@@ -3,10 +3,8 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/model"
 
 	"gorm.io/gorm"
@@ -60,7 +58,7 @@ func (repo *ArticlesRepo) FindArticlesByFolderID(
 
 	err := query.Find(&articles).Error
 	if err != nil {
-		return nil, apperr.MySQLError
+		return nil, wrapMySQLError("查询文章列表", err)
 	}
 
 	return articles, nil
@@ -72,8 +70,11 @@ func (repo *ArticlesRepo) FindArticleContentByID(c context.Context, id string) (
 
 	// 直接查询字符串主键，并让请求取消能够终止数据库操作。
 	err := repo.db.WithContext(c).Model(model.Articles{}).Where("id = ?", id).Take(&aricle).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.ArticlesDetail{}, ErrArticleNotFound
+	}
 	if err != nil {
-		return model.ArticlesDetail{}, err
+		return model.ArticlesDetail{}, wrapMySQLError("查询文章内容", err)
 	}
 
 	return aricle, nil
@@ -85,8 +86,11 @@ func (repo *ArticlesRepo) FindArticlePreviewByID(c context.Context, id string) (
 
 	// 预览与正文共用同一个 NanoID 主键。
 	err := repo.db.WithContext(c).Model(model.Articles{}).Where("id = ?", id).Take(&aricle).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.ArticlesPreview{}, ErrArticleNotFound
+	}
 	if err != nil {
-		return model.ArticlesPreview{}, err
+		return model.ArticlesPreview{}, wrapMySQLError("查询文章预览", err)
 	}
 
 	return aricle, nil
@@ -113,7 +117,7 @@ func (repo *ArticlesRepo) ExistsOtherArticleReference(
 		Count(&count).
 		Error
 	if err != nil {
-		return false, fmt.Errorf("检查图片引用: %w", err)
+		return false, wrapMySQLError("检查图片引用", err)
 	}
 
 	return count > 0, nil
@@ -134,7 +138,7 @@ func (repo *ArticlesRepo) FindArticleBriefByID(c context.Context, id string) (mo
 	}
 	if err != nil {
 		// 保留底层错误链，交给上层映射为服务端错误。
-		return model.ArticlesBrief{}, fmt.Errorf("查询文章简要信息: %w", err)
+		return model.ArticlesBrief{}, wrapMySQLError("查询文章简要信息", err)
 	}
 
 	return article, nil
@@ -151,7 +155,7 @@ func (repo *ArticlesRepo) FindArticlesByName(c context.Context, name string) ([]
 		Find(&names).
 		Error
 	if err != nil {
-		return nil, err
+		return nil, wrapMySQLError("根据名称查询文章", err)
 	}
 
 	return names, nil
@@ -159,7 +163,11 @@ func (repo *ArticlesRepo) FindArticlesByName(c context.Context, name string) ([]
 
 // 根据父文件夹 id 创建文章
 func (repo *ArticlesRepo) CreateArticle(c context.Context, article *model.Articles) error {
-	return repo.db.WithContext(c).Create(article).Error
+	err := repo.db.WithContext(c).Create(article).Error
+	if err != nil {
+		return wrapMySQLError("创建文章", err)
+	}
+	return nil
 }
 
 // 部分更新文章内容
@@ -192,7 +200,7 @@ func (repo *ArticlesRepo) UpdateArticle(c context.Context, article_id string, op
 		Updates(fields)
 
 	if result.Error != nil {
-		return result.Error
+		return wrapMySQLError("更新文章", result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return ErrArticleNotFound
@@ -208,7 +216,7 @@ func (repo *ArticlesRepo) RenameArticle(c context.Context, article_id string, ti
 		Update("title", title)
 
 	if result.Error != nil {
-		return fmt.Errorf("重命名文章: %w", result.Error)
+		return wrapMySQLError("重命名文章", result.Error)
 	}
 	// MySQL 在新标题和旧标题相同时返回 0 行，需要再确认记录是否真的存在。
 	if result.RowsAffected == 0 {
@@ -217,7 +225,7 @@ func (repo *ArticlesRepo) RenameArticle(c context.Context, article_id string, ti
 			Model(&model.Articles{}).
 			Where("id = ?", article_id).
 			Count(&count).Error; err != nil {
-			return fmt.Errorf("确认文章是否存在: %w", err)
+			return wrapMySQLError("确认文章是否存在", err)
 		}
 		if count == 0 {
 			return ErrArticleNotFound
@@ -230,7 +238,7 @@ func (repo *ArticlesRepo) RenameArticle(c context.Context, article_id string, ti
 func (repo *ArticlesRepo) DeleteArticle(c context.Context, id string) error {
 	result := repo.db.WithContext(c).Delete(&model.Articles{}, "id = ?", id)
 	if result.Error != nil {
-		return result.Error
+		return wrapMySQLError("删除文章", result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return ErrArticleNotFound

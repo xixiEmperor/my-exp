@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"zhiye/server/internal/apperr"
 	"zhiye/server/internal/dto"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/repository"
@@ -82,7 +81,7 @@ func (s *FoldersService) CreateFolder(c context.Context, parent_id string) (dto.
 	}
 
 	if err := s.folderRepo.CreateFolder(c, &newFolder); err != nil {
-		return dto.FolderResp{}, apperr.MySQLError
+		return dto.FolderResp{}, err
 	}
 	// 响应使用实际保存的父目录，保持数据库和接口结果一致。
 	return dto.FolderResp{

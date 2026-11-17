@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"zhiye/server/internal/model"
@@ -28,9 +27,12 @@ func (u *UsersRepo) FindUserByOpenID(ctx context.Context, openid string) (*model
 	// WithContext 让数据库查询响应请求取消；仅接收标准库类型，不依赖 Gin。
 	var user model.Users
 	err := u.db.WithContext(ctx).Where("openid = ?", openid).Take(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrUserNotFound
+	}
 	if err != nil {
 		// 保留原始错误，调用方才能区分记录不存在与数据库故障。
-		return nil, fmt.Errorf("根据 openid 查询用户: %w", err)
+		return nil, wrapMySQLError("根据 openid 查询用户", err)
 	}
 	return &user, nil
 }
@@ -41,9 +43,12 @@ func (u *UsersRepo) FindUserByID(ctx context.Context, id uint64) (*model.Users, 
 	// WithContext 让数据库查询响应请求取消；仅接收标准库类型，不依赖 Gin。
 	var user model.Users
 	err := u.db.WithContext(ctx).Where("id = ?", id).Take(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, ErrUserNotFound
+	}
 	if err != nil {
 		// 保留原始错误，调用方才能区分记录不存在与数据库故障。
-		return nil, fmt.Errorf("根据 id 查询用户: %w", err)
+		return nil, wrapMySQLError("根据 id 查询用户", err)
 	}
 	return &user, nil
 }
@@ -71,7 +76,7 @@ func (u *UsersRepo) CreateUser(ctx context.Context, openid, name, role string) (
 			// 并发请求可能已经创建了同一 openid，必须读取实际保存的资料。
 			return u.FindUserByOpenID(ctx, openid)
 		}
-		return nil, fmt.Errorf("创建用户: %w", res.Error)
+		return nil, wrapMySQLError("创建用户", res.Error)
 	}
 	return &user, nil
 }
@@ -79,8 +84,11 @@ func (u *UsersRepo) CreateUser(ctx context.Context, openid, name, role string) (
 func (u *UsersRepo) FindRole(ctx context.Context, id uint64) (string, error) {
 	var role string
 	err := u.db.WithContext(ctx).Model(model.Users{}).Select("role").Where("id = ?", id).Take(&role).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", ErrUserNotFound
+	}
 	if err != nil {
-		return "", err
+		return "", wrapMySQLError("查询用户角色", err)
 	}
 	return role, nil
 }

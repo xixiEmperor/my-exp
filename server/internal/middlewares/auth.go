@@ -3,18 +3,17 @@ package middlewares
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"strings"
 
 	"zhiye/server/internal/apperr"
 	cons "zhiye/server/internal/constant"
 	"zhiye/server/internal/dto"
+	"zhiye/server/internal/logger"
 	"zhiye/server/internal/model"
 	"zhiye/server/internal/service"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 const (
@@ -144,7 +143,7 @@ func RequireAdmin() gin.HandlerFunc {
 // attachUser 为已验证的身份查询一次用户，并向后续处理传递完整资料。
 func attachUser(c *gin.Context, s UserInfoReader, id uint64) bool {
 	user, err := s.FindUserByID(c.Request.Context(), id)
-	if errors.Is(err, gorm.ErrRecordNotFound) || err == nil && user == nil {
+	if errors.Is(err, service.ErrUserNotFound) || err == nil && user == nil {
 		abortWithAuthError(c, apperr.ErrTokenInvalid)
 		return false
 	}
@@ -179,7 +178,7 @@ func abortWithAuthError(c *gin.Context, err error) {
 			dto.Fail(cons.WrongToken, "身份信息校验失败"),
 		)
 	default:
-		log.Printf("verify token failed: %v", err)
+		logger.FromContext(c.Request.Context()).Error("鉴权失败", "type", "business", "error", err)
 		c.AbortWithStatusJSON(
 			http.StatusInternalServerError,
 			dto.Fail(cons.InternalError, "服务暂不可用"),
