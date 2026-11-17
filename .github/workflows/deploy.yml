@@ -21,6 +21,9 @@ jobs:
         name: Build and Deploy
         runs-on: ubuntu-latest
 
+        # 指定使用 GitHub 中名为 SERVER_HOST 的 Environment
+        environment: SERVER_HOST
+
         steps:
             # 1. Check out the repository.
             - name: Checkout
