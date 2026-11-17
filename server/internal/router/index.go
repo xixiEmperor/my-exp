@@ -30,7 +30,7 @@ func NewRouterGroup(
 	// 健康检查仅表示 HTTP 服务可响应，不依赖数据库或微信配置。
 	r.GET("/health", func(context *gin.Context) {
 		context.JSON(http.StatusOK, gin.H{
-			"status":  "ok",
+			"status":  "ohhhhhhhhhhhhhhhhh ok",
 			"service": "zhiye-api",
 		})
 	})

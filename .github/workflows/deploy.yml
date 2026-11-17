@@ -1,0 +1,134 @@
+name: Deploy Go Backend
+
+on:
+    push:
+        branches:
+            - master
+        paths:
+            - 'server/**'
+            - '.github/workflows/deploy.yml'
+
+    # Allow manual deployment from the GitHub Actions page.
+    workflow_dispatch:
+
+# Prevent two deployments from modifying the server at the same time.
+concurrency:
+    group: go-backend-deploy
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        name: Build and Deploy
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Check out the repository.
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            # 2. Install the Go version declared in server/go.mod.
+            - name: Setup Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: server/go.mod
+                  cache-dependency-path: server/go.sum
+
+            # 3. Build the Linux AMD64 executable.
+            - name: Build
+              working-directory: server
+              env:
+                  CGO_ENABLED: 0
+                  GOOS: linux
+                  GOARCH: amd64
+              run: |
+                  go mod download
+                  go build -trimpath -ldflags="-s -w" -o my-exp .
+                  file my-exp
+
+            # 4. Configure SSH.
+            - name: Setup SSH
+              env:
+                  SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+                  SSH_HOST: ${{ secrets.SERVER_HOST }}
+                  SSH_PORT: ${{ secrets.SERVER_SSH_PORT }}
+              run: |
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+
+                  printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+                  chmod 600 ~/.ssh/id_ed25519
+
+                  ssh-keyscan -H -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+                  chmod 600 ~/.ssh/known_hosts
+
+            # 5. Upload the new executable to a temporary filename.
+            - name: Upload
+              env:
+                  SSH_HOST: ${{ secrets.SERVER_HOST }}
+                  SSH_USER: ${{ secrets.SERVER_USER }}
+                  SSH_PORT: ${{ secrets.SERVER_SSH_PORT }}
+              run: |
+                  scp -i ~/.ssh/id_ed25519 \
+                    -P "$SSH_PORT" \
+                    server/my-exp \
+                    "$SSH_USER@$SSH_HOST:/opt/myapp/server.new"
+
+            # 6. Replace the executable, restart systemd, and roll back on failure.
+            - name: Deploy
+              env:
+                  SSH_HOST: ${{ secrets.SERVER_HOST }}
+                  SSH_USER: ${{ secrets.SERVER_USER }}
+                  SSH_PORT: ${{ secrets.SERVER_SSH_PORT }}
+              run: |
+                  ssh -i ~/.ssh/id_ed25519 \
+                    -p "$SSH_PORT" \
+                    "$SSH_USER@$SSH_HOST" 'bash -s' <<'REMOTE'
+                  set -Eeuo pipefail
+
+                  APP_DIR="/opt/myapp"
+                  SERVICE_NAME="my-exp"
+
+                  cd "$APP_DIR"
+                  test -s server.new
+
+                  # Keep a backup of the currently deployed executable.
+                  if [ -f server ]; then
+                    cp -p server server.bak
+                  fi
+
+                  # Install the new executable with execute permissions.
+                  install -m 755 server.new server
+                  rm -f server.new
+
+                  # Restart the service. Restore the previous executable if restart fails.
+                  if ! systemctl restart "$SERVICE_NAME"; then
+                    echo "Service restart failed; rolling back."
+
+                    if [ -f server.bak ]; then
+                      cp -p server.bak server
+                      systemctl restart "$SERVICE_NAME" || true
+                    fi
+
+                    exit 1
+                  fi
+
+                  # Confirm systemd reports the service as active.
+                  if ! systemctl is-active --quiet "$SERVICE_NAME"; then
+                    echo "Service is not active; rolling back."
+
+                    if [ -f server.bak ]; then
+                      cp -p server.bak server
+                      systemctl restart "$SERVICE_NAME" || true
+                    fi
+
+                    exit 1
+                  fi
+
+                  echo "Deployment successful."
+                  systemctl status "$SERVICE_NAME" --no-pager
+                  REMOTE
+
+            # 7. Remove the temporary private-key file even if an earlier step fails.
+            - name: Cleanup SSH key
+              if: always()
+              run: rm -f ~/.ssh/id_ed25519
