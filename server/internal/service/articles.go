@@ -101,10 +101,8 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 
 		// 直接把分隔符变为空字符串
 		detail.Content = strings.ReplaceAll(detail.Content, cons.SplitFlag, "")
-	}
 
-	// 管理员查看草稿不计数，已发布文章返回包含本次阅读的数量。
-	if detail.Status == "published" {
+		// 非管理员查看已发布文章才增加阅读量
 		if err := s.artiRepo.IncrementArticleViews(c, article_id); err != nil {
 			return model.ArticlesDetail{}, articleNotFound(err)
 		}
