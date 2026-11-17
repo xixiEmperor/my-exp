@@ -74,6 +74,12 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 			content = visible + "\n" + cons.SplitFlag + "\n"
 		}
 
+		// 游客通过草稿权限检查后，读取预览也计入一次阅读。
+		if err := s.artiRepo.IncrementArticleViews(c, article_id); err != nil {
+			return model.ArticlesDetail{}, articleNotFound(err)
+		}
+		preview.Views++
+
 		return model.ArticlesDetail{
 			ArticlesBasis: preview.ArticlesBasis,
 			Content:       content,
@@ -95,6 +101,14 @@ func (s *ArticlesService) FindArticleContent(c context.Context, article_id strin
 
 		// 直接把分隔符变为空字符串
 		detail.Content = strings.ReplaceAll(detail.Content, cons.SplitFlag, "")
+	}
+
+	// 管理员查看草稿不计数，已发布文章返回包含本次阅读的数量。
+	if detail.Status == "published" {
+		if err := s.artiRepo.IncrementArticleViews(c, article_id); err != nil {
+			return model.ArticlesDetail{}, articleNotFound(err)
+		}
+		detail.Views++
 	}
 
 	return detail, nil

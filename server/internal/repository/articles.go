@@ -96,6 +96,22 @@ func (repo *ArticlesRepo) FindArticlePreviewByID(c context.Context, id string) (
 	return aricle, nil
 }
 
+// IncrementArticleViews 在数据库内增加阅读量，避免并发请求覆盖彼此的计数。
+func (repo *ArticlesRepo) IncrementArticleViews(c context.Context, id string) error {
+	// 只更新阅读量，不触发文章最后修改时间的自动更新，并排除软删除记录。
+	result := repo.db.WithContext(c).
+		Model(&model.Articles{}).
+		Where("id = ?", id).
+		UpdateColumn("views", gorm.Expr("views + 1"))
+	if result.Error != nil {
+		return wrapMySQLError("增加文章阅读量", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return ErrArticleNotFound
+	}
+	return nil
+}
+
 // ExistsOtherArticleReference 判断除当前文章外是否还有文章引用指定图片 URL。
 // 前端按文件 hash 全局去重，同一张图片可能被多篇文章共用，删除前必须确认没有其他引用。
 // 使用 LOCATE 而不是 LIKE，避免 URL 中的下划线被当成通配符；软删除文章也计入引用。

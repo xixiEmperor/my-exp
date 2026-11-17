@@ -31,6 +31,41 @@ func newTestArticlesRepo(t *testing.T) (*ArticlesRepo, sqlmock.Sqlmock) {
 	return NewArticlesRepo(db), mock
 }
 
+// TestIncrementArticleViews 验证原子更新、软删除过滤以及更新失败时的错误处理。
+func TestIncrementArticleViews(t *testing.T) {
+	dbErr := errors.New("数据库不可用")
+	for _, tt := range []struct {
+		name string
+		rows int64
+		err  error
+		want error
+	}{
+		{name: "成功", rows: 1},
+		{name: "文章不存在", want: ErrArticleNotFound},
+		{name: "数据库失败", err: dbErr, want: dbErr},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			repo, mock := newTestArticlesRepo(t)
+			// 精确限制更新字段，确保阅读不会改变最后修改时间。
+			mock.ExpectBegin()
+			exec := mock.ExpectExec("UPDATE .articles. SET .views.=views \\+ 1 WHERE id = \\? AND .articles...deleted_at. IS NULL").WithArgs("article")
+			if tt.err != nil {
+				exec.WillReturnError(tt.err)
+				mock.ExpectRollback()
+			} else {
+				exec.WillReturnResult(sqlmock.NewResult(0, tt.rows))
+				mock.ExpectCommit()
+			}
+			if err := repo.IncrementArticleViews(context.Background(), "article"); !errors.Is(err, tt.want) {
+				t.Fatalf("错误 = %v，期望 %v", err, tt.want)
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
 // TestExistsOtherArticleReference 验证引用检查使用 LOCATE 并正确读取计数。
 func TestExistsOtherArticleReference(t *testing.T) {
 	const (

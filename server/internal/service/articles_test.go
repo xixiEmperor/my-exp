@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"image/png"
 	"io"
@@ -42,6 +43,11 @@ func TestFindArticleContentSeparator(t *testing.T) {
 				// 用旧的错误预览数据验证游客返回仍会在标记处截断。
 				mock.ExpectQuery("SELECT .* FROM .articles. WHERE").WithArgs("article", 1).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "status", "content", "preview"}).AddRow("article", "published", content, content))
+				// 所有角色成功读取已发布文章时，都应增加一次阅读量。
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE .articles. SET .views.=views \\+ 1 WHERE id = \\? AND .articles...deleted_at. IS NULL").
+					WithArgs("article").WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
 				ctx := context.Background()
 				if role != "guest" {
 					ctx = context.WithValue(ctx, cons.CtxUserInfo, &model.Users{Role: role})
@@ -51,6 +57,9 @@ func TestFindArticleContentSeparator(t *testing.T) {
 					t.Fatal(err)
 				}
 				got := article.(model.ArticlesDetail).Content
+				if article.(model.ArticlesDetail).Views != 1 {
+					t.Fatal("返回的阅读量应包含本次阅读")
+				}
 				want := content
 				if role == "user" {
 					want = "预览" + newline + newline + "正文"
@@ -60,6 +69,53 @@ func TestFindArticleContentSeparator(t *testing.T) {
 				}
 				if got != want {
 					t.Fatalf("正文 = %q, want %q", got, want)
+				}
+				if err := mock.ExpectationsWereMet(); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
+	}
+}
+
+// TestFindArticleContentNoViews 验证草稿和不存在的文章不会增加阅读量。
+func TestFindArticleContentNoViews(t *testing.T) {
+	for _, role := range []string{"guest", "user", "admin"} {
+		for _, missing := range []bool{false, true} {
+			t.Run(role+fmt.Sprint(missing), func(t *testing.T) {
+				sqlDB, mock, err := sqlmock.New()
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Cleanup(func() { _ = sqlDB.Close() })
+				db, err := gorm.Open(mysql.New(mysql.Config{Conn: sqlDB, SkipInitializeWithVersion: true}), &gorm.Config{DisableAutomaticPing: true})
+				if err != nil {
+					t.Fatal(err)
+				}
+				// 这里只允许查询，任何阅读量写入都会使测试失败。
+				rows := sqlmock.NewRows([]string{"id", "status", "views"})
+				if !missing {
+					rows.AddRow("article", "draft", 5)
+				}
+				mock.ExpectQuery("SELECT .* FROM .articles. WHERE").WithArgs("article", 1).WillReturnRows(rows)
+				ctx := context.Background()
+				if role != "guest" {
+					ctx = context.WithValue(ctx, cons.CtxUserInfo, &model.Users{Role: role})
+				}
+				article, err := NewArticlesService(repository.NewArticlesRepo(db), nil).FindArticleContent(ctx, "article")
+				switch {
+				case missing:
+					if !errors.Is(err, ErrArticleNotFound) {
+						t.Fatalf("不存在的文章应返回不存在错误，实际 %v", err)
+					}
+				case role != "admin":
+					if !errors.Is(err, ErrNotPublished) {
+						t.Fatalf("草稿应拒绝访问，实际 %v", err)
+					}
+				default:
+					if err != nil || article.(model.ArticlesDetail).Views != 5 {
+						t.Fatalf("管理员读取草稿应保留阅读量，实际 %v，%v", article, err)
+					}
 				}
 				if err := mock.ExpectationsWereMet(); err != nil {
 					t.Fatal(err)
