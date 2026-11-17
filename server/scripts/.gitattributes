@@ -1,0 +1,2 @@
+# Shell 脚本固定使用 LF，保证 Windows 检出后也能在 Ubuntu 执行。
+*.sh text eol=lf
