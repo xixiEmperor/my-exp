@@ -7,6 +7,11 @@ web/.vite/
 # 后端可执行文件与本地运行日志不提交。
 server/bin/
 server/*.exe
+# 服务器本地编译的产物和回滚文件不进入源码仓库。
+server/my-exp
+server/my-exp.new
+server/my-exp.bak
+server/my-exp.rollback
 # Air 热更新生成的临时文件不进入源码仓库。
 server/tmp/
 *.log

@@ -16,10 +16,17 @@ concurrency:
     group: go-backend-deploy
     cancel-in-progress: false
 
+# 工作流只需要读取仓库中的部署脚本。
+permissions:
+    contents: read
+
 jobs:
     deploy:
-        name: Build and Deploy
+        name: Build on Server and Deploy
         runs-on: ubuntu-latest
+        # 自动和手动部署都只使用 master 的部署脚本。
+        if: github.ref == 'refs/heads/master'
+        timeout-minutes: 30
 
         # 指定使用 GitHub 中名为 SERVER_HOST 的 Environment
         environment: SERVER_HOST
@@ -28,25 +35,6 @@ jobs:
             # 1. Check out the repository.
             - name: Checkout
               uses: actions/checkout@v4
-
-            # 2. Install the Go version declared in server/go.mod.
-            - name: Setup Go
-              uses: actions/setup-go@v5
-              with:
-                  go-version-file: server/go.mod
-                  cache-dependency-path: server/go.sum
-
-            # 3. Build the Linux AMD64 executable.
-            - name: Build
-              working-directory: server
-              env:
-                  CGO_ENABLED: 0
-                  GOOS: linux
-                  GOARCH: amd64
-              run: |
-                  go mod download
-                  go build -trimpath -ldflags="-s -w" -o my-exp .
-                  file my-exp
 
             # 4. Configure SSH.
             - name: Setup SSH
@@ -64,72 +52,20 @@ jobs:
                   ssh-keyscan -H -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
                   chmod 600 ~/.ssh/known_hosts
 
-            # 5. Upload the new executable to a temporary filename.
-            - name: Upload
+            # 服务器拉取 master，使用本机 Go 编译，成功后重启并检查服务。
+            - name: Pull, Build and Restart on Server
               env:
                   SSH_HOST: ${{ secrets.SERVER_HOST }}
                   SSH_USER: ${{ secrets.SERVER_USER }}
                   SSH_PORT: ${{ secrets.SERVER_SSH_PORT }}
-              run: |
-                  scp -i ~/.ssh/id_ed25519 \
-                    -P "$SSH_PORT" \
-                    server/my-exp \
-                    "$SSH_USER@$SSH_HOST:/opt/myapp/server.new"
-
-            # 6. Replace the executable, restart systemd, and roll back on failure.
-            - name: Deploy
-              env:
-                  SSH_HOST: ${{ secrets.SERVER_HOST }}
-                  SSH_USER: ${{ secrets.SERVER_USER }}
-                  SSH_PORT: ${{ secrets.SERVER_SSH_PORT }}
+                  REPOSITORY: ${{ github.repository }}
               run: |
                   ssh -i ~/.ssh/id_ed25519 \
+                    -o BatchMode=yes -o ConnectTimeout=30 \
                     -p "$SSH_PORT" \
-                    "$SSH_USER@$SSH_HOST" 'bash -s' <<'REMOTE'
-                  set -Eeuo pipefail
-
-                  APP_DIR="/opt/myapp"
-                  SERVICE_NAME="my-exp"
-
-                  cd "$APP_DIR"
-                  test -s server.new
-
-                  # Keep a backup of the currently deployed executable.
-                  if [ -f server ]; then
-                    cp -p server server.bak
-                  fi
-
-                  # Install the new executable with execute permissions.
-                  install -m 755 server.new server
-                  rm -f server.new
-
-                  # Restart the service. Restore the previous executable if restart fails.
-                  if ! systemctl restart "$SERVICE_NAME"; then
-                    echo "Service restart failed; rolling back."
-
-                    if [ -f server.bak ]; then
-                      cp -p server.bak server
-                      systemctl restart "$SERVICE_NAME" || true
-                    fi
-
-                    exit 1
-                  fi
-
-                  # Confirm systemd reports the service as active.
-                  if ! systemctl is-active --quiet "$SERVICE_NAME"; then
-                    echo "Service is not active; rolling back."
-
-                    if [ -f server.bak ]; then
-                      cp -p server.bak server
-                      systemctl restart "$SERVICE_NAME" || true
-                    fi
-
-                    exit 1
-                  fi
-
-                  echo "Deployment successful."
-                  systemctl status "$SERVICE_NAME" --no-pager
-                  REMOTE
+                    "$SSH_USER@$SSH_HOST" \
+                    "bash -s -- 'git@github.com:$REPOSITORY.git'" \
+                    < server/scripts/deploy.sh
 
             # 7. Remove the temporary private-key file even if an earlier step fails.
             - name: Cleanup SSH key
