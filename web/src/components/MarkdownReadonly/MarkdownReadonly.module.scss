@@ -40,3 +40,13 @@
         border-radius: 2px;
     }
 }
+/* 图表居中显示，较宽的图表允许横向滚动。 */
+.mermaid {
+    overflow-x: auto;
+    margin: 24px 0;
+    text-align: center;
+
+    svg {
+        height: auto;
+    }
+}

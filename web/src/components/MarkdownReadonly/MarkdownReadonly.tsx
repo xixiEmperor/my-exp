@@ -1,5 +1,4 @@
 import type { ComponentProps } from 'react';
-import { SPLIT_FLAG } from '@/constants/articles';
 import { useUIStore } from '@/stores/ui';
 import Markdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -7,6 +6,8 @@ import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import styles from './MarkdownReadonly.module.scss';
+import MermaidDiagram from './MermaidDiagram';
+import { remarkArticleSeparator, urlTransform } from '../../utils/markdown-plugin';
 
 interface Props {
     isPreview?: boolean;
@@ -16,59 +17,36 @@ interface Props {
 // 直接从组件类型里取插件字段的类型，不用额外依赖 unified 的类型包
 type MarkdownProps = ComponentProps<typeof Markdown>;
 
-// 只描述转换分隔标记时需要的节点字段，代码块中的文本不参与转换。
-interface MarkdownNode {
-    type: string;
-    value?: string;
-    children?: MarkdownNode[];
-    data?: {
-        hName?: string;
-        hProperties?: Record<string, string>;
-    };
-}
-
-function urlTransform(url: string) {
-    if (url.startsWith('blob:')) {
-        return url;
-    }
-
-    return defaultUrlTransform(url);
-}
-
-// 在 Markdown 解析后替换独立的分隔标记，保留正文的正常解析流程。
-function remarkArticleSeparator() {
-    return (tree: MarkdownNode) => {
-        const transform = (node: MarkdownNode) => {
-            if (node.type === 'html' && node.value?.trim() === SPLIT_FLAG.trim()) {
-                node.type = 'paragraph';
-                delete node.value;
-
-                node.children = [{ type: 'text', value: '登录后继续查看完整内容' }];
-
-                node.data = {
-                    hName: 'div',
-                    hProperties: { className: styles.separator },
-                };
-
-                return;
-            }
-
-            // HTML 标记和代码节点类型不同，不会误改示例代码。
-            node.children?.forEach(transform);
-        };
-
-        transform(tree);
-    };
-}
-
 // 插件数组放在模块作用域，保证每次渲染传进去的都是同一个引用，避免无意义的重新处理
 const remarkPlugins: MarkdownProps['remarkPlugins'] = [remarkGfm, remarkArticleSeparator];
 
 // rehype-slug 给标题补 id，右侧目录里的锚点链接才能跳到对应位置
-const rehypePlugins: MarkdownProps['rehypePlugins'] = [rehypeSlug, rehypeHighlight];
+const rehypePlugins: MarkdownProps['rehypePlugins'] = [
+    rehypeSlug,
+    [rehypeHighlight, { ignore: ['mermaid'] }],
+];
 
 // 分隔提示使用站点已有的登录入口，按钮支持键盘操作。
 const markdownComponents: MarkdownProps['components'] = {
+    // 从原始代码节点读取文本，避免代码高亮影响图表解析。
+    pre: ({ node, children, ...props }) => {
+        const code = node?.children[0];
+
+        if (
+            code?.type === 'element' &&
+            code.tagName === 'code' &&
+            Array.isArray(code.properties.className) &&
+            code.properties.className.includes('language-mermaid')
+        ) {
+            const source = code.children
+                .map((child) => (child.type === 'text' ? child.value : ''))
+                .join('');
+
+            return <MermaidDiagram source={source} />;
+        }
+
+        return <pre {...props}>{children}</pre>;
+    },
     div: ({ className, children }) => {
         if (className !== styles.separator) {
             return <div className={className}>{children}</div>;
