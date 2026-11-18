@@ -1,6 +1,6 @@
 import { defaultUrlTransform } from 'react-markdown';
 import { SPLIT_FLAG } from '@/constants/articles';
-import styles from './MarkdownReadonly.module.scss';
+import styles from '@/components/MarkdownReadonly/MarkdownReadonly.module.scss';
 
 // 只描述转换分隔标记时需要的节点字段，代码块中的文本不参与转换。
 interface MarkdownNode {
