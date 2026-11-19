@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useParams } from 'react-router-dom';
 import MarkdownSpace from '@/components/MarkdownSpace/MarkdownSpace';
 import MarkdownToc from '@/components/MarkdownToc/MarkdownToc';
@@ -7,12 +7,17 @@ import SiteFooter from '@/components/SiteFooter/SiteFooter';
 import EmptyState from '@/components/EmptyState/EmptyState';
 import { useArticles } from '@/hooks/useArticles';
 import { useArticlesStore } from '@/stores/articles';
+import ReadingFontToolbar, {
+    DEFAULT_READING_FONT_SIZE,
+} from '@/components/ReadingFontToolbar/ReadingFontToolbar';
 import styles from './KnowledgeArticle.module.scss';
 
 // 前台文章详情页。按路径里的文章 id 取缓存或发请求，然后用只读模式渲染 markdown。
 export default function KnowledgeArticle() {
     const { id } = useParams<{ id: string }>();
     const { findArticle } = useArticles();
+    // 字号保留在阅读页中，切换文章时继续使用当前设置。
+    const [fontSize, setFontSize] = useState(DEFAULT_READING_FONT_SIZE);
 
     // 订阅文章缓存，详情写回 store 之后这里会跟着重新渲染
     const articles = useArticlesStore((state) => state.articles);
@@ -52,7 +57,21 @@ export default function KnowledgeArticle() {
         <div className={styles.page}>
             <div className={styles.reading}>
                 <div className={styles.articleColumn}>
-                    <article className="reader-article">
+                    {/* 移动端把同一个字号组件放在标题前，侧栏隐藏后仍然可以调整。 */}
+                    <div className={styles.mobileFontToolbar}>
+                        <ReadingFontToolbar fontSize={fontSize} onFontSizeChange={setFontSize} />
+                    </div>
+                    {/* 只给正文设置字号变量，右侧目录和文章信息维持原有大小。 */}
+                    <article
+                        className="reader-article"
+                        style={
+                            {
+                                '--reader-font-size': `${fontSize}px`,
+                                // 一级标题保留随屏幕变化的尺寸，再按用户字号缩放。
+                                '--reader-font-scale': fontSize / DEFAULT_READING_FONT_SIZE,
+                            } as CSSProperties
+                        }
+                    >
                         <div className="reader-prose">
                             {/* 用文章 id 做 key，切换文章时强制重新挂载，内容不会串到上一篇 */}
                             <MarkdownSpace key={id} mode="readonly" article={article} />
@@ -76,11 +95,17 @@ export default function KnowledgeArticle() {
                 <MarkdownToc
                     content={content}
                     footer={
-                        <ArticleMeta
-                            createdAt={article.created_at}
-                            lastModifiedAt={article.last_modified_at}
-                            views={article.views}
-                        />
+                        <>
+                            <ReadingFontToolbar
+                                fontSize={fontSize}
+                                onFontSizeChange={setFontSize}
+                            />
+                            <ArticleMeta
+                                createdAt={article.created_at}
+                                lastModifiedAt={article.last_modified_at}
+                                views={article.views}
+                            />
+                        </>
                     }
                 />
             </div>

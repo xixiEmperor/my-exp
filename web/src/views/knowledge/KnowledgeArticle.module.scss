@@ -30,6 +30,11 @@
     min-width: 0;
 }
 
+// 桌面使用侧栏中的工具栏，移动端显示正文顶部的同一组件。
+.mobileFontToolbar {
+    display: none;
+}
+
 // 标签和值放在同一行，每项信息各占一行，日期过长时只在值这一列换行。
 .articleMeta {
     // 正文底部这份只在移动端显示，PC 使用目录下方的默认排版。
@@ -58,6 +63,10 @@
 
 /* 窄屏放不下右侧目录，目录组件自己会隐藏，这里同时把两列收成一列 */
 @media (max-width: 900px) {
+    .mobileFontToolbar {
+        display: block;
+    }
+
     .articleMeta {
         display: block;
     }

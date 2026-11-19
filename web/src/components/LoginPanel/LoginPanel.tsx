@@ -37,8 +37,7 @@ export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
                 </button>
             </div>
             <div className={styles.body}>
-                <h2 id="login-title">让好奇，继续往下走。</h2>
-                <p>公众号验证码登录</p>
+                <h2>公众号验证码登录</h2>
                 <div className={styles.qrPlaceholder} role="status">
                     <img src={gzh} alt="" />
                 </div>
@@ -61,7 +60,7 @@ export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
                     />
                 </div>
                 <button className={styles.submit} type="button" onClick={handleLogin}>
-                    登录，继续阅读
+                    登录
                 </button>
             </div>
         </dialog>

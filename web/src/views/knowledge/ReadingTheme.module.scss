@@ -23,7 +23,7 @@
     --reader-code-keyword: #77508a;
     --reader-code-string: #416444;
     --selection: #f0d9b5;
-    --reader-font-size: 17px;
+    --reader-font-size: 16px;
     --page-glow: none;
     --ring: var(--accent);
     --action-ink: #fffdf8;
@@ -87,7 +87,8 @@
 
         h1 {
             margin: 18px 0 28px;
-            font-size: clamp(29px, 3.1vw, 44px);
+            // 标题随基础字号等比例缩放，保留桌面和移动端原有的标题层级。
+            font-size: clamp(1.8125em, calc(3.1vw * var(--reader-font-scale, 1)), 2.75em);
             line-height: 1.38;
             letter-spacing: -0.045em;
         }
@@ -99,6 +100,27 @@
         h5,
         h6 {
             scroll-margin-top: calc(var(--header) + 28px);
+        }
+
+        // 各级标题使用相对字号，调整正文时标题同步变化。
+        h2 {
+            font-size: 1.4375em;
+        }
+
+        h3 {
+            font-size: 1.1875em;
+        }
+
+        h4 {
+            font-size: 1.125em;
+        }
+
+        h5 {
+            font-size: 1em;
+        }
+
+        h6 {
+            font-size: 0.875em;
         }
 
         pre {
@@ -162,7 +184,12 @@
 
     @media (max-width: 480px) {
         :global(.reader-prose) {
-            font-size: 16px;
+            // 移动端也读取用户设置，避免固定字号覆盖工具栏的调整。
+            font-size: var(--reader-font-size);
+
+            h2 {
+                font-size: 1.3125em;
+            }
 
             pre {
                 font-size: 12px;

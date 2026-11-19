@@ -1,0 +1,101 @@
+// 字号工具栏沿用阅读页的纸张配色，在目录下方独立显示。
+.toolbar {
+    flex-shrink: 0;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--muted-2);
+    font-size: 12px;
+
+    button {
+        color: var(--accent-deep);
+        font: inherit;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        // 键盘操作也能看清当前聚焦的按钮。
+        &:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
+    }
+}
+
+.heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.reset {
+    padding: 4px 0 4px 8px;
+    border: 0;
+    background: transparent;
+
+    &:hover:not(:disabled) {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
+
+// 中间数值保持稳定宽度，两侧按钮各占一格。
+.controls {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+
+    button {
+        min-height: 36px;
+        padding: 0;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+        font-size: 15px;
+
+        &:hover:not(:disabled) {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+    }
+
+    output {
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+// 窄屏工具栏放在标题上方，标签和操作按钮排在同一行。
+@media (max-width: 900px) {
+    .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin: 0 0 20px;
+        padding: 12px 0;
+        border-top: 0;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .heading {
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0;
+    }
+
+    .controls {
+        flex-shrink: 0;
+        grid-template-columns: 44px 48px 44px;
+
+        button {
+            min-height: 44px;
+        }
+    }
+}
