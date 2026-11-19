@@ -34,3 +34,9 @@ export interface RenameFolderReq {
 }
 
 export type GetFolderChildrenResp = FolderResp[];
+
+// 移动文件夹时，parent_id 使用 root 表示根目录。
+export interface MoveFolderReq {
+    id: string;
+    parent_id: string;
+}

@@ -3,9 +3,22 @@ import type {
     Article,
     GetArticleDetailResp,
     GetArticlesByFolderIDResp,
+    MoveArticleReq,
+    MoveArticleResp,
     RenameArticleReq,
     UpdateArticleReq,
 } from '@/types/articles';
+
+// 移动文章，返回后端实际保存的信息并向调用方传递失败原因。
+export const moveArticle = async (body: MoveArticleReq, signal?: AbortSignal) => {
+    return await request<MoveArticleResp>({
+        method: 'POST',
+        path: '/articles/move',
+        body,
+        credentials: 'include',
+        signal,
+    });
+};
 
 /** 获取文章详情 */
 export const getArticleDetail = (id: string, signal?: AbortSignal) => {

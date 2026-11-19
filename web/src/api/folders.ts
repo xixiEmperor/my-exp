@@ -1,5 +1,21 @@
 import { request } from './request';
-import type { FolderResp, GetFolderChildrenResp, RenameFolderReq } from '@/types/folders';
+import type {
+    FolderResp,
+    GetFolderChildrenResp,
+    MoveFolderReq,
+    RenameFolderReq,
+} from '@/types/folders';
+
+// 移动文件夹，返回后端实际保存的信息并向调用方传递失败原因。
+export const moveFolder = async (body: MoveFolderReq, signal?: AbortSignal) => {
+    return await request<FolderResp>({
+        method: 'POST',
+        path: '/folder/move',
+        body,
+        credentials: 'include',
+        signal,
+    });
+};
 
 export const getFolderChildren = async (id: string, signal?: AbortSignal) => {
     return await request<GetFolderChildrenResp>({

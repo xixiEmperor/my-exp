@@ -39,3 +39,12 @@ export interface CreateArticleReq {
 export type GetArticlesByFolderIDResp = ArticleBrief[];
 
 export type GetArticleDetailResp = Article;
+
+// 移动文章时，folder_id 使用 root 表示根目录。
+export interface MoveArticleReq {
+    id: string;
+    folder_id: string;
+}
+
+// 响应包含移动后实际保存的标题和所属目录。
+export type MoveArticleResp = ArticleBrief;

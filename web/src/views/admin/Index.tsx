@@ -8,12 +8,15 @@ import { useArticles } from '@/hooks/useArticles';
 import { useArticleTree } from '@/hooks/useArticleTree';
 import { useArticlesStore } from '@/stores/articles';
 import type { TreeNode } from '@/types/article-tree';
+import { DragDropProvider } from '@dnd-kit/react';
+import { useTreeNodeDrag } from '@/hooks/useTreeNodeDrag';
 import styles from './Admin.module.scss';
 
 export default function AdminIndex() {
     const root = useArticlesStore((state) => state.folders.root);
     const { find, folderChildrenRequest } = useArticleTree();
     const { findArticle } = useArticles();
+    const { onDragEnd } = useTreeNodeDrag();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -71,12 +74,15 @@ export default function AdminIndex() {
                                 重试加载目录
                             </button>
                         )}
-                        <ArticleTree
-                            data={rootNodes}
-                            fromAdmin={true}
-                            onFolderClick={(node) => find(node.id, node.name!, node.parentId)}
-                            onArticleClick={handleArticleClick}
-                        />
+                        {/* 后台的文件列表应该整个作为拖拽上下文 */}
+                        <DragDropProvider onDragEnd={onDragEnd}>
+                            <ArticleTree
+                                data={rootNodes}
+                                fromAdmin={true}
+                                onFolderClick={(node) => find(node.id, node.name!, node.parentId)}
+                                onArticleClick={handleArticleClick}
+                            />
+                        </DragDropProvider>
                     </>
                 }
             >

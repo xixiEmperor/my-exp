@@ -7,6 +7,9 @@
 }
 
 .tree {
+    // 文件列表数下面留空一段，方便把文件拖拽移动到根节点
+    padding-bottom: 30px;
+
     // 每一行条目，整行可点击
     .tree-row {
         display: flex;

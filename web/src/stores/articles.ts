@@ -36,6 +36,8 @@ interface ArticlesStoreState {
     removeArticleNode: (id: string) => void;
     /** 删除成功后把文件夹实体、其所有后代缓存和目录树里的节点一起移除 */
     removeFolderNode: (id: string) => void;
+    /** 移动文件夹节点 */
+    moveFolderNode: (node: TreeNode, tar: TreeNode) => void;
 }
 
 export const useArticlesStore = create<ArticlesStoreState>()(
@@ -170,7 +172,7 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                     delete state.articles[id];
 
                     // 文章只属于一个文件夹，优先用实体上的 folder_id 反查父目录
-                    let parentId: string | null = null;
+                    let parentId: string | null;
 
                     if (article) {
                         parentId = article.folder_id ?? 'root';
@@ -195,6 +197,7 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                     }
                 });
             },
+
             removeFolderNode: (id) => {
                 set((state) => {
                     const target = state.folders[id];
@@ -237,6 +240,51 @@ export const useArticlesStore = create<ArticlesStoreState>()(
                     parent.children = parent.children.filter(
                         (item) => !(item.type === 'folder' && item.id === id),
                     );
+                });
+            },
+
+            moveFolderNode: (node, tar) => {
+                set((state) => {
+                    // 1. 找到拖拽节点的当前父文件夹
+                    const curParent = state.folders[node.parentId ?? 'root'];
+
+                    // 2. 在当前父文件夹中删除该拖拽节点
+                    if (curParent) {
+                        curParent.children = curParent.children.filter(
+                            (item) => !(item.id === node.id && item.type === node.type),
+                        );
+                    }
+
+                    // 3. 找到目标放置文件夹，并在其子节点数组里面加入当前拖拽节点
+                    // 已经缓存过就不管，没缓存过就对目标文件夹进行初始化，status 保持 idle 使其后续请求能够正常发送
+                    state.folders[tar.id] ??= {
+                        id: tar.id,
+                        folderName: tar.name,
+                        parentId: tar.parentId,
+                        children: [],
+                        status: 'idle',
+                    };
+
+                    const nxtParent = state.folders[tar.id];
+                    const parentId = tar.id === 'root' ? null : tar.id;
+
+                    // 将移动后的节点直接追加到目标目录。
+                    nxtParent.children.push({ ...node, parentId });
+
+                    // 4. 如果是文件夹节点且已在 zustand 中有缓存，则应该同步修改该文件夹节点的父节点id
+                    if (node.type === 'folder' && state.folders[node.id] !== undefined) {
+                        state.folders[node.id].parentId = parentId;
+                        state.folders[node.id].folderName = node.name;
+
+                        return;
+                    }
+
+                    // 5. 如果是文件节点则去修改文章实体映射中的文件夹id
+                    // 没有详情缓存时只移动树节点，不创建字段不完整的文章实体。
+                    if (state.articles[node.id]) {
+                        state.articles[node.id].folder_id = parentId;
+                        state.articles[node.id].title = node.name;
+                    }
                 });
             },
         })),

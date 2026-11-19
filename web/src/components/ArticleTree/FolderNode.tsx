@@ -4,6 +4,8 @@ import TreeRow from './TreeRow';
 import { useArticlesStore } from '@/stores/articles';
 import { useArticleTree } from '@/hooks/useArticleTree';
 import type { TreeNode as FolderNodeData } from '@/types/article-tree';
+import DragItem from '../DndItems/DragItem';
+import DropItem from '../DndItems/DropItem';
 
 interface FolderNodeProps {
     /** 文件夹节点数据，只有 id、type、name 这些轻量信息 */
@@ -31,8 +33,44 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
         setMounted(true);
     };
 
-    return (
-        <>
+    return fromAdmin ? (
+        <DropItem id={node.id} data={node}>
+            <DragItem id={node.id} data={node}>
+                <TreeRow
+                    level={level}
+                    fromAdmin={fromAdmin}
+                    hasArrow
+                    open={open}
+                    nodeId={node.id}
+                    onClick={toggle}
+                >
+                    {node.name ?? ''}
+                </TreeRow>
+
+                {/* 外层 grid 从 0fr 过渡到 1fr，内层负责裁剪，做出高度动画 */}
+                <div className={`${styles['tree-children-wrapper']} ${open ? styles.open : ''}`}>
+                    <ul className={styles['tree-children']} role="group">
+                        {/* 第一次展开之前不渲染，也就不会触发 find 请求；之后一直保留 */}
+                        {mounted ? renderChildren() : null}
+                        {/* 加载失败时通过明确操作重试，避免渲染过程中反复发送请求。 */}
+                        {open && status === 'error' && (
+                            <li>
+                                <button
+                                    onClick={() => {
+                                        void folderChildrenRequest.run(node.id);
+                                    }}
+                                >
+                                    重试加载目录
+                                </button>
+                            </li>
+                        )}
+                    </ul>
+                </div>
+            </DragItem>
+        </DropItem>
+    ) : (
+        <div>
+            {' '}
             <TreeRow
                 level={level}
                 fromAdmin={fromAdmin}
@@ -43,7 +81,6 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
             >
                 {node.name ?? ''}
             </TreeRow>
-
             {/* 外层 grid 从 0fr 过渡到 1fr，内层负责裁剪，做出高度动画 */}
             <div className={`${styles['tree-children-wrapper']} ${open ? styles.open : ''}`}>
                 <ul className={styles['tree-children']} role="group">
@@ -63,6 +100,6 @@ export default function FolderNode({ node, level, fromAdmin, renderChildren }: F
                     )}
                 </ul>
             </div>
-        </>
+        </div>
     );
 }

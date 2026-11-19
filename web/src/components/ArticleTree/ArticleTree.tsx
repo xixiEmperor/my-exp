@@ -1,6 +1,7 @@
 import styles from './ArticleTree.module.scss';
 import ArticleTreeNode from './ArticleTreeNode';
 import type { TreeNode } from '@/types/article-tree';
+import DropItem from '../DndItems/DropItem';
 
 /** 树的根数据，既可以是文件夹也可以是文件，节点里只有 id、type、name */
 export type TreeData = Array<TreeNode>;
@@ -23,17 +24,19 @@ export default function ArticleTree({
     onArticleClick,
 }: ArticleTreeProps) {
     return (
-        <ul className={styles.tree} role="tree">
-            {data.map((node) => (
-                <ArticleTreeNode
-                    key={node.type + node.id}
-                    node={node}
-                    fromAdmin={fromAdmin}
-                    level={0}
-                    onFolderClick={onFolderClick}
-                    onArticleClick={onArticleClick}
-                />
-            ))}
-        </ul>
+        <DropItem id="root" data={{ id: 'root', type: 'folder', name: '全部文章', parentId: null }}>
+            <ul className={styles.tree} role="tree">
+                {data.map((node) => (
+                    <ArticleTreeNode
+                        key={node.type + node.id}
+                        node={node}
+                        fromAdmin={fromAdmin}
+                        level={0}
+                        onFolderClick={onFolderClick}
+                        onArticleClick={onArticleClick}
+                    />
+                ))}
+            </ul>
+        </DropItem>
     );
 }

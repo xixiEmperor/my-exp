@@ -1,4 +1,5 @@
 import TreeRow from './TreeRow';
+import DragItem from '@/components/DndItems/DragItem';
 import type { TreeNode } from '@/types/article-tree';
 
 interface ArticleNodeProps {
@@ -14,7 +15,18 @@ interface ArticleNodeProps {
 
 export default function ArticleNode({ node, level, fromAdmin, onArticleClick }: ArticleNodeProps) {
     // 文件行没有展开逻辑，只负责把点击事件带着节点数据交出去
-    return (
+    return fromAdmin ? (
+        <DragItem id={node.id} data={node}>
+            <TreeRow
+                fromAdmin={fromAdmin}
+                level={level}
+                nodeId={node.id}
+                onClick={() => onArticleClick?.(node)}
+            >
+                {node.name ?? ''}
+            </TreeRow>
+        </DragItem>
+    ) : (
         <TreeRow
             fromAdmin={fromAdmin}
             level={level}

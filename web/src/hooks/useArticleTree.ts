@@ -7,12 +7,17 @@ import {
     getArticlesByFolderID,
     renameArticle,
 } from '@/api/articles';
-import { createFolder, deleteFolder as deleteFolderApi, getFolderChildren, renameFolder } from '@/api/folders';
+import {
+    createFolder,
+    deleteFolder as deleteFolderApi,
+    getFolderChildren,
+    renameFolder,
+} from '@/api/folders';
 import { useRequest } from './useRequest';
 
 /** 请求某个文件夹下所有子节点，包括文章和子文件夹 */
 async function fetchDirectory(id: string, signal?: AbortSignal): Promise<TreeNode[]> {
-    const { setFolderStatus, setFolderNodes } = useArticlesStore.getState();
+    const { setFolderStatus, appendFolderNodes } = useArticlesStore.getState();
     setFolderStatus(id, { status: 'loading' });
 
     try {
@@ -36,7 +41,7 @@ async function fetchDirectory(id: string, signal?: AbortSignal): Promise<TreeNod
         ];
 
         // 两种资源都成功后才提交完整目录，空数组也是成功结果。
-        setFolderNodes(id, nodes);
+        appendFolderNodes(id, nodes);
         setFolderStatus(id, { status: 'loaded' });
 
         // 把节点交给调用方，外层用它区分成功和失败
