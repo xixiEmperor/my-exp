@@ -36,3 +36,9 @@ type RenameArticleResp = RenameArticleReq
 
 // GetArticlesByFolderIDResp 只包含文章简要信息。
 type GetArticlesByFolderIDResp = []model.ArticlesBrief
+
+// MoveArticleReq 使用 root 表示移到根目录。
+type MoveArticleReq struct {
+	ID       string `json:"id"`
+	FolderID string `json:"folder_id"`
+}

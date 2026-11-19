@@ -18,6 +18,7 @@ func registerArticleRouter(
 	admin.POST("/create", handler.CreateArticle)
 	admin.POST("/update", handler.UpdateArticle)
 	admin.POST("/rename", handler.RenameArticle)
+	admin.POST("/move", handler.MoveArticle)
 	admin.DELETE("/:id", handler.Delete)
 
 	// 无需管理员或可选登录即可调用

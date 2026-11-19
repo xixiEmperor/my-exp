@@ -25,3 +25,9 @@ type FolderResp struct {
 
 // GetFolderChildrenResp 只包含文件夹，不混入文章节点。
 type GetFolderChildrenResp = []FolderResp
+
+// MoveFolderReq 使用 root 表示移到根目录。
+type MoveFolderReq struct {
+	ID       string `json:"id"`
+	ParentID string `json:"parent_id"`
+}
