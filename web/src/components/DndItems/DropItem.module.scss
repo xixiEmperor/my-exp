@@ -1,3 +1,7 @@
 .dropping {
-    background-color: antiquewhite;
+    // 复用主题柔和强调色，明暗模式自动切换，保持文字清晰。
+    background-color: var(--accent-soft);
+    // 内描边强调放置范围，不改变节点尺寸。
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: var(--r-md);
 }

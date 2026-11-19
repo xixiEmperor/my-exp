@@ -15,8 +15,8 @@ interface ArticleNodeProps {
 
 export default function ArticleNode({ node, level, fromAdmin, onArticleClick }: ArticleNodeProps) {
     // 文件行没有展开逻辑，只负责把点击事件带着节点数据交出去
-    return fromAdmin ? (
-        <DragItem id={node.id} data={node}>
+    return (
+        <DragItem enabled={fromAdmin} id={node.id} data={node}>
             <TreeRow
                 fromAdmin={fromAdmin}
                 level={level}
@@ -26,14 +26,5 @@ export default function ArticleNode({ node, level, fromAdmin, onArticleClick }: 
                 {node.name ?? ''}
             </TreeRow>
         </DragItem>
-    ) : (
-        <TreeRow
-            fromAdmin={fromAdmin}
-            level={level}
-            nodeId={node.id}
-            onClick={() => onArticleClick?.(node)}
-        >
-            {node.name ?? ''}
-        </TreeRow>
     );
 }
