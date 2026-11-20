@@ -28,7 +28,7 @@ server/logs/
 Thumbs.db
 
 docs/
-record/
+draw/
 .multimodal-ppt-build
 
 dump.rdb
