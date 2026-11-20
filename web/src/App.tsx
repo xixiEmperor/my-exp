@@ -22,7 +22,7 @@ export default function App() {
         shell.activePath === '/knowledge' || shell.activePath.startsWith('/knowledge/');
     // 文章详情的页脚由正文列承载，侧栏的吸顶范围也能覆盖页面底部。
     const hasArticleFooter = shell.activePath.startsWith('/knowledge');
-    const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin/');
+    const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin');
     const isPaperPage = isReading || isAdmin;
     const theme = useTheme(isPaperPage ? 'reading' : 'default');
     const cursor = useCursor();
