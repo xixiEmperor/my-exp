@@ -8,7 +8,8 @@
 /* 正文在左，目录在右。目录列宽度固定，正文吃掉剩下的空间 */
 .reading {
     display: grid;
-    grid-template-columns: minmax(0, 720px) 176px;
+    // 右侧栏加宽到 240px，给目录标题和文章信息留出更多横向空间。
+    grid-template-columns: minmax(0, 720px) 240px;
     justify-content: space-between;
     align-items: start;
     gap: 40px;

@@ -66,6 +66,8 @@ export default function App() {
             <a className={styles.skipLink} href="#main">
                 跳到主要内容
             </a>
+
+            {/* 导航栏 */}
             <SiteHeader
                 activePath={shell.activePath}
                 resolvedTheme={theme.resolvedTheme}
@@ -75,9 +77,16 @@ export default function App() {
                 onToggleCursor={cursor.toggleCursor}
                 onLogout={() => setLogoutOpen(true)}
             />
+
+            {/* 路由出口 */}
             <Outlet />
-            {!hasArticleFooter ? <SiteFooter /> : null}
+
+            {/* 阅读页和后台不出现页脚 */}
+            {!hasArticleFooter || isAdmin ? <SiteFooter /> : null}
+
+            {/* 登录表单 */}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />
+
             {/* 退出确认挂在壳层，任何页面点退出登录都能弹出。 */}
             <ConfirmDialog
                 open={logoutOpen}
@@ -88,6 +97,7 @@ export default function App() {
                 onConfirm={logout}
                 onClose={() => setLogoutOpen(false)}
             />
+
             {/* 提示条挂在壳层最外层，任何页面和浮层里都能触发。 */}
             <Toast />
         </div>

@@ -10,6 +10,8 @@ interface Props {
     views: number;
     // 正文底部可以补充排版类名，编辑页的窄侧栏继续使用默认样式。
     className?: string;
+    // 后台传入状态，前台不展示此项。
+    status?: 'published' | 'draft';
 }
 
 // 固定使用中文日期格式，避免不同浏览器拿到不同顺序的日期
@@ -43,7 +45,13 @@ function formatDate(value: Date | string | null | undefined): string {
 }
 
 // 文章详情页右侧的元信息，展示创建时间、最后修改时间和浏览量。
-export default function ArticleMeta({ createdAt, lastModifiedAt, views, className }: Props) {
+export default function ArticleMeta({
+    createdAt,
+    lastModifiedAt,
+    views,
+    className,
+    status,
+}: Props) {
     // 结构相同的三行数据交给数组驱动，后续增加字段只需要补一条记录
     const items: Array<{ label: string; icon: IconName; value: string }> = [
         { label: '创建时间', icon: 'clock', value: formatDate(createdAt) },
@@ -54,6 +62,25 @@ export default function ArticleMeta({ createdAt, lastModifiedAt, views, classNam
             value: countFormatter.format(Number.isFinite(views) ? views : 0),
         },
     ];
+
+    // 使用原始时间判断正文是否已经保存到数据库。
+    if (status) {
+        const createdTime = new Date(createdAt).getTime();
+        const modifiedTime = new Date(lastModifiedAt).getTime();
+
+        // 未保存的文章优先显示未发布，其余按接口状态展示。
+        let stateLabel = status === 'published' ? '正文' : '草稿';
+
+        if (Number.isFinite(createdTime) && createdTime === modifiedTime) {
+            stateLabel = '未发布';
+        }
+
+        items.unshift({
+            label: '文章状态',
+            icon: 'renameFile',
+            value: stateLabel,
+        });
+    }
 
     return (
         <section

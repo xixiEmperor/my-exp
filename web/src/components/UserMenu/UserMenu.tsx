@@ -110,7 +110,7 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
                             <span>管理后台</span>
                         </button>
                     )}
-                    <button
+                    {/* <button
                         type="button"
                         role="menuitem"
                         className={styles.item}
@@ -118,7 +118,7 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
                     >
                         <SiteIcon name="user" />
                         <span>个人主页</span>
-                    </button>
+                    </button> */}
                     <button
                         type="button"
                         role="menuitem"

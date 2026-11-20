@@ -1,6 +1,8 @@
 import '@mdxeditor/editor/style.css';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { EditorView } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
+import MarkdownToc from '../MarkdownToc/MarkdownToc';
+import { extractToc } from '@/utils/markdownToc';
 import { normalizeArticleSeparator } from './ArticleSeparator';
 import MarkdownSourceEditor, { type MarkdownSourceMethods } from './MarkdownSourceEditor';
 import InsertArticleSeparator, { articleSeparatorExtensions } from './InsertArticleSeparator';
@@ -46,6 +48,25 @@ export default function MDWriteComponent({ article }: Props) {
         useArticlePreview();
 
     const [pendingSave, setPendingSave] = useState<SaveStatus | null>(null); // 待确认的保存类型。有值就代表确认框打开，两种保存共用同一个框
+
+    // 目录从当前原文取行号，重复标题也能准确定位。
+    const handleTocJump = (id: string) => {
+        const view = sourceViewRef.current;
+
+        if (!view) return;
+
+        const heading = extractToc(view.state.doc.toString()).find((item) => item.id === id);
+
+        if (!heading) return;
+
+        const position = view.state.doc.line(heading.lineNumber).from;
+
+        view.dispatch({
+            selection: { anchor: position },
+            effects: EditorView.scrollIntoView(position, { y: 'center' }),
+        });
+        view.focus();
+    };
 
     // 组件初次加载时初始化 IndexedDB
     useEffect(() => {
@@ -158,10 +179,18 @@ export default function MDWriteComponent({ article }: Props) {
 
             {/* 编辑页不需要目录，只把文章信息固定在右侧 */}
             <aside className={style.side}>
-                <ArticleMeta
-                    createdAt={article.created_at}
-                    lastModifiedAt={article.last_modified_at}
-                    views={article.views}
+                {/* 目录跟随当前编辑内容更新，下方展示数据库中的文章信息。 */}
+                <MarkdownToc
+                    content={draft}
+                    onJump={handleTocJump}
+                    footer={
+                        <ArticleMeta
+                            createdAt={article.created_at}
+                            lastModifiedAt={article.last_modified_at}
+                            views={article.views}
+                            status={article.status}
+                        />
+                    }
                 />
             </aside>
         </div>

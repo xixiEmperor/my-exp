@@ -7,6 +7,8 @@ export interface TocHeading {
     text: string;
     /** 锚点 id，要和 rehype-slug 渲染出来的标题 id 保持一致 */
     id: string;
+    // 源码行号供后台目录定位。
+    lineNumber: number;
 }
 
 // 标题里常见的行内标记，按顺序替换成纯文字
@@ -40,7 +42,7 @@ export function extractToc(content: string): TocHeading[] {
     // 代码块里的 # 不是标题，用这个开关跳过围栏内部的每一行
     let inFence = false;
 
-    return content.split(/\r?\n/).reduce<TocHeading[]>((headings, line) => {
+    return content.split(/\r?\n/).reduce<TocHeading[]>((headings, line, index) => {
         // 围栏代码块的开头和结尾都用三个反引号或波浪线，遇到就翻转状态
         if (/^\s*(```|~~~)/.test(line)) {
             inFence = !inFence;
@@ -65,6 +67,8 @@ export function extractToc(content: string): TocHeading[] {
             depth: match[1].length,
             text,
             id: slugger.slug(text),
+            // 编辑器的行号从 1 开始。
+            lineNumber: index + 1,
         });
 
         return headings;

@@ -14,7 +14,7 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.6;
 }
 
@@ -34,7 +34,7 @@
 
 .link {
     display: block;
-    padding: 6px 0;
+    padding: 3px 0;
     border-left: 1px solid var(--line);
     color: var(--muted-2);
     text-decoration: none;

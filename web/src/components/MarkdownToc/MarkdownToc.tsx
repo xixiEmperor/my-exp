@@ -46,7 +46,7 @@ export default function MarkdownToc({ content, onJump, footer }: Props) {
                                     }}
 
                                     // 每深一级往右缩进一档，层级关系一眼能看出来
-                                    style={{ paddingLeft: 12 + (item.depth - minDepth) * 12 }}
+                                    style={{ paddingLeft: 8 + (item.depth - minDepth) * 8 }}
                                 >
                                     {item.text}
                                 </a>

@@ -16,6 +16,10 @@
     top: calc(var(--header) + 32px);
     min-width: 0;
     padding-block: 20px 0;
+    // 外层负责吸顶，目录内部滚动时保留下方文章信息。
+    > :global([data-article-toc]) {
+        position: static;
+    }
 }
 
 // 工作区变窄后右侧信息栏会挤占源码编辑空间，这时优先保证编辑可用
