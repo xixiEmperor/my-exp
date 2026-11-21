@@ -1,0 +1,127 @@
+/* 样式只用于这个独立页面，所有行的实际高度由 ROW_HEIGHT 决定。 */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    color: #20372e;
+    background: #f5f7f4;
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+
+button {
+    font: inherit;
+}
+.demo {
+    width: min(720px, 100%);
+    margin: 0 auto;
+    padding: 48px 24px;
+}
+.eyebrow {
+    margin: 0 0 12px;
+    color: #638072;
+    font:
+        12px Consolas,
+        monospace;
+    letter-spacing: 2px;
+}
+h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+.description,
+.range {
+    color: #638072;
+    font-size: 13px;
+}
+.description {
+    margin: 12px 0 32px;
+}
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+}
+.toolbar p {
+    margin: 0;
+}
+.toolbar strong {
+    color: #16704f;
+    font-family: Consolas, monospace;
+}
+.actions {
+    display: flex;
+    gap: 8px;
+}
+button {
+    padding: 7px 10px;
+    border: 1px solid #c4d6ca;
+    border-radius: 4px;
+    color: #23533e;
+    background: #fff;
+    cursor: pointer;
+}
+button:hover {
+    background: #eaf2ec;
+}
+button:focus-visible,
+.viewport:focus-visible {
+    outline: 2px solid #16704f;
+    outline-offset: 3px;
+}
+.list-frame {
+    overflow: hidden;
+    border: 1px solid #c4d6ca;
+    border-radius: 6px;
+    background: #fff;
+}
+
+/* 禁用滚动锚定，渲染窗口移动时保持用户的滚动位置。 */
+.viewport {
+    overflow-y: auto;
+    overflow-anchor: none;
+}
+.spacer {
+    position: relative;
+}
+.window {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+.row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 16px;
+    border-bottom: 1px solid #edf1ed;
+    font-size: 14px;
+}
+.row-even {
+    background: #f8faf7;
+}
+.row-number {
+    color: #87a292;
+    font:
+        12px Consolas,
+        monospace;
+}
+.range {
+    margin: 12px 0 0;
+}
+
+@media (max-width: 480px) {
+    .demo {
+        padding: 24px 16px;
+    }
+    .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
