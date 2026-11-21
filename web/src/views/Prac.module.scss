@@ -1,0 +1,257 @@
+// 工作台使用独立深色容器，避免站点页面样式影响编辑器布局。
+.page {
+    width: min(1760px, calc(100% - 48px));
+    margin: 110px auto 40px;
+    color: #d8dee9;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 24px;
+    background: #181b20;
+    border: 1px solid #303640;
+    border-radius: 10px 10px 0 0;
+
+    h1 {
+        margin: 4px 0 0;
+        font-size: 21px;
+        font-weight: 500;
+    }
+}
+
+.version {
+    margin-left: 8px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    color: #8ecdbb;
+}
+
+.description {
+    margin: 10px 0 0;
+    color: #9ca7b6;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.actions button,
+.actions a,
+.sourceStatus button {
+    padding: 6px 10px;
+    border: 1px solid #3d4652;
+    border-radius: 5px;
+    background: #242a32;
+    color: #cdd6e1;
+    font: inherit;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+        background: #303b44;
+        border-color: #8ecdbb;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #8ecdbb;
+        outline-offset: 3px;
+    }
+}
+
+// 两条链路独立展示，收起一侧时保留其组件、标签和 iframe 状态。
+.panels {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    height: clamp(600px, 74vh, 920px);
+    border-inline: 1px solid #303640;
+    background: #1f1f1f;
+}
+
+.singlePanel {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.sourcePanel,
+.previewPanel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.sourcePanel {
+    border-right: 1px solid #303640;
+}
+
+.panelToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 12px;
+    min-height: 48px;
+    padding: 10px 14px;
+    background: #22262d;
+    border-bottom: 1px solid #303640;
+    font-size: 13px;
+
+    small {
+        margin-left: 8px;
+        color: #8c98a8;
+        font-size: 11px;
+    }
+}
+
+.readonly {
+    color: #8ecdbb;
+    font-size: 11px;
+}
+
+.eyebrow {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #8c98a8;
+}
+
+.workbench {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    background: #1f1f1f;
+    overflow: hidden;
+    text-align: left;
+}
+
+.sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid #303640;
+}
+
+.sourceStatus {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 34px;
+    padding: 7px 12px;
+    background: #252b32;
+    font-size: 11px;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    button {
+        flex-shrink: 0;
+    }
+}
+
+.previewContent {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #f5f7fa;
+
+    iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+.previewMessage {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: #f5f7fa;
+    color: #526174;
+    font-size: 13px;
+}
+
+.previewHint {
+    padding: 10px 14px;
+    background: #22262d;
+    border-top: 1px solid #303640;
+    color: #9ca7b6;
+    font-size: 11px;
+    line-height: 1.6;
+}
+.editor {
+    flex: 1;
+    min-width: 0;
+}
+.sidebar,
+.editor {
+    height: 100%;
+    overflow: hidden;
+}
+
+.status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 16px;
+    font-size: 12px;
+    background: #183b34;
+    border-radius: 0 0 10px 10px;
+}
+
+// 窄一些的桌面与平板上下排列，避免同时挤压源码与预览。
+@media (max-width: 1100px) {
+    .panels {
+        height: auto;
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .sourcePanel {
+        height: 620px;
+        border-right: 0;
+    }
+    .previewPanel {
+        height: 760px;
+        border-top: 1px solid #303640;
+    }
+}
+
+// 窄屏仍保留真实资源管理器，给编辑区留出可阅读宽度。
+@media (max-width: 700px) {
+    .page {
+        width: calc(100% - 20px);
+    }
+    .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 16px;
+    }
+    // 移动端只保留效果预览，不展示源码或源码面板的切换按钮。
+    .sourcePanel,
+    .toolbar > .actions {
+        display: none;
+    }
+    .previewPanel[hidden] {
+        display: flex;
+    }
+    .status > span:last-child {
+        display: none;
+    }
+}

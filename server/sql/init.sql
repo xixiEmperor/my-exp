@@ -62,3 +62,36 @@ CREATE TABLE IF NOT EXISTS articles (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci
   COMMENT = '文章表';
+
+-- 保存 demo 本身的资料与前台展示状态。
+CREATE TABLE demo_entries (
+    id CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    slug VARCHAR(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '稳定资源目录标识',
+    name VARCHAR(255) NOT NULL COMMENT '展示名称',
+    description TEXT NULL COMMENT 'demo 说明',
+    tags JSON NULL COMMENT '检索标签',
+    status ENUM('draft', 'published', 'hidden') NOT NULL DEFAULT 'draft',
+    current_resource_id CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '默认资源版本',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_demo_slug (slug),
+    KEY idx_demo_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 每条记录对应一个已上传的 demo 版本，verison 保留指定拼写。
+CREATE TABLE demo_resources (
+    id CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    demo_entry_id CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    implementation VARCHAR(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '实现目录，default 表示场景根',
+    verison VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT 'x.x.x 格式的版本',
+    r2_prefix VARCHAR(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '桶内版本资源前缀',
+    file_paths JSON NOT NULL COMMENT '以 demos/slug 为根的源码相对路径数组',
+    exclude_paths JSON NULL COMMENT '相对于所选实现目录的排除规则',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_demo_verison (demo_entry_id, verison),
+    CONSTRAINT fk_demo_resource_entry FOREIGN KEY (demo_entry_id)
+        REFERENCES demo_entries (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
