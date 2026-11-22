@@ -15,6 +15,7 @@ func NewRouterGroup(
 	authHandler *handler.AuthHandler,
 	articleHandler *handler.ArticlesHandler,
 	folderHandler *handler.FoldersHandler,
+	fileHandler *handler.FileHandler,
 	corsCfg cors.Config,
 	userService middlewares.UserInfoReader,
 	limitStore limiter.Store,
@@ -42,6 +43,7 @@ func NewRouterGroup(
 	registerAuthRouter(api, authHandler, userService, limitStore)
 	registerArticleRouter(api, articleHandler, userService)
 	registerFolderRouter(api, folderHandler, userService)
+	registerFileRouter(api, fileHandler, userService)
 
 	return r
 }
