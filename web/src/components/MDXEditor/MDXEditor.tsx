@@ -65,6 +65,7 @@ export default function MDWriteComponent({ article }: Props) {
             selection: { anchor: position },
             effects: EditorView.scrollIntoView(position, { y: 'center' }),
         });
+
         view.focus();
     };
 
@@ -102,7 +103,8 @@ export default function MDWriteComponent({ article }: Props) {
 
             // 2.2 图片数据
             const items = (await getByArticleId(articleId)) ?? [];
-            for (let item of items) {
+
+            for (const item of items) {
                 formData.append(item.cdnURL, item.imageData); // 这里用 cdnURL 做键名是因为所有信息都可以从 url 反解出来
             }
 

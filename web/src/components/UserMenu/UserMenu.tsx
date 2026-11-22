@@ -59,11 +59,6 @@ export default function UserMenu({ userInfo, onLogout }: Props) {
         setIsOpen((open) => !open);
     };
 
-    // 两个动作都先收起菜单，再交给外部，避免菜单盖在跳转后的页面上。
-    const handleProfile = () => {
-        setIsOpen(false);
-    };
-
     const handleEnterAdmin = () => {
         setIsOpen(false);
         navigate('/admin');

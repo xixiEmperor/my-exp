@@ -41,6 +41,7 @@ export const initDB = async () => {
             },
         });
     }
+
     return db;
 };
 
@@ -48,10 +49,12 @@ export const initDB = async () => {
 export const addCache = (value: DBValue) => {
     if (!db) {
         console.warn('IndexedDB 没有初始化，不做处理');
+
         return; // 这里返回 true ，外界不处理
     }
+
     const tx = db?.transaction('images', 'readwrite');
-    const store = tx.store;
+    const { store } = tx;
     store.add(value);
 };
 
@@ -59,10 +62,12 @@ export const addCache = (value: DBValue) => {
 export const deleteCache = (id: string) => {
     if (!db) {
         console.warn('IndexedDB 没有初始化，不做处理');
+
         return; // 这里返回 true ，外界不处理
     }
+
     const tx = db?.transaction('images', 'readwrite');
-    const store = tx.store;
+    const { store } = tx;
     store.delete(id);
 };
 
@@ -70,8 +75,10 @@ export const deleteCache = (id: string) => {
 export const getByImageId = (imageId: string) => {
     if (!db) {
         console.warn('IndexedDB 没有初始化，不做处理');
+
         return; // 这里返回 true ，外界不处理
     }
+
     return db.getFromIndex('images', 'by-imageId', imageId);
 };
 
@@ -79,8 +86,10 @@ export const getByImageId = (imageId: string) => {
 export const getByHash = (hash: string) => {
     if (!db) {
         console.warn('IndexedDB 没有初始化，不做处理');
+
         return; // 这里返回 true ，外界不处理
     }
+
     return db.getFromIndex('images', 'by-hash', hash);
 };
 
@@ -88,6 +97,7 @@ export const getByHash = (hash: string) => {
 export const getByArticleId = async (articleId: string) => {
     if (!db) {
         console.warn('IndexedDB 没有初始化，不做处理');
+
         return; // 这里返回 true ，外界不处理
     }
 

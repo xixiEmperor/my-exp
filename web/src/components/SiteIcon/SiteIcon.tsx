@@ -133,9 +133,11 @@ export default function SiteIcon({ name, className, size, strokeWidth, style }: 
     // 尺寸和线宽通过 CSS 变量下发，让调用方既能用 props 控制，
     // 也能继续用外部样式覆盖，不用和 .icon 里的默认值抢优先级
     const vars: Record<string, string> = {};
+
     if (size !== undefined) {
         vars['--icon-size'] = typeof size === 'number' ? `${size}px` : size;
     }
+
     if (strokeWidth !== undefined) {
         vars['--icon-stroke'] = String(strokeWidth);
     }
