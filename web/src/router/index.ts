@@ -12,6 +12,7 @@ import { lazy } from 'react';
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
 const AdminEmpty = lazy(() => import('@/views/admin/AdminEmpty'));
 const AdminArticles = lazy(() => import('@/views/admin/Articles'));
+const AdminDemos = lazy(() => import('@/views/admin/Demos/Demos'));
 
 // 所有路径集中在这一份配置中，首页、待开发入口和兜底页统一管理。
 export const router = createBrowserRouter([
@@ -44,8 +45,7 @@ export const router = createBrowserRouter([
                 children: [
                     // 后台首页保留真实的操作说明，避免没有选中文章时整块留白。
                     { index: true, Component: AdminEmpty },
-
-                    // 文章详情页，文章 id 作为路径参数，页面自己按 id 读缓存或发请求
+                    { path: 'demos', Component: AdminDemos },
                     { path: 'articles/:id', Component: AdminArticles },
                 ],
             },

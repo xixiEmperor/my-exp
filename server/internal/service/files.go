@@ -47,7 +47,7 @@ func (s *FileService) GetVery(c context.Context, demo_name string) ([]string, er
 	return names, nil
 }
 
-// 获取目标 demo 指定变体的源码文件路径，路径相对于服务运行目录。
+// 获取目标 demo 指定变体的源码文件路径，路径相对于变体目录。
 func (s *FileService) GetSourcePaths(c context.Context, demo_name, vary_name string) ([]string, error) {
 	path, err := s.getVariantPath(demo_name, vary_name)
 	if err != nil {
@@ -56,6 +56,7 @@ func (s *FileService) GetSourcePaths(c context.Context, demo_name, vary_name str
 
 	// 递归读取整个变体目录，只收集文件，统一使用正斜杠返回路径。
 	paths := []string{}
+	variantPath := path
 	err = filepath.WalkDir(path, func(path string, entry fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			return walkErr
@@ -64,7 +65,12 @@ func (s *FileService) GetSourcePaths(c context.Context, demo_name, vary_name str
 			return err
 		}
 		if !entry.IsDir() {
-			paths = append(paths, filepath.ToSlash(path))
+			// 去掉变体目录前缀，前端只接收变体内部的文件路径。
+			relativePath, err := filepath.Rel(variantPath, path)
+			if err != nil {
+				return err
+			}
+			paths = append(paths, filepath.ToSlash(relativePath))
 		}
 		return nil
 	})
