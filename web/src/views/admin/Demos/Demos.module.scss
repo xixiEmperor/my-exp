@@ -74,13 +74,24 @@
         color: var(--muted);
         background: var(--accent-soft);
         font-weight: 500;
+        white-space: nowrap;
     }
     th,
     td {
         text-align: left;
+        vertical-align: middle;
         padding: 14px 12px;
         border-bottom: 1px solid var(--accent-soft);
         overflow-wrap: anywhere;
+    }
+    .nowrap {
+        white-space: nowrap;
+    }
+    .rowActions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
     }
     small,
     code {
@@ -92,5 +103,36 @@
         text-align: center;
         padding: 40px 16px;
         color: var(--muted);
+    }
+}
+.page .editBtn,
+.page .deleteBtn {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+        background-color 0.2s,
+        color 0.2s,
+        border-color 0.2s;
+}
+.page .editBtn {
+    background: var(--accent-soft);
+    color: var(--accent-deep);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+    &:hover:not(:disabled) {
+        background: var(--accent);
+        color: var(--bg);
+        border-color: var(--accent);
+    }
+}
+.page .deleteBtn {
+    background: color-mix(in srgb, var(--danger) 12%, transparent);
+    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+    &:hover:not(:disabled) {
+        background: var(--danger);
+        color: #fff;
+        border-color: var(--danger);
     }
 }

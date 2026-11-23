@@ -1,4 +1,5 @@
 import SiteIcon, { type IconName } from '../SiteIcon/SiteIcon';
+import { formatDate } from '@/utils/date';
 import styles from './ArticleMeta.module.scss';
 
 interface Props {
@@ -14,35 +15,7 @@ interface Props {
     status?: 'published' | 'draft';
 }
 
-// 固定使用中文日期格式，避免不同浏览器拿到不同顺序的日期
-const dateFormatter = new Intl.DateTimeFormat('zh-CN', {
-    timeZone: 'Asia/Shanghai',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    // 创建和修改时间精确到秒，统一按 24 小时制展示。
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-});
-
 const countFormatter = new Intl.NumberFormat('zh-CN');
-
-/** 把接口时间统一转成可展示的日期，缺失或非法值返回占位符 */
-function formatDate(value: Date | string | null | undefined): string {
-    if (!value) {
-        return '—';
-    }
-
-    const date = value instanceof Date ? value : new Date(value);
-
-    if (Number.isNaN(date.getTime())) {
-        return '—';
-    }
-
-    return dateFormatter.format(date);
-}
 
 // 文章详情页右侧的元信息，展示创建时间、最后修改时间和浏览量。
 export default function ArticleMeta({

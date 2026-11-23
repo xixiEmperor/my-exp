@@ -1,15 +1,13 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import Form from 'antd/es/form';
 import Input from 'antd/es/input';
 import Select from 'antd/es/select';
 import { getDemoNames, getDemoVariants, getDemoVersion, getDemoSourcePaths } from '@/api/demos';
+import { useDemos } from '@/hooks/useDemos';
 import { useRequest } from '@/hooks/useRequest';
 import type { DemoResourceFormValues } from '@/types/demos';
 import { toast } from '@/utils/toast';
 import styles from './DemoResourceForm.module.scss';
-
-// 上传源码、构建产物和写入资源表的确认逻辑预留在这里。
-function confirmDemoResource() {}
 
 // 源码字段由 Form 管理，保留接口返回的实现目录相对路径。
 function SourcePaths({ value }: { value?: string[] }) {
@@ -152,7 +150,8 @@ function VariantField({ demo, onChange }: { demo: string; onChange: () => void }
 
 export default function DemoResourceForm({ onCancel }: { onCancel: () => void }) {
     const [form] = Form.useForm<DemoResourceFormValues>();
-    const [submitted, setSubmitted] = useState(false);
+    const { createResourceRequest } = useDemos();
+    const { loading: submitting, run: submitDemoResource } = createResourceRequest;
     const demo = Form.useWatch('demo', form) || '';
     const variant = Form.useWatch('implementation', form) || '';
     const verison = Form.useWatch('verison', form);
@@ -167,12 +166,28 @@ export default function DemoResourceForm({ onCancel }: { onCancel: () => void })
         void runNames();
     }, [runNames]);
 
-    function handleSubmit() {
-        if (!ready) return;
+    async function handleSubmit(values: DemoResourceFormValues) {
+        if (!ready || submitting) return;
 
-        confirmDemoResource();
-        setSubmitted(true);
-        toast.info('当前未接入真实逻辑，尚未上传到 Cloudflare R2，也未写入数据库。');
+        // 1. 将多行文本格式的排除规则按行拆分为相对路径数组。
+        const excludePaths = values.exclude_paths
+            ?.split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter(Boolean);
+
+        // 2. 触发后端上传构建产物、源码并写入 demos 表。
+        const res = await submitDemoResource({
+            slug: values.demo,
+            implementation: values.implementation,
+            verison: values.verison,
+            exclude_paths: excludePaths?.length ? excludePaths : undefined,
+        });
+
+        // 3. 入库成功后提示并关闭新增弹窗。
+        if (res) {
+            toast.success('demo 资源上传并写入资源表成功');
+            onCancel();
+        }
     }
 
     return (
@@ -182,7 +197,6 @@ export default function DemoResourceForm({ onCancel }: { onCancel: () => void })
             size="large"
             className={styles.form}
             onFinish={handleSubmit}
-            onValuesChange={() => setSubmitted(false)}
             aria-labelledby="new-demo-heading"
         >
             <div className={styles.heading}>
@@ -252,18 +266,12 @@ export default function DemoResourceForm({ onCancel }: { onCancel: () => void })
             <Form.Item name="exclude_paths" label="排除规则 · 可选">
                 <Input.TextArea placeholder="每行一条，相对于所选实现目录" rows={3} />
             </Form.Item>
-            <p className={styles.hint}>确认逻辑暂未接入，当前不会上传资源或写入数据库。</p>
-            {submitted ? (
-                <p role="status" className={styles.hint}>
-                    当前未接入真实逻辑，资源尚未保存。
-                </p>
-            ) : null}
             <div className={styles.actions}>
-                <button type="button" onClick={onCancel}>
+                <button type="button" onClick={onCancel} disabled={submitting}>
                     取消
                 </button>
-                <button type="submit" className={styles.primary} disabled={!ready}>
-                    确认
+                <button type="submit" className={styles.primary} disabled={!ready || submitting}>
+                    {submitting ? '上传中…' : '确认'}
                 </button>
             </div>
         </Form>
