@@ -243,7 +243,7 @@ func TestDeletableImageKey(t *testing.T) {
 // TestUploadImage 用本地 R2 服务验证对象路径、文件类型和文件内容。
 func TestUploadImage(t *testing.T) {
 	var gotPath, gotType, gotBody string
-	imageSvc := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	r2Svc := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		gotPath = strings.TrimPrefix(r.URL.Path, "/accounts/account/r2/buckets/images/objects/")
 		gotType = r.Header.Get("Content-Type")
 		body, _ := io.ReadAll(r.Body)
@@ -277,7 +277,7 @@ func TestUploadImage(t *testing.T) {
 
 	header := form.File["file"][0]
 	header.Header.Set("Content-Type", "image/webp")
-	svc := &ArticlesService{imageSvc: imageSvc}
+	svc := &ArticlesService{r2Svc: r2Svc}
 	cdnURL := cons.CDN_BASE_URL + "/my-exp/article/image.webp"
 	if err := svc.uploadImage(context.Background(), cdnURL, header); err != nil {
 		t.Fatal(err)

@@ -102,10 +102,10 @@ func run() (runErr error) {
 	foldersRepo := repository.NewFoldersRepo(sqlDB)
 
 	// 2. 创建各部分 service
-	// 图片服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
-	var imageService *service.ImageService
+	// R2 对象存储服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
+	var r2Service *service.R2Service
 	if cfg.R2AccountID != "" || cfg.R2APIToken != "" || cfg.R2BucketName != "" {
-		imageService, err = service.NewImageService(service.ImageConfig{
+		r2Service, err = service.NewR2Service(service.R2Config{
 			AccountID:  cfg.R2AccountID,
 			APIToken:   cfg.R2APIToken,
 			BucketName: cfg.R2BucketName,
@@ -116,7 +116,7 @@ func run() (runErr error) {
 	}
 	userService := service.NewUsersService(userRepo, cfg.AdminOpenID)
 	authService := service.NewAuthService(codeRepo, userService)
-	articleService := service.NewArticlesService(articlesRepo, imageService)
+	articleService := service.NewArticlesService(articlesRepo, r2Service)
 	folderService := service.NewFoldersService(foldersRepo)
 	fileService := service.NewFileService()
 
