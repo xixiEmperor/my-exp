@@ -1,0 +1,93 @@
+// 场景卡片响应式网格、骨架屏与空状态容器样式。
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+
+    .skeletonCard {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: var(--paper);
+
+        .skeletonPreview {
+            height: 152px;
+            background: linear-gradient(
+                100deg,
+                var(--soft) 25%,
+                color-mix(in srgb, var(--line) 65%, var(--soft)) 50%,
+                var(--soft) 75%
+            );
+            background-size: 200% 100%;
+            animation: grid-shimmer 1.6s linear infinite;
+        }
+
+        .skeletonBody {
+            display: grid;
+            gap: 12px;
+            padding: 24px;
+        }
+
+        .skeletonTitle,
+        .skeletonLine,
+        .skeletonLineShort {
+            display: block;
+            border-radius: 999px;
+            background: var(--soft);
+        }
+
+        .skeletonTitle {
+            width: 56%;
+            height: 22px;
+        }
+
+        .skeletonLine {
+            width: 92%;
+            height: 14px;
+        }
+
+        .skeletonLineShort {
+            width: 68%;
+            height: 14px;
+        }
+    }
+
+    @media (max-width: 760px) {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+.stateBox {
+    border: 1px dashed var(--line);
+    border-radius: 22px;
+    background: var(--paper);
+
+    .actionBtn {
+        min-height: 40px;
+        padding: 0 22px;
+        border-radius: 999px;
+        color: var(--action-ink, #fffdf8);
+        background: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        transition:
+            transform 0.2s ease,
+            background-color 0.2s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            background: var(--accent, #a4562a);
+        }
+    }
+}
+
+@keyframes grid-shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}

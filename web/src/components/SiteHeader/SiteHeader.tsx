@@ -58,11 +58,13 @@ export default function SiteHeader({
     });
 
     // 首页的视觉壳层独立，登录和光标仍调用同一套真实操作。
-    // 知识库复用首页导航，只有页面令牌不同，账号操作保持同一个入口。
+    // 知识库与场景演练场复用首页导航，只有页面令牌不同，账号操作保持同一个入口。
     if (
         activePath === '/' ||
         activePath === '/knowledge' ||
         activePath.startsWith('/knowledge/') ||
+        activePath === '/playground' ||
+        activePath.startsWith('/playground/') ||
         activePath === '/admin' ||
         activePath.startsWith('/admin/')
     ) {

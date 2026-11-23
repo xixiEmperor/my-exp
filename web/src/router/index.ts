@@ -1,13 +1,15 @@
+import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
-import HomeView from '../views/home/HomeView';
-import KnowledgeView from '../views/knowledge/KnowledgeView';
-import KnowledgeEmpty from '../views/knowledge/KnowledgeEmpty';
-import KnowledgeArticle from '../views/knowledge/KnowledgeArticle';
-import NotFoundView from '../views/not-found/NotFoundView';
 
-import Prac from '@/views/Prac';
-import { lazy } from 'react';
+const HomeView = lazy(() => import('../views/home/HomeView'));
+const KnowledgeView = lazy(() => import('../views/knowledge/KnowledgeView'));
+const KnowledgeEmpty = lazy(() => import('../views/knowledge/KnowledgeEmpty'));
+const KnowledgeArticle = lazy(() => import('../views/knowledge/KnowledgeArticle'));
+const PlaygroundView = lazy(() => import('../views/playground/PlaygroundView'));
+const NotFoundView = lazy(() => import('../views/not-found/NotFoundView'));
+
+const Prac = lazy(() => import('@/views/Prac'));
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
 const AdminEmpty = lazy(() => import('@/views/admin/AdminEmpty'));
@@ -32,6 +34,10 @@ export const router = createBrowserRouter([
                     // 前台文章详情，文章 id 走路径参数
                     { path: ':id', Component: KnowledgeArticle },
                 ],
+            },
+            {
+                path: 'playground',
+                Component: PlaygroundView,
             },
             { path: '*', Component: NotFoundView },
 

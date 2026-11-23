@@ -23,7 +23,9 @@ export default function App() {
     // 文章详情的页脚由正文列承载，侧栏的吸顶范围也能覆盖页面底部。
     const hasArticleFooter = shell.activePath.startsWith('/knowledge');
     const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin');
-    const isPaperPage = isReading || isAdmin;
+    const isPlayground =
+        shell.activePath === '/playground' || shell.activePath.startsWith('/playground/');
+    const isPaperPage = isReading || isAdmin || isPlayground;
     const theme = useTheme(isPaperPage ? 'reading' : 'default');
     const cursor = useCursor();
     const headerHeight = useHomeInteraction((state) => state.headerHeight);
@@ -31,7 +33,9 @@ export default function App() {
     const { login, checkLogin, logout } = useLogin();
 
     useEffect(() => {
-        if (shell.activePath !== '/') return;
+        if (shell.activePath !== '/') {
+            return;
+        }
 
         return useHomeInteraction.getState().registerAction('theme', theme.toggleTheme);
     }, [shell.activePath, theme.toggleTheme]);

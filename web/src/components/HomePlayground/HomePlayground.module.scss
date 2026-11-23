@@ -1,0 +1,46 @@
+// 首页场景演练场板块样式：与其他双栏板块保持两端对齐，桌面端舞台在左、文字在右以延续左右交替节奏。
+.section {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(36px, 5vw, 80px);
+    align-items: center;
+    justify-content: space-between;
+
+    .copy {
+        grid-column: 2;
+        grid-row: 1;
+        width: 100%;
+        min-width: 0;
+
+        > p {
+            width: 100%;
+            max-width: none;
+            margin-top: 23px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.95;
+        }
+    }
+
+    .action {
+        margin-top: 32px;
+    }
+
+    .stageWrap {
+        grid-column: 1;
+        grid-row: 1;
+        width: 100%;
+        min-width: 0;
+    }
+
+    @media (max-width: 760px) {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 29px;
+
+        .action {
+            margin-top: 24px;
+        }
+    }
+}
