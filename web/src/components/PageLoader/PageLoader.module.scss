@@ -1,0 +1,491 @@
+// 参考 Awwwards 出版物与瑞士网格工作室的转场节奏：
+// 全屏覆盖 + 顶部细线扫描 + 建筑感裁切准星 + 3D 纸页翻折徽章 + 逐字遮罩升起排版 + 渐进读数。
+.stage {
+    --loader-accent: var(--accent-text, var(--accent));
+    --loader-ease: cubic-bezier(0.76, 0, 0.24, 1);
+
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(24px, 4vw, 48px) clamp(20px, 5vw, 56px);
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--ink);
+    isolation: isolate;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition:
+        opacity 0.36s var(--loader-ease),
+        transform 0.36s var(--loader-ease);
+    // 使用 backwards 在入场完成后释放 opacity/transform，确保退场淡出 transition 顺畅触发。
+    animation: stageEnter 0.28s var(--loader-ease) backwards;
+}
+
+.stageExiting {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.99);
+    pointer-events: none;
+}
+
+// 顶部 2px 建筑感进度扫描线，贴合吸顶导航下方。
+.topTrack {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: color-mix(in srgb, var(--line) 55%, transparent);
+    overflow: hidden;
+}
+
+.topBar {
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, var(--loader-accent) 55%, var(--ink) 100%);
+    transform-origin: left center;
+    animation: topSweep 1.35s var(--loader-ease) infinite;
+}
+
+// 背景里的极淡纵向网格线，呼应出版物印张与瑞士栅格。
+.gridLines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.gridColumn {
+    border-right: 1px solid color-mix(in srgb, var(--line) 42%, transparent);
+
+    &:last-child {
+        border-right: 0;
+    }
+}
+
+// 顶栏与底栏遥测信息
+.metaRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.metaCluster {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.crosshair {
+    position: relative;
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    flex: none;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        background: var(--loader-accent);
+    }
+
+    &::before {
+        top: 5px;
+        left: 0;
+        width: 11px;
+        height: 1px;
+    }
+
+    &::after {
+        top: 0;
+        left: 5px;
+        width: 1px;
+        height: 11px;
+    }
+}
+
+.liveDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: var(--loader-accent);
+    animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+// 中心视觉舞台
+.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(22px, 3.2vw, 34px);
+    padding: 36px 0;
+    text-align: center;
+}
+
+// 3D 折纸翻页徽章：三层纸片沿书脊交替翻折，呼应阅读与知识库气质。
+.folio {
+    position: relative;
+    width: 72px;
+    height: 52px;
+    perspective: 420px;
+}
+
+.folioSpine {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--loader-accent);
+    border-radius: 2px;
+    z-index: 5;
+}
+
+.folioBaseLeft,
+.folioBaseRight,
+.folioLeaf {
+    position: absolute;
+    top: 4px;
+    width: 34px;
+    height: 44px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 7%, transparent);
+}
+
+.folioBaseLeft {
+    left: 2px;
+    border-radius: 4px 1px 1px 4px;
+}
+
+.folioBaseRight {
+    right: 2px;
+    border-radius: 1px 4px 4px 1px;
+}
+
+.folioLeaf {
+    right: 2px;
+    border-radius: 1px 4px 4px 1px;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+    animation: leafTurn 1.8s var(--loader-ease) infinite;
+
+    // 纸页上的模拟排版细线与右上角强调色折角
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 10px 7px auto;
+        height: 2px;
+        border-radius: 1px;
+        background: color-mix(in srgb, var(--ink) 26%, transparent);
+        box-shadow:
+            0 7px 0 color-mix(in srgb, var(--ink) 18%, transparent),
+            0 14px 0 color-mix(in srgb, var(--ink) 12%, transparent);
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: -1px;
+        right: -1px;
+        width: 8px;
+        height: 8px;
+        border-top-right-radius: 4px;
+        background: var(--loader-accent);
+        clip-path: polygon(0 0, 100% 0, 100% 100%);
+    }
+}
+
+.folioLeafSecond {
+    animation-delay: 0.6s;
+}
+
+.folioLeafThird {
+    animation-delay: 1.2s;
+}
+
+// 逐字遮罩升起大标题（Awwwards 经典 Kinetic Typography）
+.titleBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.indexBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--paper);
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--loader-accent);
+}
+
+.wordmark {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    font-size: clamp(2rem, 6.2vw, 4.75rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+}
+
+.charMask {
+    display: inline-flex;
+    overflow: hidden;
+    padding-block: 0.06em;
+}
+
+.char {
+    display: inline-block;
+    transform: translateY(115%);
+    animation:
+        charReveal 0.44s var(--loader-ease) calc(var(--char-index) * 24ms + 40ms) forwards,
+        charWave 2.1s ease-in-out calc(var(--char-index) * 65ms + 720ms) infinite;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+// 底部读数与细长进度轨
+.footerBar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 16px;
+}
+
+.routePath {
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.equalizer {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 16px;
+}
+
+.eqBar {
+    width: 2px;
+    height: 100%;
+    border-radius: 2px;
+    background: var(--loader-accent);
+    transform-origin: bottom center;
+    animation: eqBounce 1.05s var(--loader-ease) infinite;
+
+    &:nth-child(2) {
+        animation-delay: 0.14s;
+    }
+
+    &:nth-child(3) {
+        animation-delay: 0.28s;
+    }
+
+    &:nth-child(4) {
+        animation-delay: 0.42s;
+    }
+
+    &:nth-child(5) {
+        animation-delay: 0.56s;
+    }
+}
+
+.counterWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.counter {
+    font-family: 'Courier New', ui-monospace, SFMono-Regular, monospace;
+    font-size: clamp(1.35rem, 2.6vw, 2rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+}
+
+.counterUnit {
+    margin-left: 2px;
+    font-size: 0.55em;
+    color: var(--loader-accent);
+}
+
+.miniRail {
+    width: clamp(96px, 14vw, 156px);
+    height: 2px;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.miniFill {
+    height: 100%;
+    background: var(--loader-accent);
+    transform-origin: left center;
+    transition: transform 0.18s ease-out;
+}
+
+@keyframes stageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes topSweep {
+    0% {
+        transform: translateX(-110%) scaleX(0.45);
+    }
+
+    55% {
+        transform: translateX(95%) scaleX(1);
+    }
+
+    100% {
+        transform: translateX(260%) scaleX(0.5);
+    }
+}
+
+@keyframes dotPulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.35;
+        transform: scale(0.72);
+    }
+}
+
+@keyframes leafTurn {
+    0% {
+        transform: rotateY(0deg);
+        border-color: var(--line);
+    }
+
+    42% {
+        transform: rotateY(-180deg);
+        border-color: color-mix(in srgb, var(--loader-accent) 48%, var(--line));
+    }
+
+    100% {
+        transform: rotateY(-180deg);
+        border-color: var(--line);
+    }
+}
+
+@keyframes charReveal {
+    from {
+        transform: translateY(115%);
+    }
+
+    to {
+        transform: translateY(0%);
+    }
+}
+
+@keyframes charWave {
+    0%,
+    72%,
+    100% {
+        transform: translateY(0%);
+        color: var(--ink);
+    }
+
+    36% {
+        transform: translateY(-9%);
+        color: var(--loader-accent);
+    }
+}
+
+@keyframes eqBounce {
+    0%,
+    100% {
+        transform: scaleY(0.25);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .gridLines {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footerBar {
+        grid-template-columns: 1fr auto;
+    }
+
+    .equalizer {
+        display: none;
+    }
+}
+
+// 尊重系统减少动效偏好，保留清晰的静态加载反馈。
+@media (prefers-reduced-motion: reduce) {
+    .stage,
+    .topBar,
+    .liveDot,
+    .folioLeaf,
+    .char,
+    .eqBar {
+        animation: none;
+    }
+
+    .stage {
+        transition: none;
+    }
+
+    .char {
+        transform: none;
+    }
+
+    .topBar {
+        width: 100%;
+        opacity: 0.65;
+    }
+}

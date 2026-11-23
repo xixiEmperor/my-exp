@@ -1,12 +1,46 @@
-import { lazy } from 'react';
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
+import { endPageTransition, startPageTransition } from '../components/PageLoader/pageTransition';
 
-const HomeView = lazy(() => import('../views/home/HomeView'));
-const KnowledgeView = lazy(() => import('../views/knowledge/KnowledgeView'));
+const MIN_PAGE_LOAD_MS = 700;
+
+// 保证首次加载懒加载页面时至少展示一段完整转场，并仅对使用此包装的路由开启全屏过渡幕布。
+function lazyWithMinDelay<T extends ComponentType>(
+    loader: () => Promise<{ default: T }>,
+    minDelay = MIN_PAGE_LOAD_MS,
+): LazyExoticComponent<T> {
+    return lazy(async () => {
+        const reducedMotion =
+            typeof globalThis.matchMedia === 'function' &&
+            globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reducedMotion || minDelay <= 0) {
+            return loader();
+        }
+
+        startPageTransition();
+
+        try {
+            const [module] = await Promise.all([
+                loader(),
+                new Promise<void>((resolve) => {
+                    globalThis.setTimeout(resolve, minDelay);
+                }),
+            ]);
+
+            return module;
+        } finally {
+            endPageTransition();
+        }
+    });
+}
+
+const HomeView = lazyWithMinDelay(() => import('../views/home/HomeView'));
+const KnowledgeView = lazyWithMinDelay(() => import('../views/knowledge/KnowledgeView'));
 const KnowledgeEmpty = lazy(() => import('../views/knowledge/KnowledgeEmpty'));
 const KnowledgeArticle = lazy(() => import('../views/knowledge/KnowledgeArticle'));
-const PlaygroundView = lazy(() => import('../views/playground/PlaygroundView'));
+const PlaygroundView = lazyWithMinDelay(() => import('../views/playground/PlaygroundView'));
 const NotFoundView = lazy(() => import('../views/not-found/NotFoundView'));
 
 const Prac = lazy(() => import('@/views/Prac'));

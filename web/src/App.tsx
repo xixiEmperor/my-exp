@@ -5,6 +5,7 @@ import SiteFooter from './components/SiteFooter/SiteFooter';
 import LoginPanel from './components/LoginPanel/LoginPanel';
 import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
 import Toast from './components/Toast/Toast';
+import { PageSuspense } from './components/PageLoader/PageLoader';
 import { useSiteShell } from './hooks/useSiteShell';
 import { useTheme } from './hooks/useTheme';
 import { useCursor } from './hooks/useCursor';
@@ -24,7 +25,7 @@ export default function App() {
     const hasArticleFooter = shell.activePath.startsWith('/knowledge');
     const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin');
     const isPlayground =
-        shell.activePath === '/playground' || shell.activePath.startsWith('/playground/');
+        shell.activePath === '/playground' || shell.activePath.startsWith('/playground');
     const isPaperPage = isReading || isAdmin || isPlayground;
     const theme = useTheme(isPaperPage ? 'reading' : 'default');
     const cursor = useCursor();
@@ -83,7 +84,9 @@ export default function App() {
             />
 
             {/* 路由出口 */}
-            <Outlet />
+            <PageSuspense activePath={shell.activePath}>
+                <Outlet />
+            </PageSuspense>
 
             {/* 阅读页和后台不出现页脚 */}
             {!hasArticleFooter || isAdmin ? <SiteFooter /> : null}
