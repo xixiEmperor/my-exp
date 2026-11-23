@@ -100,6 +100,7 @@ func run() (runErr error) {
 	codeRepo := repository.NewVerificationCodes(rdb)
 	articlesRepo := repository.NewArticlesRepo(sqlDB)
 	foldersRepo := repository.NewFoldersRepo(sqlDB)
+	demoResourcesRepo := repository.NewDemoResourcesRepo(sqlDB)
 
 	// 2. 创建各部分 service
 	// R2 对象存储服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
@@ -119,16 +120,18 @@ func run() (runErr error) {
 	articleService := service.NewArticlesService(articlesRepo, r2Service)
 	folderService := service.NewFoldersService(foldersRepo)
 	fileService := service.NewFileService()
+	demoResourceService := service.NewDemoResourceService(demoResourcesRepo, r2Service)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken, cfg.CookieSecure)
 	articleHandler := handler.NewArticlesHandler(articleService)
 	folderHandler := handler.NewFoldersHandler(folderService)
 	fileHandler := handler.NewFileHandler(fileService)
+	demoResourceHandler := handler.NewDemoResourceHandler(demoResourceService)
 
 	// 4. 创建装配后的路由，跨域配置随路由一起传入，保证中间件先于路由挂载。
 	// 前端 dev server 监听在 127.0.0.1，和 localhost 属于不同的源，两个都要放行。
-	engine := router.NewRouterGroup(authHandler, articleHandler, folderHandler, fileHandler, cors.Config{
+	engine := router.NewRouterGroup(authHandler, articleHandler, folderHandler, fileHandler, demoResourceHandler, cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:5173",
 			"http://127.0.0.1:5173",

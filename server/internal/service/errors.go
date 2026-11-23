@@ -25,9 +25,14 @@ var (
 	ErrCDNPostFailed      = errors.New("上传图片到 CDN 失败")
 
 	// 重命名时资源可能已经被删除，单独给出可用于映射 404 的业务错误。
-	ErrArticleNotFound = errors.New("文章不存在")
-	ErrFolderNotFound  = errors.New("文件夹不存在")
-	ErrUserNotFound    = errors.New("用户不存在")
+	ErrArticleNotFound      = errors.New("文章不存在")
+	ErrFolderNotFound       = errors.New("文件夹不存在")
+	ErrUserNotFound         = errors.New("用户不存在")
+	ErrDemoResourceNotFound = errors.New("demo资源不存在")
+	ErrDemoResourceConflict = errors.New("demo资源版本已存在")
+	ErrDemoResourceInvalid  = errors.New("demo资源参数非法")
+	ErrDemoEntryNotFound    = errors.New("关联的demo条目不存在")
+	ErrR2NotConfigured      = errors.New("R2对象存储未配置")
 
 	ErrCodeActive  = errors.New("当前用户的验证码尚未过期")
 	ErrInvalidCode = errors.New("验证码已过期或不存在")

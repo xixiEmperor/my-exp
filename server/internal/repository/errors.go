@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrArticleNotFound = errors.New("找不到对应id的文章")
-	ErrFolderNotFound  = errors.New("找不到对应id的文件夹")
-	ErrUserNotFound    = errors.New("找不到对应id的用户")
+	ErrArticleNotFound      = errors.New("找不到对应id的文章")
+	ErrFolderNotFound       = errors.New("找不到对应id的文件夹")
+	ErrUserNotFound         = errors.New("找不到对应id的用户")
+	ErrDemoResourceNotFound = errors.New("找不到对应id的demo资源")
 )
 
 // wrapMySQLError 给存储错误补上操作名和统一哨兵，同时保留底层错误链。
