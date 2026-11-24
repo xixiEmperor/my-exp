@@ -50,6 +50,7 @@ const fetchArticleDetail = async (id: string) => {
 };
 
 export function useArticles() {
+    const authReady = useUserStore((state) => state.authReady);
     // 方法引用稳定，直接从 getState 解构，不参与订阅
     const { setArticle } = useArticlesStore.getState();
     const { getDraft, removeDraft } = useDraftStore.getState();
@@ -91,6 +92,11 @@ export function useArticles() {
         // 1. zustand 里有这篇文章的实体，就说明缓存过，直接返回
         if (articles[id]) {
             return articles[id];
+        }
+
+        // 登录态尚未初始化完成前不发起请求，避免先按游客请求一次、登录态就绪后再请求一次。
+        if (!authReady) {
+            return undefined;
         }
 
         // 2. 没有实体且没有请求在路上，就发起请求，成功后写回 articles，下次再点就命中缓存
