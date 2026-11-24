@@ -21,9 +21,8 @@ export default function App() {
     const shell = useSiteShell();
     const isReading =
         shell.activePath === '/knowledge' || shell.activePath.startsWith('/knowledge/');
-    // 文章详情的页脚由正文列承载，侧栏的吸顶范围也能覆盖页面底部。
-    const hasArticleFooter = shell.activePath.startsWith('/knowledge');
     const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin');
+    const isIndex = shell.activePath === '/';
     const isPlayground =
         shell.activePath === '/playground' || shell.activePath.startsWith('/playground');
     const isPaperPage = isReading || isAdmin || isPlayground;
@@ -89,7 +88,7 @@ export default function App() {
             </PageSuspense>
 
             {/* 阅读页和后台不出现页脚 */}
-            {!hasArticleFooter || isAdmin ? <SiteFooter /> : null}
+            {isIndex ? <SiteFooter /> : null}
 
             {/* 登录表单 */}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />

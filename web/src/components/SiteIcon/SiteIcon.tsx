@@ -50,6 +50,17 @@ import {
     Save,
     SavePen,
     Send,
+    PanelLeftClose,
+    PanelLeftOpen,
+    PanelRightClose,
+    PanelRightOpen,
+    RotateCw,
+    Maximize2,
+    Minimize2,
+    Columns2,
+    Eye,
+    FolderTree,
+    GitBranch,
     type LucideIcon,
 } from 'lucide-react';
 import styles from './SiteIcon.module.scss';
@@ -110,6 +121,19 @@ const icons = {
     // 编辑器工具栏用：存草稿和发布各留一个语义化的名字
     save: Save,
     publish: Send,
+
+    // 场景演练工作台与分栏控制图标
+    'panel-left-close': PanelLeftClose,
+    'panel-left-open': PanelLeftOpen,
+    'panel-right-close': PanelRightClose,
+    'panel-right-open': PanelRightOpen,
+    refresh: RotateCw,
+    maximize: Maximize2,
+    minimize: Minimize2,
+    columns: Columns2,
+    eye: Eye,
+    'folder-tree': FolderTree,
+    branch: GitBranch,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;

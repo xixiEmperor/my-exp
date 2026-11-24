@@ -9,22 +9,35 @@ export default defineConfig({
         react(),
         visualizer({
             filename: 'stats.html',
-            open: true,
+            open: false,
             gzipSize: true,
             brotliSize: true,
         }),
     ],
     // TextMate Worker 包含动态导入，使用 ES 模块格式才能完成构建。
     worker: { format: 'es' },
-    // 默认扩展通过 import.meta.url 加载语法和主题文件，交给 Vite 保留资源地址。
+    // 统一排除 @codingame/monaco-vscode-* 的预构建，避免排除 TextMate/扩展后与预构建的 api 产生双份 TokenizationRegistry 实例。
     optimizeDeps: {
         exclude: [
+            '@codingame/monaco-vscode-api',
+            '@codingame/monaco-vscode-configuration-service-override',
+            '@codingame/monaco-vscode-explorer-service-override',
+            '@codingame/monaco-vscode-files-service-override',
+            '@codingame/monaco-vscode-languages-service-override',
+            '@codingame/monaco-vscode-textmate-service-override',
+            '@codingame/monaco-vscode-theme-service-override',
+            '@codingame/monaco-vscode-views-service-override',
             '@codingame/monaco-vscode-json-default-extension',
-            // TSX 和 Markdown 的语法资源同样需要保留扩展内的原始地址。
             '@codingame/monaco-vscode-typescript-basics-default-extension',
             '@codingame/monaco-vscode-markdown-basics-default-extension',
+            '@codingame/monaco-vscode-css-default-extension',
+            '@codingame/monaco-vscode-scss-default-extension',
+            '@codingame/monaco-vscode-html-default-extension',
+            '@codingame/monaco-vscode-go-default-extension',
+            '@codingame/monaco-vscode-yaml-default-extension',
+            '@codingame/monaco-vscode-shellscript-default-extension',
+            '@codingame/monaco-vscode-sql-default-extension',
             '@codingame/monaco-vscode-theme-defaults-default-extension',
-            '@codingame/monaco-vscode-textmate-service-override',
         ],
     },
 

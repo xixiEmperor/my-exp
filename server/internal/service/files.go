@@ -7,12 +7,18 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"zhiye/server/internal/utils"
 )
 
-type FileService struct{}
+type FileService struct {
+	workspaceRoot string
+}
 
 func NewFileService() *FileService {
-	return &FileService{}
+	return &FileService{
+		workspaceRoot: "..",
+	}
 }
 
 // 获取现有 demo
@@ -54,7 +60,7 @@ func (s *FileService) GetSourcePaths(c context.Context, demo_name, vary_name str
 		return nil, err
 	}
 
-	// 递归读取整个变体目录，只收集文件，统一使用正斜杠返回路径。
+	// 递归读取整个变体目录，跳过依赖、构建产物及敏感文件，只收集源码文件并统一使用正斜杠返回路径。
 	paths := []string{}
 	variantPath := path
 	err = filepath.WalkDir(path, func(path string, entry fs.DirEntry, walkErr error) error {
@@ -64,14 +70,36 @@ func (s *FileService) GetSourcePaths(c context.Context, demo_name, vary_name str
 		if err := c.Err(); err != nil {
 			return err
 		}
-		if !entry.IsDir() {
-			// 去掉变体目录前缀，前端只接收变体内部的文件路径。
-			relativePath, err := filepath.Rel(variantPath, path)
-			if err != nil {
-				return err
-			}
-			paths = append(paths, filepath.ToSlash(relativePath))
+		if path == variantPath {
+			return nil
 		}
+
+		name := entry.Name()
+		if utils.ShouldIgnoreSourceEntry(name) {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if entry.Type()&os.ModeSymlink != 0 {
+			if entry.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if entry.IsDir() {
+			if demoIgnoredDirs[name] {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// 去掉变体目录前缀，前端只接收变体内部的文件路径。
+		relativePath, err := filepath.Rel(variantPath, path)
+		if err != nil {
+			return err
+		}
+		paths = append(paths, filepath.ToSlash(relativePath))
 		return nil
 	})
 	if err != nil {
@@ -114,5 +142,9 @@ func (s *FileService) getVariantPath(demo_name, vary_name string) (string, error
 			return "", fmt.Errorf("demo 或变体名称无效")
 		}
 	}
-	return filepath.Join("..", "playground", demo_name, vary_name), nil
+	root := s.workspaceRoot
+	if root == "" {
+		root = ".."
+	}
+	return filepath.Join(root, "playground", demo_name, vary_name), nil
 }

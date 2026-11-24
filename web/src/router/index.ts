@@ -41,9 +41,12 @@ const KnowledgeView = lazyWithMinDelay(() => import('../views/knowledge/Knowledg
 const KnowledgeEmpty = lazy(() => import('../views/knowledge/KnowledgeEmpty'));
 const KnowledgeArticle = lazy(() => import('../views/knowledge/KnowledgeArticle'));
 const PlaygroundView = lazyWithMinDelay(() => import('../views/playground/PlaygroundView'));
+const PlaygroundDetailView = lazyWithMinDelay(
+    () => import('../views/playground/PlaygroundDetailView'),
+);
 const NotFoundView = lazy(() => import('../views/not-found/NotFoundView'));
 
-const Prac = lazy(() => import('@/views/Prac'));
+// const Prac = lazy(() => import('@/views/Prac'));
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
 const AdminEmpty = lazy(() => import('@/views/admin/AdminEmpty'));
@@ -73,12 +76,16 @@ export const router = createBrowserRouter([
                 path: 'playground',
                 Component: PlaygroundView,
             },
+            {
+                path: 'playground/:id',
+                Component: PlaygroundDetailView,
+            },
             { path: '*', Component: NotFoundView },
 
-            {
-                path: '/prac',
-                Component: Prac,
-            },
+            // {
+            //     path: '/prac',
+            //     Component: Prac,
+            // },
             {
                 path: '/admin',
                 Component: AdminIndex,

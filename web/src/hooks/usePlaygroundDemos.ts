@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDemos } from '@/hooks/useDemos';
 import { useDemosStore } from '@/stores/demos';
 import type { DemoResource } from '@/types/demos';
@@ -12,6 +13,7 @@ const HIGHLIGHT_DURATION = 2600;
 // 场景演练场的业务编排：拉取列表、筛选已发布场景、检索与定位卡片。
 // 页面只拿这里返回的状态与方法做装配，不再自己拼业务流程。
 export function usePlaygroundDemos() {
+    const navigate = useNavigate();
     const resources = useDemosStore((state) => state.resources);
     const { resourcesRequest } = useDemos();
     const { loading, error, run: loadResources } = resourcesRequest;
@@ -110,10 +112,14 @@ export function usePlaygroundDemos() {
         focusDemo(picked.id);
     }, [publishedDemos, focusDemo]);
 
-    const openDemo = useCallback((demo: DemoResource) => {
-        // TODO: 进入场景详情页，携带 demo.id、demo.slug、demo.verison 加载源码工作台与效果预览。
-        void demo;
-    }, []);
+    const openDemo = useCallback(
+        (demo: DemoResource) => {
+            navigate(`/playground/${demo.id}?verison=${encodeURIComponent(demo.verison)}`, {
+                state: { demo },
+            });
+        },
+        [navigate],
+    );
 
     const retry = useCallback(() => {
         void loadResources();
