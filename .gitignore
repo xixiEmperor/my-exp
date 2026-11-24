@@ -32,3 +32,5 @@ draw/
 .multimodal-ppt-build
 
 dump.rdb
+node_modules
+playground
