@@ -50,3 +50,26 @@
         height: auto;
     }
 }
+
+/* 代码块容器：承载右上角语言标签，避免随 pre 横向滚动偏移。 */
+.codeBlock {
+    position: relative;
+    margin: 1.6em 0;
+
+    pre {
+        margin: 0;
+    }
+}
+
+.codeLanguage {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: rgba(219, 232, 255, 0.55);
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: lowercase;
+    pointer-events: none;
+    user-select: none;
+}

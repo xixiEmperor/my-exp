@@ -31,18 +31,32 @@ const markdownComponents: MarkdownProps['components'] = {
     // 从原始代码节点读取文本，避免代码高亮影响图表解析。
     pre: ({ node, children, ...props }) => {
         const code = node?.children[0];
-
-        if (
+        const classNames =
             code?.type === 'element' &&
             code.tagName === 'code' &&
-            Array.isArray(code.properties.className) &&
-            code.properties.className.includes('language-mermaid')
-        ) {
+            Array.isArray(code.properties.className)
+                ? code.properties.className
+                : [];
+        const languageClass = classNames.find(
+            (name): name is string => typeof name === 'string' && name.startsWith('language-'),
+        );
+        const language = languageClass?.slice('language-'.length);
+
+        if (code?.type === 'element' && code.tagName === 'code' && language === 'mermaid') {
             const source = code.children
                 .map((child) => (child.type === 'text' ? child.value : ''))
                 .join('');
 
             return <MermaidDiagram source={source} />;
+        }
+
+        if (language) {
+            return (
+                <div className={styles.codeBlock}>
+                    <span className={styles.codeLanguage}>{language}</span>
+                    <pre {...props}>{children}</pre>
+                </div>
+            );
         }
 
         return <pre {...props}>{children}</pre>;
