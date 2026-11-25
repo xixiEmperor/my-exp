@@ -1,42 +1,59 @@
 import { useCallback, useRef, useState } from 'react';
 import { handleError } from '@/utils/errorHandler';
 
+interface PendingRequest {
+    service: (...params: any[]) => Promise<any>;
+    params: unknown[];
+    promise: Promise<unknown>;
+}
+
+// 模块级进行中请求表，支持跨组件对同一 service + 相同参数的并发请求去重。
+const globalPendingRequests: PendingRequest[] = [];
+
 /**
  * 请求状态管理 hook。
  *
- * 只负责 loading、data、error 这三个状态，
- * 业务 hook 和 UI 组件调用 run 即可，不用每次手写 try/catch。
+ * 负责 loading、data、error 状态管理，并对相同 service 与参数的进行中请求自动去重。
  */
 export function useRequest<T, P extends unknown[]>(service: (...params: P) => Promise<T>) {
     const [data, setData] = useState<T | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<unknown>(undefined);
-
-    // 用 ref 保存进行中的请求，避免连续调用时依赖尚未更新的 loading。
-    const pendingRequests = useRef<
-        { service: typeof service; params: P; promise: Promise<T | undefined> }[]
-    >([]);
+    const activeCountRef = useRef(0);
 
     /** 执行请求，成功返回数据，失败统一提示并返回 undefined */
     const run = useCallback(
         async (...params: P) => {
             // 参数逐项比较，基础类型按值去重，对象参数按引用去重。
-            const pending = pendingRequests.current.find(
+            const pending = globalPendingRequests.find(
                 (request) =>
                     request.service === service &&
                     request.params.length === params.length &&
                     request.params.every((param, index) => Object.is(param, params[index])),
             );
 
-            if (pending) {
-                return await pending.promise;
-            }
-
+            activeCountRef.current += 1;
             setLoading(true);
             setError(undefined);
 
+            if (pending) {
+                try {
+                    const res = (await pending.promise) as T | undefined;
+                    setData(res);
+                    return res;
+                } catch (err) {
+                    setError(err);
+                    return undefined;
+                } finally {
+                    activeCountRef.current -= 1;
+                    if (activeCountRef.current === 0) {
+                        setLoading(false);
+                    }
+                }
+            }
+
             // 先登记请求再执行 service，确保同步异常和同步重入也能正确处理。
-            const request: (typeof pendingRequests.current)[number] = {
+            const request: PendingRequest = {
                 service,
                 params,
                 promise: Promise.resolve(undefined),
@@ -57,19 +74,23 @@ export function useRequest<T, P extends unknown[]>(service: (...params: P) => Pr
 
                     return undefined;
                 } finally {
-                    // 成功和失败都移除记录，只有全部请求结束才关闭 loading。
-                    pendingRequests.current = pendingRequests.current.filter(
-                        (item) => item !== request,
-                    );
+                    // 成功和失败都移除记录，只有当前组件全部请求结束才关闭 loading。
+                    const index = globalPendingRequests.indexOf(request);
+                    if (index !== -1) {
+                        globalPendingRequests.splice(index, 1);
+                    }
 
-                    setLoading(pendingRequests.current.length > 0);
+                    activeCountRef.current -= 1;
+                    if (activeCountRef.current === 0) {
+                        setLoading(false);
+                    }
                 }
             };
 
             request.promise = execute();
-            pendingRequests.current.push(request);
+            globalPendingRequests.push(request);
 
-            return await request.promise;
+            return (await request.promise) as T | undefined;
         },
         [service],
     );

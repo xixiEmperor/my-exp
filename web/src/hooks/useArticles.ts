@@ -16,7 +16,41 @@ useUserStore.subscribe((state, previous) => {
     }
 });
 
+// 模块级请求函数，保证跨组件调用 useRequest(fetchArticleDetail) 时引用一致以触发去重。
+const fetchArticleDetail = async (id: string) => {
+    // 保存本次请求的身份，身份切换后丢弃仍在路上的旧响应。
+    const userState = useUserStore.getState();
+    const requestVersion = articleRequestVersion;
+
+    try {
+        // 请求层已经解掉了统一响应结构，这里拿到的就是文章详情
+        const detail = await getArticleDetail(id);
+
+        const currentUserState = useUserStore.getState();
+
+        if (
+            articleRequestVersion !== requestVersion ||
+            currentUserState.isLogin !== userState.isLogin ||
+            currentUserState.userInfo !== userState.userInfo
+        ) {
+            return;
+        }
+
+        // 详情写进 zustand 缓存，下次再点这篇就能直接命中
+        useArticlesStore.getState().setArticle(id, detail);
+
+        return detail;
+    } catch (error) {
+        // 记录失败的文章，页面提示仍由 useRequest 统一处理。
+        console.error('获取文章失败:', id, error);
+
+        // 错误交给 useRequest 统一处理。
+        throw error;
+    }
+};
+
 export function useArticles() {
+    const authReady = useUserStore((state) => state.authReady);
     // 方法引用稳定，直接从 getState 解构，不参与订阅
     const { setArticle } = useArticlesStore.getState();
     const { getDraft, removeDraft } = useDraftStore.getState();
@@ -33,38 +67,6 @@ export function useArticles() {
         setArticle(res.id, res);
 
         return res;
-    };
-
-    const fetchArticleDetail = async (id: string) => {
-        // 保存本次请求的身份，身份切换后丢弃仍在路上的旧响应。
-        const userState = useUserStore.getState();
-        const requestVersion = articleRequestVersion;
-
-        try {
-            // 请求层已经解掉了统一响应结构，这里拿到的就是文章详情
-            const detail = await getArticleDetail(id);
-
-            const currentUserState = useUserStore.getState();
-
-            if (
-                articleRequestVersion !== requestVersion ||
-                currentUserState.isLogin !== userState.isLogin ||
-                currentUserState.userInfo !== userState.userInfo
-            ) {
-                return;
-            }
-
-            // 详情写进 zustand 缓存，下次再点这篇就能直接命中
-            setArticle(id, detail);
-
-            return detail;
-        } catch (error) {
-            // 记录失败的文章，页面提示仍由 useRequest 统一处理。
-            console.error('获取文章失败:', id, error);
-
-            // 错误交给 useRequest 统一处理。
-            throw error;
-        }
     };
 
     const articleDetailRequest = useRequest(fetchArticleDetail);
@@ -90,6 +92,11 @@ export function useArticles() {
         // 1. zustand 里有这篇文章的实体，就说明缓存过，直接返回
         if (articles[id]) {
             return articles[id];
+        }
+
+        // 登录态尚未初始化完成前不发起请求，避免先按游客请求一次、登录态就绪后再请求一次。
+        if (!authReady) {
+            return undefined;
         }
 
         // 2. 没有实体且没有请求在路上，就发起请求，成功后写回 articles，下次再点就命中缓存

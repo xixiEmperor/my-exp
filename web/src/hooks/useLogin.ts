@@ -9,7 +9,7 @@ import { useRequest } from './useRequest';
 // 所以放在模块作用域里用 getState() 取操作入口，函数引用天然稳定
 const checkLogin = async () => {
     // 方法引用稳定，直接解构，不参与订阅
-    const { setUserInfo, setLogin } = useUserStore.getState();
+    const { setUserInfo, setLogin, setAuthReady } = useUserStore.getState();
 
     // 记录本次恢复开始时的状态，避免慢响应覆盖后续登录或退出操作。
     const initialState = useUserStore.getState();
@@ -32,6 +32,8 @@ const checkLogin = async () => {
         if (useUserStore.getState() === initialState && !initialState.isLogin) {
             setLogin(false);
         }
+    } finally {
+        setAuthReady(true);
     }
 };
 
