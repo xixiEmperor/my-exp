@@ -1,8 +1,15 @@
-import { type FocusEventHandler, type KeyboardEvent, type ReactNode, useState } from 'react';
+import {
+    type FocusEventHandler,
+    type KeyboardEvent,
+    type ReactNode,
+    useMemo,
+    useState,
+} from 'react';
 import SiteIcon from '../SiteIcon/SiteIcon';
 import TreeRowActions from './TreeRowActions';
 import styles from './ArticleTree.module.scss';
 import { useArticleTree } from '@/hooks/useArticleTree';
+import { useParams } from 'react-router-dom';
 
 /** 每往下一层增加的缩进距离 */
 const INDENT_STEP = 16;
@@ -36,6 +43,8 @@ export default function TreeRow({
     children,
     nodeId,
 }: TreeRowProps) {
+    const { id } = useParams();
+
     const [mouseIn, setMouseIn] = useState<boolean>(false);
     const [renaming, setRenaming] = useState<boolean>(false);
 
@@ -90,7 +99,7 @@ export default function TreeRow({
 
     return (
         <div
-            className={styles['tree-row']}
+            className={`${styles['tree-row']} ${id === nodeId ? styles['tree-open'] : ''}`}
             style={{ paddingLeft: level * INDENT_STEP + INDENT_BASE }}
             title={children?.toString()}
             onClick={onClick}

@@ -76,6 +76,13 @@
         }
     }
 
+    // 文章被阅读时状态
+    .tree-open {
+        background: var(--paper-2);
+        color: var(--accent-deep);
+        font-weight: 700;
+    }
+
     /* 箭头旋转 */
     .tree-arrow {
         display: inline-block;
