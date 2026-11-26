@@ -3,7 +3,7 @@ import HomeHero from '../../components/HomeHero/HomeHero';
 import HomeJourney from '../../components/HomeJourney/HomeJourney';
 import HomeUpdates from '../../components/HomeUpdates/HomeUpdates';
 import HomeKnowledge from '../../components/HomeKnowledge/HomeKnowledge';
-import HomeWishlist from '../../components/HomeWishlist/HomeWishlist';
+import HomePlayground from '../../components/HomePlayground/HomePlayground';
 import HomeContact from '../../components/HomeContact/HomeContact';
 import { HomeWeatherHanger, HomeBuddyHanger } from '../../components/HomeExperience/HomeHangers';
 import { useHomeDocumentHidden } from '../../hooks/useHomeExperience';
@@ -36,7 +36,7 @@ export default function HomeView() {
             <HomeJourney />
             <HomeUpdates />
             <HomeKnowledge />
-            <HomeWishlist />
+            <HomePlayground />
             <HomeContact />
         </main>
     );

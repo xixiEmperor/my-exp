@@ -1,0 +1,408 @@
+// 互动机制演示台样式：跟随所在页面的纸张、线条与强调色令牌，在首页与演练场均可复用。
+.stage {
+    --stage-primary: #254ddb;
+    --stage-second: #1b7a58;
+    --stage-third: var(--accent, #a4562a);
+
+    perspective: 1100px;
+    min-width: 0;
+
+    .card {
+        position: relative;
+        overflow: hidden;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background:
+            radial-gradient(
+                340px circle at var(--stage-spot-x, 50%) var(--stage-spot-y, 35%),
+                color-mix(in srgb, var(--stage-primary) 12%, transparent),
+                transparent 72%
+            ),
+            var(--paper);
+        box-shadow: 0 20px 50px -18px rgba(25, 22, 18, 0.12);
+        transform: rotateX(var(--stage-rx, 0deg)) rotateY(var(--stage-ry, 0deg));
+        transform-style: preserve-3d;
+        transition:
+            transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+            border-color 0.25s ease;
+
+        &:hover {
+            border-color: color-mix(in srgb, var(--stage-primary) 45%, var(--line));
+        }
+    }
+
+    .canvas {
+        position: relative;
+        height: 268px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--soft);
+        overflow: hidden;
+    }
+
+    .caption {
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.75;
+        text-align: center;
+    }
+
+    .tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 14px;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--soft);
+    }
+
+    .tab {
+        min-height: 38px;
+        padding: 0 10px;
+        border-radius: 9px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition:
+            color 0.2s ease,
+            background-color 0.2s ease,
+            box-shadow 0.2s ease;
+
+        &:hover {
+            color: var(--ink);
+        }
+
+        &.isSelected {
+            color: var(--ink);
+            background: var(--paper);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+    }
+
+    @media (max-width: 580px) {
+        .card {
+            padding: 16px;
+        }
+
+        .canvas {
+            height: 248px;
+            padding: 12px;
+        }
+
+        .tab {
+            padding: 0 6px;
+            font-size: 12px;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .card {
+            transform: none;
+            transition: none;
+        }
+    }
+}
+
+:global([data-home-theme='dark']) .stage,
+:global([data-reading-theme='dark']) .stage,
+:global(html[data-theme='dark']) .stage {
+    --stage-primary: #7ca2ff;
+    --stage-second: #5eead4;
+    --stage-third: #f0b673;
+}
+
+// 模式一：虚拟视口按需渲染
+.viewport {
+    position: relative;
+    height: 100%;
+
+    .viewportFrame {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 128px;
+        border: 2px solid var(--stage-primary);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--stage-primary) 9%, transparent);
+        box-shadow: 0 10px 26px -10px color-mix(in srgb, var(--stage-primary) 42%, transparent);
+        transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: none;
+    }
+
+    .rows {
+        display: grid;
+        gap: 6px;
+    }
+
+    .row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 38px;
+        padding: 0 14px;
+        border-radius: 9px;
+        opacity: 0.4;
+        transition:
+            opacity 0.22s ease,
+            transform 0.22s ease;
+
+        .rowDot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            transition:
+                background-color 0.22s ease,
+                transform 0.22s ease;
+        }
+
+        .rowBars {
+            flex: 1;
+            display: grid;
+            gap: 5px;
+        }
+
+        .rowPrimary {
+            display: block;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--line);
+            transition: background-color 0.22s ease;
+        }
+
+        .rowSecondary {
+            display: block;
+            height: 4px;
+            border-radius: 999px;
+            background: color-mix(in srgb, var(--line) 75%, transparent);
+        }
+
+        &.isActive {
+            opacity: 1;
+            transform: translateX(4px);
+
+            .rowDot {
+                background: var(--stage-primary);
+                transform: scale(1.25);
+            }
+
+            .rowPrimary {
+                background: var(--stage-primary);
+            }
+        }
+    }
+}
+
+// 模式二：多路分片并发流
+.stream {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) 74px;
+    align-items: center;
+    gap: 16px;
+    height: 100%;
+    padding: 0 8px;
+
+    .source {
+        display: block;
+        width: 52px;
+        height: 52px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background:
+            radial-gradient(circle at 35% 35%, var(--stage-primary), var(--stage-third)),
+            var(--paper);
+        animation: stage-source-pulse 2.2s ease-in-out infinite;
+    }
+
+    .lanes {
+        display: grid;
+        gap: 18px;
+    }
+
+    .lane {
+        --lane-color: var(--stage-primary);
+
+        position: relative;
+        height: 12px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--line) 65%, transparent);
+        overflow: hidden;
+
+        &[data-tone='second'] {
+            --lane-color: var(--stage-second);
+        }
+
+        &[data-tone='third'] {
+            --lane-color: var(--stage-third);
+        }
+
+        .packet {
+            position: absolute;
+            top: 2px;
+            left: -28%;
+            width: 28%;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--lane-color);
+            box-shadow: 0 0 12px var(--lane-color);
+            animation: stage-packet-flow 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+    }
+
+    .target {
+        width: 74px;
+        height: 74px;
+        transform: rotate(-90deg);
+
+        .ringTrack {
+            fill: none;
+            stroke: var(--line);
+            stroke-width: 6;
+        }
+
+        .ringProgress {
+            fill: none;
+            stroke: var(--stage-second);
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-dasharray: 188;
+            stroke-dashoffset: 38;
+            animation: stage-ring-spin 3.4s ease-in-out infinite alternate;
+        }
+    }
+}
+
+// 模式三：实时双向信号脉冲
+.pulse {
+    position: relative;
+    height: 100%;
+
+    .pulseLines {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .pulseLine {
+        stroke: color-mix(in srgb, var(--stage-primary) 42%, var(--line));
+        stroke-width: 1.8;
+        stroke-dasharray: 6 6;
+        animation: stage-line-dash 3s linear infinite;
+    }
+
+    .hub {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--stage-primary);
+        box-shadow: 0 8px 22px color-mix(in srgb, var(--stage-primary) 45%, transparent);
+        transform: translate(-50%, -50%);
+
+        > i {
+            position: absolute;
+            inset: -6px;
+            border: 2px solid var(--stage-primary);
+            border-radius: 50%;
+            animation: stage-hub-ripple 2.6s cubic-bezier(0.2, 0.7, 0.3, 1) infinite;
+
+            &:last-child {
+                animation-delay: 1.3s;
+            }
+        }
+    }
+
+    .satellite {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        margin-left: -9px;
+        margin-top: -9px;
+        border: 3px solid var(--paper);
+        border-radius: 50%;
+        background: var(--stage-third);
+        box-shadow: 0 0 0 4px color-mix(in srgb, var(--stage-third) 24%, transparent);
+        animation: stage-satellite-float 2.4s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes stage-source-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+}
+
+@keyframes stage-packet-flow {
+    0% {
+        left: -30%;
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 1;
+    }
+
+    100% {
+        left: 102%;
+        opacity: 0;
+    }
+}
+
+@keyframes stage-ring-spin {
+    from {
+        stroke-dashoffset: 130;
+    }
+
+    to {
+        stroke-dashoffset: 24;
+    }
+}
+
+@keyframes stage-line-dash {
+    to {
+        stroke-dashoffset: -24;
+    }
+}
+
+@keyframes stage-hub-ripple {
+    0% {
+        transform: scale(0.75);
+        opacity: 0.85;
+    }
+
+    100% {
+        transform: scale(1.75);
+        opacity: 0;
+    }
+}
+
+@keyframes stage-satellite-float {
+    from {
+        transform: translateY(-3px) scale(0.96);
+    }
+
+    to {
+        transform: translateY(3px) scale(1.08);
+    }
+}

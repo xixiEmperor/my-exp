@@ -58,6 +58,7 @@ export function useClipboard({ viewRef }: Props = {}) {
     const hashBlob = async (blob: Blob) => {
         const buffer = await blob.arrayBuffer();
         const digest = await crypto.subtle.digest('SHA-256', buffer);
+
         return Array.from(new Uint8Array(digest))
             .map((b) => b.toString(16).padStart(2, '0'))
             .join('');
@@ -85,6 +86,7 @@ export function useClipboard({ viewRef }: Props = {}) {
             // 如果不是图片，不做其他特殊处理
             if (!type.startsWith('image')) {
                 console.warn('粘贴的不是图片，走正常流程，不额外处理');
+
                 return;
             }
 
@@ -107,12 +109,14 @@ export function useClipboard({ viewRef }: Props = {}) {
                     hash,
                     cdnURL,
                 };
+
                 addCache(value);
             } else {
                 cdnURL = tar.cdnURL;
             }
 
             const view = viewRef.current;
+
             if (!view || view.state.readOnly) return;
 
             const pos = view.state.selection.main.head;
@@ -122,6 +126,7 @@ export function useClipboard({ viewRef }: Props = {}) {
                 selection: { anchor: pos + cdnURL.length }, // 光标落到插入内容之后
                 scrollIntoView: true,
             });
+
             view.focus();
         } catch (error) {
             // 捕获读取或压缩图片时的异常，避免出现未处理的 Promise 拒绝。

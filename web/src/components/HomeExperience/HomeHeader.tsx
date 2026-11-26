@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { mainNavigation } from '../../constants/navigation';
 import SiteMark from '../SiteMark/SiteMark';
 import styles from './HomeHeader.module.scss';
 import { useHomeInteraction } from '../../stores/homeInteraction';
@@ -16,24 +17,35 @@ export default function HomeHeader({ actions, activePath }: Props) {
     useEffect(() => {
         const dock = dockRef.current;
 
-        if (!dock) return;
+        if (!dock) {
+            return;
+        }
 
         // 窄屏导航分成两行，挂件的起点需要跟随真实导航高度。
-        const observer = new ResizeObserver(() =>
-            useHomeInteraction.getState().setHeaderHeight(dock.getBoundingClientRect().height),
-        );
+        const observer = new ResizeObserver(() => {
+            useHomeInteraction.getState().setHeaderHeight(dock.getBoundingClientRect().height);
+        });
 
         observer.observe(dock);
 
-        return () => observer.disconnect();
+        return () => {
+            observer.disconnect();
+        };
     }, []);
 
     const homeSection = useHomeInteraction((state) => state.activeSection);
     const isHome = activePath === '/';
     const isAdmin = activePath === '/admin' || activePath.startsWith('/admin/');
+    const isPlayground = activePath === '/playground' || activePath.startsWith('/playground/');
     let active = isHome ? homeSection : 'knowledge';
 
-    if (isAdmin) active = 'admin';
+    if (isAdmin) {
+        active = 'admin';
+    }
+
+    if (isPlayground) {
+        active = 'playground';
+    }
 
     const brand = (
         <>
@@ -42,6 +54,26 @@ export default function HomeHeader({ actions, activePath }: Props) {
             <span>xixiEmperor的个人小站</span>
         </>
     );
+
+    const navNodes: ReactNode[] = [];
+
+    // 除首页锚点外，其余主导航项由统一配置数组驱动渲染。
+    for (const item of mainNavigation) {
+        if (item.id !== 'home') {
+            const isItemActive = active === item.id;
+
+            navNodes.push(
+                <Link
+                    key={item.id}
+                    to={item.to}
+                    className={isItemActive ? 'active' : ''}
+                    aria-current={isItemActive ? 'page' : undefined}
+                >
+                    {item.label}
+                </Link>,
+            );
+        }
+    }
 
     return (
         <div ref={dockRef} className={`home-header-dock ${styles.dock}`}>
@@ -56,8 +88,8 @@ export default function HomeHeader({ actions, activePath }: Props) {
                     </Link>
                 )}
                 <nav className="desktop-nav" aria-label="主导航">
-                    {/* 侧栏组件把移动端展开按钮挂到这里，首页保持原有导航。 */}
-                    {!isHome ? (
+                    {/* 侧栏组件把移动端展开按钮挂到这里，只有带侧栏的页面才渲染插槽。 */}
+                    {!isHome && !isPlayground ? (
                         <span id="sidebar-toggle-slot" className={styles.sidebarToggleSlot} />
                     ) : null}
                     {isHome ? (
@@ -71,13 +103,7 @@ export default function HomeHeader({ actions, activePath }: Props) {
                     ) : (
                         <Link to="/">首页</Link>
                     )}
-                    <Link
-                        to="/knowledge"
-                        className={active === 'knowledge' ? 'active' : ''}
-                        aria-current={active === 'knowledge' ? 'page' : undefined}
-                    >
-                        知识库
-                    </Link>
+                    {navNodes}
                 </nav>
                 <div className="header-actions">{actions}</div>
             </header>

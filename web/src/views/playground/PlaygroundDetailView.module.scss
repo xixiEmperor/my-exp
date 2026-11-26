@@ -1,0 +1,241 @@
+// 场景演练详情页样式：极致克制的 Split-Frame Studio 双帧工作室布局，去掉一切冗余装饰。
+.page {
+    --studio-accent: #254ddb;
+    --studio-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+    width: min(1680px, calc(100% - 48px));
+    min-height: calc(100vh - var(--header, 94px));
+    margin: 0 auto;
+    padding: 18px 0 36px;
+    transition: width 0.3s var(--studio-ease);
+
+    &.isTheater {
+        width: calc(100% - 24px);
+    }
+}
+
+:global([data-reading-theme='dark']) .page,
+:global(html[data-theme='dark']) .page {
+    --studio-accent: #7ca2ff;
+}
+
+.studioStage {
+    display: grid;
+    grid-template-columns: minmax(0, var(--split-left, 56%)) 6px minmax(0, var(--split-right, 44%));
+    height: calc(100vh - var(--header, 94px) - 54px);
+    min-height: 600px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--paper);
+    box-shadow: 0 24px 60px -26px rgba(18, 16, 13, 0.16);
+    overflow: hidden;
+    animation: studio-enter 0.45s var(--studio-ease) backwards;
+
+    // 右侧预览收起：左侧源码铺满，右侧留 42px 唤醒导轨
+    &[data-mode='source-only'] {
+        grid-template-columns: minmax(0, 1fr) 42px;
+    }
+
+    // 左侧源码收起：右侧预览铺满，左侧留 42px 唤醒导轨
+    &[data-mode='preview-only'] {
+        grid-template-columns: 42px minmax(0, 1fr);
+    }
+
+    &[data-dragging='true'] {
+        user-select: none;
+    }
+}
+
+.isTheater .studioStage {
+    height: calc(100vh - var(--header, 94px) - 36px);
+}
+
+// 细腻的中间可拖拽分割线
+.splitHandle {
+    position: relative;
+    background: #1d2230;
+    cursor: col-resize;
+    transition: background-color 0.2s ease;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset-block: 0;
+        left: 2px;
+        width: 2px;
+        border-radius: 2px;
+        background: transparent;
+        transition: background-color 0.2s ease;
+    }
+
+    &:hover,
+    &:focus-visible {
+        background: color-mix(in srgb, var(--studio-accent) 26%, #1d2230);
+        outline: none;
+
+        &::after {
+            background: var(--studio-accent);
+        }
+    }
+}
+
+// 收起后的边缘唤醒导轨
+.collapsedRail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 15px 0;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.railLeft {
+    color: #9ba8c0;
+    background: #10131a;
+    border-right: 1px solid #222735;
+
+    &:hover {
+        color: #f4f7ff;
+        background: #181d28;
+    }
+}
+
+.railRight {
+    color: var(--muted);
+    background: color-mix(in srgb, var(--soft) 65%, var(--paper));
+    border-left: 1px solid var(--line);
+
+    &:hover {
+        color: var(--studio-accent);
+        background: color-mix(in srgb, var(--studio-accent) 8%, var(--paper));
+    }
+}
+
+.railLabel {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+}
+
+// 加载与异常状态页
+.stateStage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 460px;
+    margin-top: 12px;
+    padding: 48px 28px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: var(--paper);
+    text-align: center;
+}
+
+.stateSpinner {
+    display: inline-flex;
+    color: var(--studio-accent);
+    animation: studio-spin 1s linear infinite;
+}
+
+.stateDangerIcon {
+    color: var(--danger, #d92d3f);
+}
+
+.stateTitle {
+    margin: 16px 0 0;
+    color: var(--ink);
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.stateDesc {
+    max-width: 420px;
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.stateActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.primaryAction,
+.secondaryAction {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.primaryAction {
+    margin-top: 22px;
+    color: var(--action-ink, #fffdf8);
+    background: var(--ink);
+
+    &:hover {
+        transform: translateY(-1px);
+        background: var(--studio-accent);
+    }
+}
+
+.stateActions .primaryAction {
+    margin-top: 0;
+}
+
+.secondaryAction {
+    border: 1px solid var(--line);
+    color: var(--ink);
+    background: var(--paper);
+
+    &:hover {
+        border-color: var(--ink);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studioStage {
+        animation: none;
+    }
+}
+
+@keyframes studio-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes studio-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -14,6 +14,12 @@ export const mainNavigation: readonly NavigationItem[] = [
         to: '/knowledge',
         activePath: '/knowledge',
     },
+    {
+        id: 'playground',
+        label: '场景演练场',
+        to: '/playground',
+        activePath: '/playground',
+    },
 ];
 
 // 侧栏快捷跳转和顶栏探索菜单共用这一份，不再另抄一份。

@@ -1,0 +1,351 @@
+// 场景演练卡片样式：支持五套和谐主题色轮换、指针聚光灯追踪、3D 微倾斜与微缩源码工作台联动动效。
+.card {
+    --card-accent: #254ddb;
+    --card-tint: color-mix(in srgb, var(--card-accent) 10%, var(--soft));
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background:
+        radial-gradient(
+            400px circle at var(--card-spot-x, 50%) var(--card-spot-y, 0%),
+            color-mix(in srgb, var(--card-accent) 13%, transparent),
+            transparent 72%
+        ),
+        var(--paper);
+    box-shadow: 0 12px 32px -18px rgba(25, 22, 18, 0.08);
+    transform: perspective(1000px) rotateX(var(--card-rx, 0deg)) rotateY(var(--card-ry, 0deg));
+    transition:
+        transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+        border-color 0.25s ease,
+        box-shadow 0.3s ease;
+
+    &[data-tone='emerald'] {
+        --card-accent: #1b7a58;
+    }
+
+    &[data-tone='amber'] {
+        --card-accent: var(--accent, #a4562a);
+    }
+
+    &[data-tone='violet'] {
+        --card-accent: #5842c3;
+    }
+
+    &[data-tone='lime'] {
+        --card-accent: #4f6f19;
+    }
+
+    &.isHighlighted {
+        border-color: var(--card-accent);
+        box-shadow:
+            0 0 0 4px color-mix(in srgb, var(--card-accent) 26%, transparent),
+            0 24px 56px -18px rgba(25, 22, 18, 0.18);
+    }
+
+    // 顶部自动生成的微缩双栏工作台视窗
+    .previewWindow {
+        position: relative;
+        padding: 16px 18px 0;
+        border-bottom: 1px solid var(--line);
+        background:
+            radial-gradient(
+                circle at 85% 20%,
+                color-mix(in srgb, var(--card-accent) 18%, transparent),
+                transparent 60%
+            ),
+            var(--card-tint);
+        overflow: hidden;
+    }
+
+    .windowChrome {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border: 1px solid color-mix(in srgb, var(--card-accent) 24%, var(--line));
+        border-bottom: 0;
+        border-radius: 14px 14px 0 0;
+        background: color-mix(in srgb, var(--paper) 90%, transparent);
+    }
+
+    .windowDots {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        flex-shrink: 0;
+
+        > span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--line);
+
+            &:first-child {
+                background: #e26d5c;
+            }
+
+            &:nth-child(2) {
+                background: #e9b879;
+            }
+
+            &:last-child {
+                background: #5ca47f;
+            }
+        }
+    }
+
+    .fileTabs {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .fileTab {
+        padding: 2px 9px;
+        border-radius: 6px;
+        color: var(--muted);
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 11px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition:
+            color 0.22s ease,
+            background-color 0.22s ease;
+
+        &.isPrimaryTab {
+            color: var(--card-accent);
+            background: color-mix(in srgb, var(--card-accent) 12%, var(--soft));
+            font-weight: 600;
+        }
+    }
+
+    .windowSplit {
+        display: grid;
+        grid-template-columns: 1.35fr 0.65fr;
+        gap: 10px;
+        padding: 14px;
+        border-inline: 1px solid color-mix(in srgb, var(--card-accent) 24%, var(--line));
+        background: color-mix(in srgb, var(--paper) 78%, var(--soft));
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .codePane {
+        display: grid;
+        align-content: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+    }
+
+    .codeLine {
+        display: block;
+        height: 6px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--card-accent) 32%, var(--line));
+        transition:
+            transform 0.32s ease,
+            background-color 0.32s ease;
+
+        &:first-child {
+            background: var(--card-accent);
+        }
+    }
+
+    .livePane {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-height: 70px;
+        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--card-accent) 28%, var(--line));
+        color: var(--card-accent);
+        background: color-mix(in srgb, var(--card-accent) 10%, var(--paper));
+        overflow: hidden;
+
+        .livePulse {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border: 1.5px solid color-mix(in srgb, var(--card-accent) 40%, transparent);
+            border-radius: 50%;
+            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+    }
+
+    // 卡片正文区域
+    .body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 24px 20px;
+    }
+
+    .title {
+        margin: 0;
+        color: var(--ink);
+        font-size: 21px;
+        font-weight: 700;
+        line-height: 1.35;
+        letter-spacing: -0.03em;
+    }
+
+    .trigger {
+        padding: 0;
+        color: inherit;
+        text-align: left;
+        font: inherit;
+        transition: color 0.2s ease;
+
+        // 伪元素铺满整张卡片，任何位置点击均可进入详情，同时保持无障碍按钮焦点。
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            border-radius: 22px;
+        }
+
+        &:focus-visible {
+            outline: none;
+
+            &::after {
+                outline: 3px solid var(--card-accent);
+                outline-offset: -3px;
+            }
+        }
+    }
+
+    .description {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.85;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: auto;
+        padding-top: 18px;
+    }
+
+    .tag {
+        padding: 4px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        background: var(--soft);
+        font-size: 12px;
+        font-weight: 600;
+        transition:
+            border-color 0.2s ease,
+            color 0.2s ease;
+    }
+
+    // 底部行动栏
+    .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 15px 24px;
+        border-top: 1px solid var(--line);
+        background: color-mix(in srgb, var(--soft) 45%, transparent);
+    }
+
+    .actionText {
+        color: var(--ink);
+        font-size: 13px;
+        font-weight: 700;
+        transition: color 0.2s ease;
+    }
+
+    .arrow {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        color: var(--ink);
+        background: var(--paper);
+        transition:
+            transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.22s ease,
+            border-color 0.22s ease,
+            color 0.22s ease;
+    }
+
+    // 悬停或键盘聚焦时的联动效果
+    &:hover,
+    &:focus-within {
+        border-color: color-mix(in srgb, var(--card-accent) 55%, var(--line));
+        box-shadow: 0 22px 54px -18px rgba(25, 22, 18, 0.14);
+
+        .trigger,
+        .actionText {
+            color: var(--card-accent);
+        }
+
+        .arrow {
+            color: #fffdf8;
+            background: var(--card-accent);
+            border-color: var(--card-accent);
+            transform: translate(3px, -3px) scale(1.06);
+        }
+
+        .tag {
+            border-color: color-mix(in srgb, var(--card-accent) 35%, var(--line));
+            color: var(--ink);
+        }
+
+        .codeLine:nth-child(2),
+        .codeLine:nth-child(4) {
+            transform: translateX(5px);
+        }
+
+        .livePane .livePulse {
+            transform: scale(1.3);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transform: none;
+        transition: none;
+    }
+}
+
+:global([data-reading-theme='dark']) .card,
+:global(html[data-theme='dark']) .card {
+    --card-accent: #7ca2ff;
+
+    &[data-tone='emerald'] {
+        --card-accent: #5eead4;
+    }
+
+    &[data-tone='amber'] {
+        --card-accent: #f0b673;
+    }
+
+    &[data-tone='violet'] {
+        --card-accent: #b69eff;
+    }
+
+    &[data-tone='lime'] {
+        --card-accent: #cde77a;
+    }
+}

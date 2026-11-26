@@ -65,3 +65,21 @@ CREATE TABLE IF NOT EXISTS articles (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci
   COMMENT = '文章表';
+
+-- 保存 demo 展示信息与已上传的源码/构建版本，verison 保留指定拼写。
+CREATE TABLE IF NOT EXISTS demos (
+    id CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+    slug VARCHAR(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '稳定资源目录标识',
+    name VARCHAR(255) NOT NULL COMMENT '展示名称，默认与目录名一致',
+    description TEXT NULL COMMENT 'demo 说明',
+    tags JSON NULL COMMENT '检索标签',
+    status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+    implementation VARCHAR(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '实现目录，default 表示场景根',
+    verison VARCHAR(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT 'x.x.x 格式的版本',
+    file_paths JSON NOT NULL COMMENT '以 demos/slug 为根的源码相对路径数组',
+    exclude_paths JSON NULL COMMENT '相对于所选实现目录的排除规则',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_demo_slug_verison (slug, verison),
+    KEY idx_demo_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

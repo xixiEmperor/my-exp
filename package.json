@@ -1,0 +1,27 @@
+{
+    "name": "my-exp",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "packageManager": "pnpm@10.17.1",
+    "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+    },
+    "scripts": {
+        "dev": "pnpm --filter zhiye-web dev",
+        "build": "pnpm --filter zhiye-web build",
+        "preview": "pnpm --filter zhiye-web preview",
+        "typecheck": "pnpm --filter zhiye-web typecheck",
+        "lint": "pnpm --filter zhiye-web lint",
+        "lint:fix": "pnpm --filter zhiye-web lint:fix",
+        "format": "pnpm --filter zhiye-web format",
+        "format:check": "pnpm --filter zhiye-web format:check",
+        "build:all": "pnpm -r --if-present build",
+        "typecheck:all": "pnpm -r --if-present typecheck",
+        "push:artifacts": "node --env-file-if-exists=scripts/.env scripts/push-artifacts.mjs",
+        "push:sources": "node --env-file-if-exists=scripts/.env scripts/push-sources.mjs"
+    },
+    "devDependencies": {
+        "cloudflare": "7.3.0"
+    }
+}

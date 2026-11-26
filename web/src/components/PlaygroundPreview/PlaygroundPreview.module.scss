@@ -1,0 +1,175 @@
+// 右侧实时预览舞台样式：极简 48px 控制头与全幅 iframe 画布，保持纯净视觉比例。
+.previewPane {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    background: var(--paper);
+    overflow: hidden;
+
+    &[data-collapsed='true'] {
+        display: none;
+    }
+}
+
+.paneHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    height: 48px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--paper) 88%, var(--soft));
+    flex-shrink: 0;
+}
+
+.headerLeft,
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.statusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    flex-shrink: 0;
+
+    &[data-status='loading'] {
+        background: #f59e0b;
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+    }
+
+    &[data-status='error'] {
+        background: var(--danger, #d92d3f);
+        box-shadow: 0 0 0 3px rgba(217, 45, 63, 0.18);
+    }
+}
+
+.headerTitle {
+    color: var(--ink);
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.toolBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--paper);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+
+    &:hover {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+        background: color-mix(in srgb, var(--accent) 6%, var(--paper));
+    }
+
+    &.isActive {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+        background: color-mix(in srgb, var(--accent) 10%, var(--paper));
+    }
+}
+
+.spinning {
+    animation: preview-spin 0.9s linear infinite;
+}
+
+.viewportWrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    background: #ffffff;
+}
+
+.iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #ffffff;
+}
+
+.dragShield {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    cursor: col-resize;
+}
+
+.stageOverlay {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    backdrop-filter: blur(6px);
+}
+
+.overlaySpinner {
+    display: inline-flex;
+    color: var(--accent);
+    animation: preview-spin 1s linear infinite;
+}
+
+.errorIcon {
+    color: var(--danger, #d92d3f);
+}
+
+.overlayText {
+    color: var(--ink);
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.overlayRetryBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 8px;
+    color: var(--action-ink, #fffdf8);
+    background: var(--ink);
+    font-size: 12.5px;
+    font-weight: 600;
+
+    &:hover {
+        background: var(--accent);
+    }
+}
+
+@keyframes preview-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

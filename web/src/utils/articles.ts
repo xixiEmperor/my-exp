@@ -14,6 +14,7 @@ export async function toWebp(file: File): Promise<File> {
 
 export const subUrls = (markdown: string) => {
     const reg = /!\[[^\]]*\]\(([^)]+)\)/g;
+
     return [...markdown.matchAll(reg)].map((match) => match[1]);
 };
 
@@ -21,9 +22,11 @@ export const subUrls = (markdown: string) => {
 function probePreviewImage(url: string, content: string) {
     return new Promise<string>((resolve) => {
         const image = new Image();
+
         image.onload = () => {
             resolve(content);
         };
+
         image.onerror = async () => {
             try {
                 // 从 URL 里取出图片 id，再到 IndexedDB 找对应的本地文件
@@ -34,6 +37,7 @@ function probePreviewImage(url: string, content: string) {
                 if (tar) {
                     const previewUrl = URL.createObjectURL(tar.imageData);
                     resolve(content.replaceAll(url, previewUrl));
+
                     return;
                 }
 

@@ -1,17 +1,57 @@
+import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
-import HomeView from '../views/home/HomeView';
-import KnowledgeView from '../views/knowledge/KnowledgeView';
-import KnowledgeEmpty from '../views/knowledge/KnowledgeEmpty';
-import KnowledgeArticle from '../views/knowledge/KnowledgeArticle';
-import NotFoundView from '../views/not-found/NotFoundView';
+import { endPageTransition, startPageTransition } from '../components/PageLoader/pageTransition';
 
-import Prac from '@/views/Prac';
-import { lazy } from 'react';
+const MIN_PAGE_LOAD_MS = 700;
+
+// 保证首次加载懒加载页面时至少展示一段完整转场，并仅对使用此包装的路由开启全屏过渡幕布。
+function lazyWithMinDelay<T extends ComponentType>(
+    loader: () => Promise<{ default: T }>,
+    minDelay = MIN_PAGE_LOAD_MS,
+): LazyExoticComponent<T> {
+    return lazy(async () => {
+        const reducedMotion =
+            typeof globalThis.matchMedia === 'function' &&
+            globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (reducedMotion || minDelay <= 0) {
+            return loader();
+        }
+
+        startPageTransition();
+
+        try {
+            const [module] = await Promise.all([
+                loader(),
+                new Promise<void>((resolve) => {
+                    globalThis.setTimeout(resolve, minDelay);
+                }),
+            ]);
+
+            return module;
+        } finally {
+            endPageTransition();
+        }
+    });
+}
+
+const HomeView = lazyWithMinDelay(() => import('../views/home/HomeView'));
+const KnowledgeView = lazyWithMinDelay(() => import('../views/knowledge/KnowledgeView'));
+const KnowledgeEmpty = lazy(() => import('../views/knowledge/KnowledgeEmpty'));
+const KnowledgeArticle = lazy(() => import('../views/knowledge/KnowledgeArticle'));
+const PlaygroundView = lazyWithMinDelay(() => import('../views/playground/PlaygroundView'));
+const PlaygroundDetailView = lazyWithMinDelay(
+    () => import('../views/playground/PlaygroundDetailView'),
+);
+const NotFoundView = lazy(() => import('../views/not-found/NotFoundView'));
+
+// const Prac = lazy(() => import('@/views/Prac'));
 
 const AdminIndex = lazy(() => import('@/views/admin/Index'));
 const AdminEmpty = lazy(() => import('@/views/admin/AdminEmpty'));
 const AdminArticles = lazy(() => import('@/views/admin/Articles'));
+const AdminDemos = lazy(() => import('@/views/admin/Demos/Demos'));
 
 // 所有路径集中在这一份配置中，首页、待开发入口和兜底页统一管理。
 export const router = createBrowserRouter([
@@ -32,20 +72,27 @@ export const router = createBrowserRouter([
                     { path: ':id', Component: KnowledgeArticle },
                 ],
             },
+            {
+                path: 'playground',
+                Component: PlaygroundView,
+            },
+            {
+                path: 'playground/:id',
+                Component: PlaygroundDetailView,
+            },
             { path: '*', Component: NotFoundView },
 
-            {
-                path: '/prac',
-                Component: Prac,
-            },
+            // {
+            //     path: '/prac',
+            //     Component: Prac,
+            // },
             {
                 path: '/admin',
                 Component: AdminIndex,
                 children: [
                     // 后台首页保留真实的操作说明，避免没有选中文章时整块留白。
                     { index: true, Component: AdminEmpty },
-
-                    // 文章详情页，文章 id 作为路径参数，页面自己按 id 读缓存或发请求
+                    { path: 'demos', Component: AdminDemos },
                     { path: 'articles/:id', Component: AdminArticles },
                 ],
             },

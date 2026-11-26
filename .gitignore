@@ -2,6 +2,10 @@
 web/node_modules/
 web/dist/
 web/.vite/
+# workspace 根目录和各示例的依赖、构建缓存不提交。
+**/node_modules/
+**/dist/
+**/.vite/
 *.tsbuildinfo
 
 # 后端可执行文件与本地运行日志不提交。

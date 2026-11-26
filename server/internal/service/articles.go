@@ -21,13 +21,13 @@ import (
 
 type ArticlesService struct {
 	artiRepo *repository.ArticlesRepo
-	imageSvc *ImageService
+	r2Svc *R2Service
 }
 
-func NewArticlesService(artiRepo *repository.ArticlesRepo, imageSvc *ImageService) *ArticlesService {
+func NewArticlesService(artiRepo *repository.ArticlesRepo, r2Svc *R2Service) *ArticlesService {
 	return &ArticlesService{
 		artiRepo: artiRepo,
-		imageSvc: imageSvc,
+		r2Svc: r2Svc,
 	}
 }
 
@@ -305,7 +305,7 @@ func (s *ArticlesService) executeImage(
 	_, delURL := utils.Diff(oldURL, newURL)
 
 	// 4. 启动go协程并发上传新增图片，单个失败不影响其他图片，最后统一返回错误
-	if len(addURL) > 0 && s.imageSvc == nil {
+	if len(addURL) > 0 && s.r2Svc == nil {
 		return nil, fmt.Errorf("%w: 图片服务未配置", ErrCDNPostFailed)
 	}
 	// 每个协程只写自己下标对应的位置，写入区域互不重叠，wg.Wait 之后再统一读取
@@ -340,7 +340,7 @@ func (s *ArticlesService) executeImage(
 // cleanupImages 在正文保存成功后清理不再引用的旧图片。
 // 删除属于附带操作，失败只记录日志，不影响已经保存成功的正文。
 func (s *ArticlesService) cleanupImages(c context.Context, articleID string, cdnURLs []string) {
-	if s.imageSvc == nil || len(cdnURLs) == 0 {
+	if s.r2Svc == nil || len(cdnURLs) == 0 {
 		return
 	}
 
@@ -366,7 +366,7 @@ func (s *ArticlesService) cleanupImages(c context.Context, articleID string, cdn
 		go func() {
 			defer wg.Done()
 			// 对象已经不存在时按删除成功处理，保证重试幂等
-			if err := s.imageSvc.DeleteFile(c, key); err != nil && !errors.Is(err, ErrImageNotFound) {
+			if err := s.r2Svc.DeleteFile(c, key); err != nil && !errors.Is(err, ErrR2NotFound) {
 				logger.FromContext(c).Warn("删除旧图片失败", "type", "business", "image_key", key, "error", err)
 			}
 		}()
@@ -406,7 +406,7 @@ func (s *ArticlesService) uploadImage(c context.Context, cdnURL string, header *
 	}
 
 	// 5. 按对象路径上传，重复路径会覆盖；错误统一包装成 ErrCDNPostFailed 供上层判断。
-	if _, err := s.imageSvc.UploadFile(c, key, file, contentType); err != nil {
+	if _, err := s.r2Svc.UploadFile(c, key, file, contentType); err != nil {
 		return fmt.Errorf("%w: 上传 %s: %w", ErrCDNPostFailed, cdnURL, err)
 	}
 	return nil

@@ -46,8 +46,8 @@ func TestImageDefaultAPIAddress(t *testing.T) {
 			_ = os.Setenv("CLOUDFLARE_BASE_URL", previous)
 		}
 	})
-	s, err := NewImageService(
-		ImageConfig{AccountID: "account", APIToken: "token", BucketName: "images"},
+	s, err := NewR2Service(
+		R2Config{AccountID: "account", APIToken: "token", BucketName: "images"},
 		option.WithHTTPClient(&http.Client{Transport: imageTestTransport{t: t}}),
 	)
 	if err != nil {
@@ -60,13 +60,13 @@ func TestImageDefaultAPIAddress(t *testing.T) {
 	response.Body.Close()
 }
 
-// newTestImageService 通过本地 HTTP 服务验证真实 SDK 的请求和响应处理。
-func newTestImageService(t *testing.T, handler http.HandlerFunc) *ImageService {
+// newTestR2Service 通过本地 HTTP 服务验证真实 SDK 的请求和响应处理。
+func newTestR2Service(t *testing.T, handler http.HandlerFunc) *R2Service {
 	t.Helper()
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
-	s, err := NewImageService(
-		ImageConfig{AccountID: "account", APIToken: "token", BucketName: "images"},
+	s, err := NewR2Service(
+		R2Config{AccountID: "account", APIToken: "token", BucketName: "images"},
 		option.WithBaseURL(server.URL),
 	)
 	if err != nil {
@@ -86,7 +86,7 @@ func writeImageJSON(w http.ResponseWriter, result any, cursor string) {
 func TestImageFileOperations(t *testing.T) {
 	key := "图片/a name.png"
 	var stored string
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") != "Bearer token" {
 			t.Error("缺少令牌")
 		}
@@ -135,7 +135,7 @@ func TestImageFileOperations(t *testing.T) {
 
 // TestImageFolderPagination 验证第二页、空目录占位对象和直接子目录的归类。
 func TestImageFolderPagination(t *testing.T) {
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("prefix") != "photos/" {
 			t.Fatalf("目录前缀错误: %s", r.URL)
 		}
@@ -162,7 +162,7 @@ func TestImageFolderPagination(t *testing.T) {
 // TestImageFolderDelete 先列完所有分页再删除，名称相近的目录不会被包含。
 func TestImageFolderDelete(t *testing.T) {
 	var operations []string
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			operations = append(operations, "list")
 			if r.URL.Query().Get("prefix") != "photos/" {
@@ -192,7 +192,7 @@ func TestImageFolderDelete(t *testing.T) {
 // TestImageRenameFailure 上传失败时不得删除源对象，并验证复制时的 HTTP 元信息。
 func TestImageRenameFailure(t *testing.T) {
 	deletes := 0
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.URL.Query().Has("prefix"):
 			prefix := r.URL.Query().Get("prefix")
@@ -230,7 +230,7 @@ func TestImageRenameFailure(t *testing.T) {
 // TestImageValidationAndNotFound 验证非法路径不发请求，404 可按业务错误处理。
 func TestImageValidationAndNotFound(t *testing.T) {
 	requests := 0
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		requests++
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusNotFound)
@@ -238,20 +238,20 @@ func TestImageValidationAndNotFound(t *testing.T) {
 	})
 	ctx := context.Background()
 	for _, key := range []string{"", "/", "/a", "a//b", "a/../b", "a\\b", "a/", "a\x00b", "a#b.png", "a%b.png", "a?b.png"} {
-		if err := s.DeleteFile(ctx, key); !errors.Is(err, ErrInvalidImageKey) {
+		if err := s.DeleteFile(ctx, key); !errors.Is(err, ErrInvalidR2Key) {
 			t.Errorf("非法路径被接受: %q", key)
 		}
 	}
-	if err := s.DeleteFolder(ctx, "/"); !errors.Is(err, ErrInvalidImageKey) {
+	if err := s.DeleteFolder(ctx, "/"); !errors.Is(err, ErrInvalidR2Key) {
 		t.Fatal("允许删除根目录")
 	}
-	if err := s.RenameFolder(ctx, "a", "a/b"); !errors.Is(err, ErrInvalidImageKey) {
+	if err := s.RenameFolder(ctx, "a", "a/b"); !errors.Is(err, ErrInvalidR2Key) {
 		t.Fatal("允许移动到子目录")
 	}
 	if requests != 0 {
 		t.Fatal("校验失败仍发送了请求")
 	}
-	if _, err := s.GetFile(ctx, "missing.png"); !errors.Is(err, ErrImageNotFound) {
+	if _, err := s.GetFile(ctx, "missing.png"); !errors.Is(err, ErrR2NotFound) {
 		t.Fatalf("404 未映射: %v", err)
 	}
 }
@@ -262,7 +262,7 @@ func TestImageRenameSuccessAndConflict(t *testing.T) {
 		t.Run(map[bool]string{false: "file", true: "folder"}[folder], func(t *testing.T) {
 			var operations []string
 			conflict := false
-			s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+			s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 				key := strings.TrimPrefix(r.URL.Path, "/accounts/account/r2/buckets/images/objects/")
 				if r.URL.Query().Has("prefix") {
 					prefix := r.URL.Query().Get("prefix")
@@ -311,7 +311,7 @@ func TestImageRenameSuccessAndConflict(t *testing.T) {
 			}
 			operations = nil
 			conflict = true
-			if err := rename(); !errors.Is(err, ErrImageAlreadyExists) {
+			if err := rename(); !errors.Is(err, ErrR2AlreadyExists) {
 				t.Fatalf("重名未报告: %v", err)
 			}
 			if len(operations) != 0 {
@@ -324,7 +324,7 @@ func TestImageRenameSuccessAndConflict(t *testing.T) {
 // TestImageCreateFolder 验证空文件夹占位对象和空目录查询。
 func TestImageCreateFolder(t *testing.T) {
 	created := false
-	s := newTestImageService(t, func(w http.ResponseWriter, r *http.Request) {
+	s := newTestR2Service(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPut {
 			if !strings.HasSuffix(r.URL.Path, "/empty/") {
 				t.Error("占位对象缺少目录分隔符")

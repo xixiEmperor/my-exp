@@ -1,0 +1,17 @@
+# 主站与后续工具包统一加入 workspace。
+packages:
+    - web
+    - tools
+    - demos/*/web
+    - demos/*/*/web
+    # 兼容仓库中现有示例的路径，新场景按开发文档放入 demos。
+    - playground/*/web
+    - playground/*/*/web
+
+# 各项目保留自己的锁文件，便于复制到仓库外独立安装。
+sharedWorkspaceLockfile: false
+
+# 构建依赖审批由 workspace 统一配置。
+onlyBuiltDependencies:
+    - '@parcel/watcher'
+    - esbuild

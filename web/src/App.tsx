@@ -5,6 +5,7 @@ import SiteFooter from './components/SiteFooter/SiteFooter';
 import LoginPanel from './components/LoginPanel/LoginPanel';
 import ConfirmDialog from './components/ConfirmDialog/ConfirmDialog';
 import Toast from './components/Toast/Toast';
+import { PageSuspense } from './components/PageLoader/PageLoader';
 import { useSiteShell } from './hooks/useSiteShell';
 import { useTheme } from './hooks/useTheme';
 import { useCursor } from './hooks/useCursor';
@@ -20,10 +21,11 @@ export default function App() {
     const shell = useSiteShell();
     const isReading =
         shell.activePath === '/knowledge' || shell.activePath.startsWith('/knowledge/');
-    // 文章详情的页脚由正文列承载，侧栏的吸顶范围也能覆盖页面底部。
-    const hasArticleFooter = shell.activePath.startsWith('/knowledge');
     const isAdmin = shell.activePath === '/admin' || shell.activePath.startsWith('/admin');
-    const isPaperPage = isReading || isAdmin;
+    const isIndex = shell.activePath === '/';
+    const isPlayground =
+        shell.activePath === '/playground' || shell.activePath.startsWith('/playground');
+    const isPaperPage = isReading || isAdmin || isPlayground;
     const theme = useTheme(isPaperPage ? 'reading' : 'default');
     const cursor = useCursor();
     const headerHeight = useHomeInteraction((state) => state.headerHeight);
@@ -31,7 +33,9 @@ export default function App() {
     const { login, checkLogin, logout } = useLogin();
 
     useEffect(() => {
-        if (shell.activePath !== '/') return;
+        if (shell.activePath !== '/') {
+            return;
+        }
 
         return useHomeInteraction.getState().registerAction('theme', theme.toggleTheme);
     }, [shell.activePath, theme.toggleTheme]);
@@ -79,10 +83,12 @@ export default function App() {
             />
 
             {/* 路由出口 */}
-            <Outlet />
+            <PageSuspense activePath={shell.activePath}>
+                <Outlet />
+            </PageSuspense>
 
             {/* 阅读页和后台不出现页脚 */}
-            {!hasArticleFooter || isAdmin ? <SiteFooter /> : null}
+            {isIndex ? <SiteFooter /> : null}
 
             {/* 登录表单 */}
             <LoginPanel dialogRef={shell.dialogRef} onClose={shell.closeLogin} onLogin={login} />

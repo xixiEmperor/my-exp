@@ -52,6 +52,17 @@ import {
     Save,
     SavePen,
     Send,
+    PanelLeftClose,
+    PanelLeftOpen,
+    PanelRightClose,
+    PanelRightOpen,
+    RotateCw,
+    Maximize2,
+    Minimize2,
+    Columns2,
+    Eye,
+    FolderTree,
+    GitBranch,
     type LucideIcon,
 } from 'lucide-react';
 import styles from './SiteIcon.module.scss';
@@ -112,6 +123,19 @@ const icons = {
     // 编辑器工具栏用：存草稿和发布各留一个语义化的名字
     save: Save,
     publish: Send,
+
+    // 场景演练工作台与分栏控制图标
+    'panel-left-close': PanelLeftClose,
+    'panel-left-open': PanelLeftOpen,
+    'panel-right-close': PanelRightClose,
+    'panel-right-open': PanelRightOpen,
+    refresh: RotateCw,
+    maximize: Maximize2,
+    minimize: Minimize2,
+    columns: Columns2,
+    eye: Eye,
+    'folder-tree': FolderTree,
+    branch: GitBranch,
     // 目录排序工具用：按钮图标和拖拽手柄
     sort: ArrowUpDown,
     grip: GripVertical,
@@ -138,9 +162,11 @@ export default function SiteIcon({ name, className, size, strokeWidth, style }: 
     // 尺寸和线宽通过 CSS 变量下发，让调用方既能用 props 控制，
     // 也能继续用外部样式覆盖，不用和 .icon 里的默认值抢优先级
     const vars: Record<string, string> = {};
+
     if (size !== undefined) {
         vars['--icon-size'] = typeof size === 'number' ? `${size}px` : size;
     }
+
     if (strokeWidth !== undefined) {
         vars['--icon-stroke'] = String(strokeWidth);
     }

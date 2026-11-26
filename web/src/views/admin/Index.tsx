@@ -11,6 +11,7 @@ import type { TreeNode } from '@/types/article-tree';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useTreeNodeDrag } from '@/hooks/useTreeNodeDrag';
 import styles from './Admin.module.scss';
+import AdminNavigation from '@/components/AdminNavigation/AdminNavigation';
 
 export default function AdminIndex() {
     const root = useArticlesStore((state) => state.folders.root);
@@ -51,14 +52,10 @@ export default function AdminIndex() {
             <Sidebar
                 className={styles.layout}
                 top={
-                    <div className={styles.heading}>
+                    <>
                         {/* 工作区标识只负责区分编辑与阅读，不引入新的业务状态。 */}
-                        <span aria-hidden="true">✎</span>
-                        <div>
-                            <h2>文章管理</h2>
-                            <p>整理目录，编辑文章。</p>
-                        </div>
-                    </div>
+                        <AdminNavigation />
+                    </>
                 }
                 bottom={
                     <>

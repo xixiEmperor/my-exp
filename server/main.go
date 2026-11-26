@@ -42,6 +42,7 @@ func run() (runErr error) {
 	if err != nil {
 		return err
 	}
+
 	// 在连接外部服务前接入日志，初始化故障也能写入服务器文件。
 	logs, err := logger.New(cfg.Log)
 	if err != nil {
@@ -59,6 +60,7 @@ func run() (runErr error) {
 			runErr = errors.Join(runErr, fmt.Errorf("关闭日志文件: %w", err))
 		}
 	}()
+
 	// Gin 的框架诊断也进入统一日志，默认 INFO 级别不输出路由调试信息。
 	gin.DefaultWriter = slog.NewLogLogger(logs.With("type", "system").Handler(), slog.LevelDebug).Writer()
 	gin.DefaultErrorWriter = slog.NewLogLogger(logs.With("type", "system").Handler(), slog.LevelError).Writer()
@@ -98,12 +100,13 @@ func run() (runErr error) {
 	codeRepo := repository.NewVerificationCodes(rdb)
 	articlesRepo := repository.NewArticlesRepo(sqlDB)
 	foldersRepo := repository.NewFoldersRepo(sqlDB)
+	demoResourcesRepo := repository.NewDemoResourcesRepo(sqlDB)
 
 	// 2. 创建各部分 service
-	// 图片服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
-	var imageService *service.ImageService
+	// R2 对象存储服务按需启用：三项 R2 配置齐全时才创建，部分配置会由构造函数报错。
+	var r2Service *service.R2Service
 	if cfg.R2AccountID != "" || cfg.R2APIToken != "" || cfg.R2BucketName != "" {
-		imageService, err = service.NewImageService(service.ImageConfig{
+		r2Service, err = service.NewR2Service(service.R2Config{
 			AccountID:  cfg.R2AccountID,
 			APIToken:   cfg.R2APIToken,
 			BucketName: cfg.R2BucketName,
@@ -114,17 +117,21 @@ func run() (runErr error) {
 	}
 	userService := service.NewUsersService(userRepo, cfg.AdminOpenID)
 	authService := service.NewAuthService(codeRepo, userService)
-	articleService := service.NewArticlesService(articlesRepo, imageService)
+	articleService := service.NewArticlesService(articlesRepo, r2Service)
 	folderService := service.NewFoldersService(foldersRepo)
+	fileService := service.NewFileService()
+	demoResourceService := service.NewDemoResourceService(demoResourcesRepo, r2Service)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken, cfg.CookieSecure)
 	articleHandler := handler.NewArticlesHandler(articleService)
 	folderHandler := handler.NewFoldersHandler(folderService)
+	fileHandler := handler.NewFileHandler(fileService)
+	demoResourceHandler := handler.NewDemoResourceHandler(demoResourceService)
 
 	// 4. 创建装配后的路由，跨域配置随路由一起传入，保证中间件先于路由挂载。
 	// 前端 dev server 监听在 127.0.0.1，和 localhost 属于不同的源，两个都要放行。
-	engine := router.NewRouterGroup(authHandler, articleHandler, folderHandler, cors.Config{
+	engine := router.NewRouterGroup(authHandler, articleHandler, folderHandler, fileHandler, demoResourceHandler, cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:5173",
 			"http://127.0.0.1:5173",
