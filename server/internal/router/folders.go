@@ -21,5 +21,6 @@ func registerFolderRouter(
 	admin.POST("/create", handler.CreateFolder)
 	admin.POST("/rename", handler.RenameFolder)
 	admin.POST("/move", handler.MoveFolder)
+	admin.POST("/sort", handler.SortChildren)
 	admin.DELETE("/:id", handler.Delete)
 }

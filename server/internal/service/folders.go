@@ -74,10 +74,16 @@ func (s *FoldersService) CreateFolder(c context.Context, parent_id string) (dto.
 	}
 
 	name := utils.UniqueName("新建文件夹", names)
+	sortOrder, err := s.folderRepo.NextFolderSortOrder(c, parentID)
+	if err != nil {
+		return dto.FolderResp{}, err
+	}
+
 	newFolder := model.Folders{
-		ID:       id,
-		Name:     name,
-		ParentID: parentID,
+		ID:        id,
+		Name:      name,
+		ParentID:  parentID,
+		SortOrder: sortOrder,
 	}
 
 	if err := s.folderRepo.CreateFolder(c, &newFolder); err != nil {

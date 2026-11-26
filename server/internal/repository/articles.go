@@ -56,12 +56,32 @@ func (repo *ArticlesRepo) FindArticlesByFolderID(
 		query = query.Where("status = ?", "published")
 	}
 
-	err := query.Find(&articles).Error
+	err := query.Order("sort_order ASC, created_at ASC, id ASC").Find(&articles).Error
 	if err != nil {
 		return nil, wrapMySQLError("查询文章列表", err)
 	}
 
 	return articles, nil
+}
+
+// nextArticleSortOrder 返回指定目录下新建或移入文章应使用的下一个排序号（排除软删除文章）。
+func nextArticleSortOrder(db *gorm.DB, folderID *string) (int32, error) {
+	var next int32
+	query := db.Model(&model.Articles{}).Select("COALESCE(MAX(sort_order), -1) + 1")
+	if folderID == nil {
+		query = query.Where("folder_id IS NULL")
+	} else {
+		query = query.Where("folder_id = ?", *folderID)
+	}
+	if err := query.Scan(&next).Error; err != nil {
+		return 0, wrapMySQLError("查询文章排序号", err)
+	}
+	return next, nil
+}
+
+// NextArticleSortOrder 查询指定目录下新文章的末尾排序号。
+func (repo *ArticlesRepo) NextArticleSortOrder(c context.Context, folderID *string) (int32, error) {
+	return nextArticleSortOrder(repo.db.WithContext(c), folderID)
 }
 
 // 根据 id 查找文章所有内容

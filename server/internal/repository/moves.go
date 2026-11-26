@@ -107,11 +107,21 @@ func (repo *FoldersRepo) MoveFolder(c context.Context, id string, target *string
 		// 4. 对于移动到目标目录的节点需要检查命名，防止目录名重复
 		moved.Name = utils.UniqueName(moved.Name, names)
 
-		// 5. 更新移动目录的父文件夹id
+		// 移入目标目录时追加到该目录文件夹组末尾。
+		sortOrder, err := nextFolderSortOrder(tx, target)
+		if err != nil {
+			return err
+		}
+
+		// 5. 更新移动目录的父文件夹id和排序号
 		moved.ParentID = target
 		if err := tx.Model(&model.Folders{}).
 			Where("id = ?", id).
-			Updates(map[string]any{"parent_id": target, "name": moved.Name}).
+			Updates(map[string]any{
+				"parent_id":  target,
+				"name":       moved.Name,
+				"sort_order": sortOrder,
+			}).
 			Error; err != nil {
 			return wrapMySQLError("移动文件夹", err)
 		}
@@ -166,11 +176,21 @@ func (repo *ArticlesRepo) MoveArticle(c context.Context, id string, target *stri
 		// 对于移动到目标目录的节点需要检查命名，防止目录名重复
 		moved.Title = utils.UniqueName(moved.Title, names)
 
-		// 更新移动文章的父文件夹id
+		// 移入目标目录时追加到该目录文章组末尾。
+		sortOrder, err := nextArticleSortOrder(tx, target)
+		if err != nil {
+			return err
+		}
+
+		// 更新移动文章的父文件夹id和排序号
 		moved.FolderID = target
 		if err := tx.Model(&model.Articles{}).
 			Where("id = ?", id).
-			Updates(map[string]any{"folder_id": target, "title": moved.Title}).
+			Updates(map[string]any{
+				"folder_id":  target,
+				"title":      moved.Title,
+				"sort_order": sortOrder,
+			}).
 			Error; err != nil {
 			return wrapMySQLError("移动文章", err)
 		}

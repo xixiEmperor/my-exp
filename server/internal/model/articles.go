@@ -8,8 +8,9 @@ import (
 
 // Articles 对应 articles 文章表。
 type Articles struct {
-	Content string  `gorm:"column:content" json:"content"` // 正文
-	Preview *string `gorm:"column:preview" json:"preview"` // 游客可读的预览部分，nil 表示未设置
+	Content   string  `gorm:"column:content"    json:"content"` // 正文
+	Preview   *string `gorm:"column:preview"    json:"preview"` // 游客可读的预览部分，nil 表示未设置
+	SortOrder int32   `gorm:"column:sort_order" json:"-"`       // 目录内手动排序，不改变现有文章接口响应
 	// 文章主键
 	// 主键统一由 ArticlesBasis 提供，详情和预览也返回相同的 NanoID。
 	ArticlesBasis

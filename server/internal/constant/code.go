@@ -19,6 +19,8 @@ const (
 	Forbidden = 4004
 	// 资源不存在
 	NotFound = 4005
+	// 资源冲突（如目录子节点已变化）
+	Conflict = 4009
 
 	// 服务内部错误与参数错误分开，前端才能提示用户稍后重试。
 	InternalError = 5000

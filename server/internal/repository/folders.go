@@ -35,10 +35,30 @@ func (repo *FoldersRepo) FindFoldersByParentID(c context.Context, id *string) ([
 		// 否则查找对应 parent_id 的文件夹
 		query = query.Where("parent_id = ?", *id)
 	}
-	if err := query.Find(&folders).Error; err != nil {
+	if err := query.Order("sort_order ASC, created_at ASC, id ASC").Find(&folders).Error; err != nil {
 		return nil, wrapMySQLError("查询文件夹列表", err)
 	}
 	return folders, nil
+}
+
+// nextFolderSortOrder 返回指定父目录下新建或移入文件夹应使用的下一个排序号。
+func nextFolderSortOrder(db *gorm.DB, parentID *string) (int32, error) {
+	var next int32
+	query := db.Model(&model.Folders{}).Select("COALESCE(MAX(sort_order), -1) + 1")
+	if parentID == nil {
+		query = query.Where("parent_id IS NULL")
+	} else {
+		query = query.Where("parent_id = ?", *parentID)
+	}
+	if err := query.Scan(&next).Error; err != nil {
+		return 0, wrapMySQLError("查询文件夹排序号", err)
+	}
+	return next, nil
+}
+
+// NextFolderSortOrder 查询指定父目录下新文件夹的末尾排序号。
+func (repo *FoldersRepo) NextFolderSortOrder(c context.Context, parentID *string) (int32, error) {
+	return nextFolderSortOrder(repo.db.WithContext(c), parentID)
 }
 
 // 根据父文件夹 id 创建文件夹

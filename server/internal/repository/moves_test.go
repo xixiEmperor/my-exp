@@ -34,9 +34,11 @@ func TestMoveFolder(t *testing.T) {
 			}
 			mock.ExpectQuery("SELECT .* FROM .folders. ORDER BY id FOR UPDATE").WillReturnRows(rows)
 			if tt.update {
-				// 根目录必须写入 NULL，且名称在更新时一起保存。
-				mock.ExpectExec("UPDATE .folders. SET .name.=\\?,.parent_id.=\\? WHERE id = \\?").
-					WithArgs("资料（1）", nil, "source").WillReturnResult(sqlmock.NewResult(0, 1))
+				// 移动前先计算目标目录下一个排序号，根目录必须写入 NULL，且名称和排序号一起保存。
+				mock.ExpectQuery("SELECT COALESCE\\(MAX\\(sort_order\\), -1\\) \\+ 1 FROM .folders. WHERE parent_id IS NULL").
+					WillReturnRows(sqlmock.NewRows([]string{"next"}).AddRow(2))
+				mock.ExpectExec("UPDATE .folders. SET .name.=\\?,.parent_id.=\\?,.sort_order.=\\? WHERE id = \\?").
+					WithArgs("资料（1）", nil, int32(2), "source").WillReturnResult(sqlmock.NewResult(0, 1))
 			}
 			if tt.want != nil {
 				mock.ExpectRollback()
@@ -70,8 +72,10 @@ func TestMoveArticleRoot(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "title", "folder_id"}).AddRow("article", "文章", "folder"))
 	mock.ExpectQuery("SELECT .title. FROM .articles. WHERE id <> \\? AND folder_id IS NULL AND .articles...deleted_at. IS NULL").
 		WithArgs("article").WillReturnRows(sqlmock.NewRows([]string{"title"}))
+	mock.ExpectQuery("SELECT COALESCE\\(MAX\\(sort_order\\), -1\\) \\+ 1 FROM .articles. WHERE folder_id IS NULL AND .articles...deleted_at. IS NULL").
+		WillReturnRows(sqlmock.NewRows([]string{"next"}).AddRow(3))
 	mock.ExpectExec("UPDATE .articles. SET .* WHERE id = \\? AND .articles...deleted_at. IS NULL").
-		WithArgs(nil, "文章", sqlmock.AnyArg(), "article").WillReturnResult(sqlmock.NewResult(0, 1))
+		WithArgs(nil, int32(3), "文章", sqlmock.AnyArg(), "article").WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectCommit()
 	moved, err := repo.MoveArticle(context.Background(), "article", nil)
 	if err != nil {

@@ -136,9 +136,14 @@ func (s *ArticlesService) CreateArticle(c context.Context, folder_id string) (mo
 		names = append(names, article.Title)
 	}
 	title := utils.UniqueName("新建文件", names)
+	sortOrder, err := s.artiRepo.NextArticleSortOrder(c, parentID)
+	if err != nil {
+		return model.Articles{}, err
+	}
 
 	// 创建文章实体
 	newArticle := model.Articles{
+		SortOrder: sortOrder,
 		ArticlesBasis: model.ArticlesBasis{
 			ID:       id,
 			FolderID: parentID,

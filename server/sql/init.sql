@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS folders (
   created_at  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_parent_id (parent_id),
+  KEY idx_parent_sort (parent_id, sort_order),
   CONSTRAINT fk_folders_parent
     FOREIGN KEY (parent_id)
     REFERENCES folders (id)
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS articles (
   preview          MEDIUMTEXT      NULL     COMMENT '游客可读的预览部分',
   status           ENUM('draft', 'published') NOT NULL DEFAULT 'draft' COMMENT '草稿/已发布',
   folder_id        CHAR(21) CHARACTER SET ascii COLLATE ascii_bin NULL COMMENT '所属文件夹id，NULL表示根目录',
+  sort_order       INT             NOT NULL DEFAULT 0 COMMENT '目录内手动排序',
   views            BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '文章浏览次数',
   slug             VARCHAR(255)    NULL     COMMENT '友好URL，可选',
   created_at       DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS articles (
   PRIMARY KEY (id),
   UNIQUE KEY uk_slug (slug),
   KEY idx_folder_id (folder_id),
+  KEY idx_folder_sort (folder_id, sort_order),
   CONSTRAINT fk_articles_folder
     FOREIGN KEY (folder_id)
     REFERENCES folders (id)

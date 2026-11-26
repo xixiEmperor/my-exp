@@ -31,3 +31,11 @@ type MoveFolderReq struct {
 	ID       string `json:"id"`
 	ParentID string `json:"parent_id"`
 }
+
+// SortFolderChildrenReq 调整单个父目录下子文件夹和文章的顺序。
+type SortFolderChildrenReq struct {
+	// parent_id 使用 root 表示根目录，其他值为真实文件夹 ID。
+	ParentID   string   `json:"parent_id"`
+	FolderIDs  []string `json:"folder_ids"`
+	ArticleIDs []string `json:"article_ids"`
+}
