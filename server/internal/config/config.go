@@ -29,6 +29,8 @@ type Config struct {
 	R2AccountID  string
 	R2APIToken   string
 	R2BucketName string
+	// 可选：显式指定 demo 源码根目录（如 /var/www/my-exp/source/playground）；留空时自动探测。
+	DemoSourceRoot string
 }
 
 // Load 在启动时读取一次配置，系统环境变量优先于本地 .env。
@@ -48,6 +50,7 @@ func Load() (Config, error) {
 		R2AccountID:         os.Getenv("R2_ACCOUNT_ID"),
 		R2APIToken:          os.Getenv("R2_API_TOKEN"),
 		R2BucketName:        os.Getenv("R2_BUCKET_NAME"),
+		DemoSourceRoot:      strings.TrimSpace(os.Getenv("DEMO_SOURCE_ROOT")),
 	}
 	// 只信任启动配置，不使用客户端可伪造的转发请求头判断 HTTPS。
 	if value := os.Getenv("COOKIE_SECURE"); value != "" {

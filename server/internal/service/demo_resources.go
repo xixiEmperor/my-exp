@@ -53,18 +53,35 @@ type demoUploadTask struct {
 
 // DemoResourceService 管理 demos 表的查询、编辑、删除，以及静态产物和源码上传。
 type DemoResourceService struct {
-	repo          *repository.DemoResourcesRepo // demo 数据仓库
-	r2Svc         *R2Service                    // R2 对象存储服务（可为 nil，表示未启用）
-	workspaceRoot string                        // 本地 demo 目录根路径，默认 ".."
+	repo           *repository.DemoResourcesRepo // demo 数据仓库
+	r2Svc          *R2Service                    // R2 对象存储服务（可为 nil，表示未启用）
+	workspaceRoot  string                        // 仓库根目录，默认按部署/本地结构自动探测
+	demoSourceRoot string                        // 可选：显式指定的 demo 根目录（DEMO_SOURCE_ROOT）
 }
 
-// NewDemoResourceService 创建 demo 资源服务实例，默认以仓库根目录（..）扫描本地文件。
-func NewDemoResourceService(repo *repository.DemoResourcesRepo, r2Svc *R2Service) *DemoResourceService {
-	return &DemoResourceService{
-		repo:          repo,
-		r2Svc:         r2Svc,
-		workspaceRoot: "..",
+// NewDemoResourceService 创建 demo 资源服务实例。
+// 当 demoSourceRoot 为空时，自动兼容服务器部署（./source）与本地开发（..）目录结构。
+func NewDemoResourceService(repo *repository.DemoResourcesRepo, r2Svc *R2Service, demoSourceRoot string) *DemoResourceService {
+	svc := &DemoResourceService{
+		repo:           repo,
+		r2Svc:          r2Svc,
+		demoSourceRoot: strings.TrimSpace(demoSourceRoot),
 	}
+	if svc.demoSourceRoot == "" {
+		svc.workspaceRoot = ResolveWorkspaceRoot()
+	}
+	return svc
+}
+
+func (s *DemoResourceService) demoBaseDir() string {
+	if s.demoSourceRoot != "" {
+		return filepath.Clean(s.demoSourceRoot)
+	}
+	root := s.workspaceRoot
+	if root == "" {
+		root = ResolveWorkspaceRoot()
+	}
+	return filepath.Join(root, demoRootDir)
 }
 
 // demoResourceNotFound 将仓储层的记录不存在错误统一转换为业务层的 ErrDemoResourceNotFound。
@@ -303,8 +320,8 @@ func validateCreateDemoResourceReq(req dto.CreateDemoResourceReq) ([]string, err
 func (s *DemoResourceService) resolveDemoDirectories(
 	slug, implementation string,
 ) (sceneDir, selectedDir, distDir string, err error) {
-	// 1. 基于固定根目录 playground 拼接场景目录、实现目录与构建产物目录。
-	sceneDir = filepath.Join(s.workspaceRoot, demoRootDir, slug)
+	// 1. 基于 demo 根目录拼接场景目录、实现目录与构建产物目录。
+	sceneDir = filepath.Join(s.demoBaseDir(), slug)
 	selectedDir = sceneDir
 	if implementation != "default" {
 		selectedDir = filepath.Join(sceneDir, implementation)

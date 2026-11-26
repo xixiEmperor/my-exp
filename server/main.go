@@ -119,8 +119,8 @@ func run() (runErr error) {
 	authService := service.NewAuthService(codeRepo, userService)
 	articleService := service.NewArticlesService(articlesRepo, r2Service)
 	folderService := service.NewFoldersService(foldersRepo)
-	fileService := service.NewFileService()
-	demoResourceService := service.NewDemoResourceService(demoResourcesRepo, r2Service)
+	fileService := service.NewFileService(cfg.DemoSourceRoot)
+	demoResourceService := service.NewDemoResourceService(demoResourcesRepo, r2Service, cfg.DemoSourceRoot)
 
 	// 3. 创建各部分 handler
 	authHandler := handler.NewAuthHandler(authService, cfg.WechatCallbackToken, cfg.CookieSecure)

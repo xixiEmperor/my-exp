@@ -7,25 +7,42 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"zhiye/server/internal/utils"
 )
 
 type FileService struct {
-	workspaceRoot string
+	workspaceRoot  string
+	demoSourceRoot string
 }
 
-func NewFileService() *FileService {
-	return &FileService{
-		workspaceRoot: "..",
+func NewFileService(demoSourceRoot string) *FileService {
+	svc := &FileService{
+		demoSourceRoot: strings.TrimSpace(demoSourceRoot),
 	}
+	if svc.demoSourceRoot == "" {
+		svc.workspaceRoot = ResolveWorkspaceRoot()
+	}
+	return svc
+}
+
+func (s *FileService) demoBaseDir() string {
+	if s.demoSourceRoot != "" {
+		return filepath.Clean(s.demoSourceRoot)
+	}
+	root := s.workspaceRoot
+	if root == "" {
+		root = ResolveWorkspaceRoot()
+	}
+	return filepath.Join(root, demoRootDir)
 }
 
 // 获取现有 demo
 func (s *FileService) GetName(c context.Context) ([]string, error) {
 	var names []string
 
-	dirs, err := os.ReadDir("../playground")
+	dirs, err := os.ReadDir(s.demoBaseDir())
 	if err != nil {
 		return nil, fmt.Errorf("读取目录错误 %s", err.Error())
 	}
@@ -38,8 +55,12 @@ func (s *FileService) GetName(c context.Context) ([]string, error) {
 
 // 获取目标 demo 的不同变体
 func (s *FileService) GetVery(c context.Context, demo_name string) ([]string, error) {
+	if !filepath.IsLocal(demo_name) || demo_name == "." || filepath.Base(demo_name) != demo_name {
+		return nil, fmt.Errorf("demo 名称无效")
+	}
+
 	var names []string
-	path := fmt.Sprintf("../playground/%s", demo_name)
+	path := filepath.Join(s.demoBaseDir(), demo_name)
 
 	dirs, err := os.ReadDir(path)
 	if err != nil {
@@ -142,9 +163,5 @@ func (s *FileService) getVariantPath(demo_name, vary_name string) (string, error
 			return "", fmt.Errorf("demo 或变体名称无效")
 		}
 	}
-	root := s.workspaceRoot
-	if root == "" {
-		root = ".."
-	}
-	return filepath.Join(root, "playground", demo_name, vary_name), nil
+	return filepath.Join(s.demoBaseDir(), demo_name, vary_name), nil
 }

@@ -81,7 +81,7 @@ func writeTestFile(t *testing.T, path string, content []byte) {
 
 func TestDemoResourceQueries(t *testing.T) {
 	repo, mock := newMockDemoResourcesRepo(t)
-	svc := NewDemoResourceService(repo, nil)
+	svc := NewDemoResourceService(repo, nil, "")
 	now := time.Now()
 
 	t.Run("按ID查询", func(t *testing.T) {
@@ -125,7 +125,7 @@ func TestDemoResourceQueries(t *testing.T) {
 
 func TestCreateDemoResourceValidation(t *testing.T) {
 	repo, _ := newMockDemoResourcesRepo(t)
-	svc := NewDemoResourceService(repo, nil)
+	svc := NewDemoResourceService(repo, nil, "")
 
 	cases := []struct {
 		name string
