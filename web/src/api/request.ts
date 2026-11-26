@@ -19,6 +19,20 @@ interface ResponseBody<T> {
     data?: T;
 }
 
+// 携带 HTTP 状态码和业务码的请求异常，兼容现有的 instanceof Error 判断，
+// 同时允许业务层按状态码区分特定场景（例如 409 排序冲突需要刷新目录）。
+export class RequestError extends Error {
+    readonly status: number;
+    readonly code?: number;
+
+    constructor(message: string, status: number, code?: number) {
+        super(message);
+        this.name = 'RequestError';
+        this.status = status;
+        this.code = code;
+    }
+}
+
 // 生产构建配置接口子域名，本地未配置时保留相对接口路径。
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '');
 
@@ -69,7 +83,7 @@ export const request = async <T>(options: Options): Promise<T> => {
 
     // HTTP 异常或业务码异常，都把后端提示抛给上层
     if (!r.ok || !res || res.code !== ResponseCode.SUCCESS) {
-        throw new Error(res?.msg || `请求失败（${r.status}）`);
+        throw new RequestError(res?.msg || `请求失败（${r.status}）`, r.status, res?.code);
     }
 
     // 成功时直接返回业务数据，调用方不用每次自己解一层 data

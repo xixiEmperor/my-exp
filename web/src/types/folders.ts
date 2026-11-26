@@ -40,3 +40,10 @@ export interface MoveFolderReq {
     id: string;
     parent_id: string;
 }
+
+// 调整单个父目录下子文件夹和文章的组内顺序，parent_id 使用 root 表示根目录。
+export interface SortFolderChildrenReq {
+    parent_id: string;
+    folder_ids: string[];
+    article_ids: string[];
+}

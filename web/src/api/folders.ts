@@ -4,7 +4,19 @@ import type {
     GetFolderChildrenResp,
     MoveFolderReq,
     RenameFolderReq,
+    SortFolderChildrenReq,
 } from '@/types/folders';
+
+// 调整单个父目录下文件夹与文章的组内排序。
+export const sortFolderChildren = (body: SortFolderChildrenReq, signal?: AbortSignal) => {
+    return request<null>({
+        method: 'POST',
+        path: '/folder/sort',
+        body,
+        credentials: 'include',
+        signal,
+    });
+};
 
 // 移动文件夹，返回后端实际保存的信息并向调用方传递失败原因。
 export const moveFolder = async (body: MoveFolderReq, signal?: AbortSignal) => {

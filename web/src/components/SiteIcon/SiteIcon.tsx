@@ -3,6 +3,7 @@ import {
     ArrowDown,
     ArrowLeft,
     ArrowRight,
+    ArrowUpDown,
     ArrowUpRight,
     BookOpen,
     Check,
@@ -19,6 +20,7 @@ import {
     FileText,
     Gauge,
     Globe,
+    GripVertical,
     Info,
     Layers,
     LayoutGrid,
@@ -110,6 +112,9 @@ const icons = {
     // 编辑器工具栏用：存草稿和发布各留一个语义化的名字
     save: Save,
     publish: Send,
+    // 目录排序工具用：按钮图标和拖拽手柄
+    sort: ArrowUpDown,
+    grip: GripVertical,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof icons;
