@@ -93,6 +93,12 @@
     }
 }
 
+/* 占满一屏可视高度（扣掉顶栏），避免加载态或空态高度塌陷导致页面抖动 */
+.fullHeight {
+    min-height: calc(100vh - var(--header, 0px));
+    min-height: calc(100dvh - var(--header, 0px));
+}
+
 @media (max-width: 700px) {
     .empty {
         padding: 40px 16px;

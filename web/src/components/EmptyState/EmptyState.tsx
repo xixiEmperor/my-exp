@@ -13,6 +13,8 @@ export interface EmptyStateProps {
     action?: ReactNode;
     // 紧凑模式，放在侧栏、卡片或列表内部时用，上下留白收紧
     compact?: boolean;
+    // 占满一屏可视高度，避免加载或空态时内容区高度塌陷引起页面抖动
+    fullHeight?: boolean;
     // 允许外层微调尺寸，比如让它占满剩余高度
     className?: string;
 }
@@ -25,10 +27,16 @@ export default function EmptyState({
     icon = 'info',
     action,
     compact = false,
+    fullHeight = false,
     className,
 }: EmptyStateProps) {
-    // 把可选类名拼在一起，紧凑模式和外层定制字段没传时就自动跳过
-    const rootClassName = [styles.empty, compact && styles.compact, className]
+    // 把可选类名拼在一起，紧凑模式、满屏高度和外层定制字段没传时就自动跳过
+    const rootClassName = [
+        styles.empty,
+        compact && styles.compact,
+        fullHeight && styles.fullHeight,
+        className,
+    ]
         .filter(Boolean)
         .join(' ');
 

@@ -31,20 +31,17 @@ export default function KnowledgeArticle() {
 
     const article = id ? articles[id] : undefined;
 
-    // 详情还没回来时先给一个占位提示，避免空白页让人以为链接坏了
+    // 详情还没回来时先给一个满屏占位提示，避免高度塌陷导致页面抖动
     if (!article) {
         return (
-            <div className={styles.page}>
+            <div className={styles.loadingPage}>
                 <EmptyState
                     compact
+                    fullHeight
                     icon="file"
                     title="文章正在加载"
-                    description="内容拉取完成后会自动显示，如果一直没出现可以回到目录重新点一次。"
+                    description="内容拉取完成后会自动显示，如果一直没出现可以回到目录重新点一次"
                 />
-                {/* 加载期间也保留正文列的页脚，避免页面底部突然空掉。 */}
-                <div className={styles.articleFooter}>
-                    <SiteFooter />
-                </div>
             </div>
         );
     }

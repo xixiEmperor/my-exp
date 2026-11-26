@@ -29,9 +29,7 @@ export default function LoginPanel({ dialogRef, onClose, onLogin }: Props) {
         >
             <div className={styles.header}>
                 {/* 登录面板沿用导航中的站点标识。 */}
-                <span>
-                    <SiteMark /> xixiEmperor.
-                </span>
+                <span></span>
                 <button type="button" onClick={onClose} aria-label="关闭登录">
                     <SiteIcon name="close" />
                 </button>
