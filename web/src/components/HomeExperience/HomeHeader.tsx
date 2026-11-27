@@ -33,11 +33,10 @@ export default function HomeHeader({ actions, activePath }: Props) {
         };
     }, []);
 
-    const homeSection = useHomeInteraction((state) => state.activeSection);
     const isHome = activePath === '/';
     const isAdmin = activePath === '/admin' || activePath.startsWith('/admin/');
     const isPlayground = activePath === '/playground' || activePath.startsWith('/playground/');
-    let active = isHome ? homeSection : 'knowledge';
+    let active = isHome ? 'home' : 'knowledge';
 
     if (isAdmin) {
         active = 'admin';

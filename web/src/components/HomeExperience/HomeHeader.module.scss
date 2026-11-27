@@ -12,8 +12,8 @@
 .dock .inner {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: clamp(24px, 4vw, 64px);
+    justify-content: space-between;
+    gap: 24px;
     width: min(1312px, calc(100% - 104px));
     height: var(--header-height);
     margin-inline: auto;
