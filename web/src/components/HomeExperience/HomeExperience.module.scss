@@ -1,5 +1,7 @@
 /* 从确认后的首页 demo 迁移，所有选择器限制在首页根节点，防止影响阅读与登录浮层。 */
 .homeRoot {
+    position: relative;
+    isolation: isolate;
     min-height: 100vh;
 }
 
@@ -386,7 +388,7 @@
 }
 :global(.home-page .sculpture-wrap) {
     width: 100%;
-    transform: rotate(-8deg);
+    transform: none;
     animation: art-enter 1s ease both;
 }
 :global(.home-page .sculpture) {
@@ -453,7 +455,8 @@
 }
 :global(.home-page .stack-strip) {
     border-block: 1px solid var(--line);
-    background: var(--soft);
+    background: color-mix(in srgb, var(--soft) 40%, transparent);
+    backdrop-filter: blur(6px);
 }
 :global(.home-page .stack-inner) {
     display: flex;
@@ -4764,7 +4767,8 @@
     position: sticky;
     top: 0;
     z-index: 60;
-    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 32%, transparent);
+    backdrop-filter: blur(8px);
 }
 :global(.home-page .theme-button) {
     min-width: 44px;

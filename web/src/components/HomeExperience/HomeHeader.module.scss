@@ -9,6 +9,12 @@
     --header-height: 94px;
 }
 
+// 首页头部透出底层 Three.js 3D 气象背景，同时保留轻微毛玻璃保证滚动时文字清晰。
+:global(.home-page) .dock {
+    background: color-mix(in srgb, var(--bg) 48%, transparent);
+    backdrop-filter: blur(10px);
+}
+
 .dock .inner {
     display: flex;
     align-items: center;

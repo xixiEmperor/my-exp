@@ -20,7 +20,7 @@ interface HomeInteractionState {
 
 // 跨组件只共享交互意图，命令面板不再查找按钮并模拟点击。
 export const useHomeInteraction = create<HomeInteractionState>((set, get) => ({
-    weatherIndex: -1,
+    weatherIndex: 0,
     setWeatherIndex: (weatherIndex) => set({ weatherIndex }),
     headerHeight: 94,
     setHeaderHeight: (headerHeight) => set({ headerHeight }),

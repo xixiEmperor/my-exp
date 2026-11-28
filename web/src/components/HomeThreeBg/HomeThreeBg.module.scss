@@ -1,0 +1,17 @@
+// Three.js 背景画布固定层。
+// 画布设为 z-index: -1 并配合首页根节点的 isolation: isolate，
+// 恰好落在首页纸色底之上、所有正文与实心卡片之下，完全不干扰阅读与交互。
+
+.canvasWrap {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}

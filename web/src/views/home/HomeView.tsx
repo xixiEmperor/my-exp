@@ -1,17 +1,19 @@
-import { useCallback } from 'react';
+import { lazy, Suspense, useCallback } from 'react';
 import HomeHero from '../../components/HomeHero/HomeHero';
 import HomeJourney from '../../components/HomeJourney/HomeJourney';
 import HomeUpdates from '../../components/HomeUpdates/HomeUpdates';
 import HomeKnowledge from '../../components/HomeKnowledge/HomeKnowledge';
 import HomePlayground from '../../components/HomePlayground/HomePlayground';
 import HomeContact from '../../components/HomeContact/HomeContact';
-import { HomeWeatherHanger, HomeBuddyHanger } from '../../components/HomeExperience/HomeHangers';
+import { HomeWeatherHanger } from '../../components/HomeExperience/HomeHangers';
 import { useHomeDocumentHidden } from '../../hooks/useHomeExperience';
 import HomeFeedback from '../../components/HomeExperience/HomeFeedback';
 import type { SculptureAccent } from '../../utils/homeSculpture';
 import { useUIStore } from '../../stores/ui';
 import { HOME_ACCENT_STORAGE_KEY } from '../../config/homeAccent';
 import styles from './HomeView.module.scss';
+
+const HomeThreeBg = lazy(() => import('../../components/HomeThreeBg/HomeThreeBg'));
 
 // 视图只组合首页的区域，交互和生命周期交给页面 hook。
 export default function HomeView() {
@@ -28,16 +30,20 @@ export default function HomeView() {
     }, []);
 
     return (
-        <main id="main" className={`${styles.view}${pageHidden ? ' is-page-hidden' : ''}`}>
-            <HomeWeatherHanger />
-            <HomeBuddyHanger />
-            <HomeFeedback />
-            <HomeHero onAccent={onAccent} />
-            <HomeJourney />
-            <HomeUpdates />
-            <HomeKnowledge />
-            <HomePlayground />
-            <HomeContact />
-        </main>
+        <>
+            <Suspense fallback={null}>
+                <HomeThreeBg />
+            </Suspense>
+            <main id="main" className={`${styles.view}${pageHidden ? ' is-page-hidden' : ''}`}>
+                <HomeWeatherHanger />
+                <HomeFeedback />
+                <HomeHero onAccent={onAccent} />
+                <HomeJourney />
+                <HomeUpdates />
+                <HomeKnowledge />
+                <HomePlayground />
+                <HomeContact />
+            </main>
+        </>
     );
 }
